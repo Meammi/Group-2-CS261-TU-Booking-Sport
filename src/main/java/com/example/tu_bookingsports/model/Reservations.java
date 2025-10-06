@@ -15,13 +15,13 @@ public class Reservations {
     @Column(name = "reservation_id" , updatable = false , nullable = false)
     private UUID reservationID;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @Column(name = "room_id", nullable = false)
-//    private Room room;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @Column(name = "room_id", nullable = false)
+    private UUID room;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "user_id", nullable = false)
-//    private User user;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private UUID user;
 
     @Column(name = "start_time", nullable = false)
     private LocalTime startTime;
@@ -52,9 +52,9 @@ public class Reservations {
         this.status = ReservationStatus.PENDING;
     }
 
-    public Reservations(LocalTime startTime, LocalTime endTime, ReservationStatus status) { //Room room, User user
-//        this.room = room;
-//        this.user = user;
+    public Reservations(UUID room, UUID user, LocalTime startTime, LocalTime endTime, ReservationStatus status) {
+        this.room = room;
+        this.user = user;
         this.startTime = startTime;
         this.endTime = endTime;
         this.status = status != null ? status : ReservationStatus.PENDING;
@@ -76,21 +76,21 @@ public class Reservations {
         this.reservationID = reservationID;
     }
 
-//    public Room getRoom() {
-//        return room;
-//    }
-//
-//    public void setRoom(Room room) {
-//        this.room = room;
-//    }
-//
-//    public User getUser() {
-//        return user;
-//    }
-//
-//    public void setUser(User user) {
-//        this.user = user;
-//    }
+    public UUID getRoom() {
+        return room;
+    }
+
+    public void setRoom(UUID room) {
+        this.room = room;
+    }
+
+    public UUID getUser() {
+        return user;
+    }
+
+    public void setUser(UUID user) {
+        this.user = user;
+    }
 
 
     public LocalTime getStartTime() {
