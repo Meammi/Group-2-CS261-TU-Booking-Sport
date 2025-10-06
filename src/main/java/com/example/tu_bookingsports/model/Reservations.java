@@ -1,4 +1,4 @@
-package com.example.demo.model;
+package com.example.tu_bookingsports.model;
 import jakarta.persistence.*;
 import java.util.UUID;
 import java.time.LocalDateTime;
