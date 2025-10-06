@@ -1,6 +1,7 @@
 package com.example.tu_bookingsports.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -15,18 +16,17 @@ public class User {
     // @GeneratedValue: ตั้งค่าให้ ID ถูกสร้างขึ้นโดยอัตโนมัติ (ในที่นี้เราใช้ UUID)
     // @Column(columnDefinition = "uuid", updatable = false): กำหนดประเภทคอลัมน์และป้องกันการอัปเดต
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID) // ใช้กลยุทธ์การสร้าง UUID
-    @Column(name = "user_id", columnDefinition = "uuid", updatable = false, nullable = false)
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @Column(name = "user_id", columnDefinition = "uniqueidentifier", updatable = false, nullable = false)
     private UUID userId;
 
     // 2. role (text, NN - Not Null)
     @Column(nullable = false)
     private String role;
 
-    // 3. email (citext, NN - Not Null)
-    // สำหรับ 'citext' (Case-Insensitive Text) อาจต้องมีการตั้งค่าเพิ่มเติมใน Hibernate/PostgreSQL
-    // ในโค้ด Java พื้นฐาน เราใช้ String และอาจใช้การตั้งค่าใน @Column หรือ SQL สำหรับ citext
-    @Column(name = "email", nullable = false, unique = true, columnDefinition = "citext")
+
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
 
     // 4. username (text, NN - Not Null)
