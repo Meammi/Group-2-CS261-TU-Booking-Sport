@@ -15,12 +15,10 @@ public class Reservations {
     @Column(name = "reservation_id" , updatable = false , nullable = false)
     private UUID reservationID;
 
-    @ManyToOne(fetch = FetchType.LAZY)
     @Column(name = "room_id", nullable = false)
     private UUID room;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @Column(name = "user_id", nullable = false)
     private UUID user;
 
     @Column(name = "start_time", nullable = false)
