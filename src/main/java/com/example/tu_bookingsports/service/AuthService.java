@@ -1,45 +1,60 @@
+//src\main\java\com\example\tu_bookingsports\service\AuthService.java
 package com.example.tu_bookingsports.service;
 
+import com.example.tu_bookingsports.dto.LoginRequest;
+import com.example.tu_bookingsports.dto.LoginResponse;
 import com.example.tu_bookingsports.dto.RegisterRequest;
 import com.example.tu_bookingsports.exception.DuplicateResourceException;
 import com.example.tu_bookingsports.model.User;
 import com.example.tu_bookingsports.repository.UserRepository;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import com.example.tu_bookingsports.config.JwtUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.HashMap;
 
 @Service
 public class AuthService {
 
     private final UserRepository userRepository;
-    //private final PasswordEncoder passwordEncoder;
+    private final JwtUtils jwtUtils;
 
-    public AuthService(UserRepository userRepository/*,PasswordEncoder passwordEncoder*/) {
+    public AuthService(UserRepository userRepository, JwtUtils jwtUtils) {
         this.userRepository = userRepository;
-        //this.passwordEncoder = passwordEncoder;
+        this.jwtUtils = jwtUtils;
     }
 
-    // @Transactional ensures DB writes are atomic (all-or-nothing).
     @Transactional
     public void register(RegisterRequest req) {
-        // 1) Email must be unique
         if (userRepository.existsByEmail(req.getEmail())) {
             throw new DuplicateResourceException("Email is already registered");
         }
 
-        // 2) Create User entity & hash the password (BCrypt)
         User user = new User();
         user.setRole("USER");
         user.setEmail(req.getEmail());
         user.setUsername(req.getUsername());
         user.setPhoneNumber(req.getPhoneNumber());
-
-        // Hash the password with BCrypt (includes salt internally)
-        //user.setPassword(passwordEncoder.encode(req.getPassword()));
-        // No Hash
-        user.setPassword(req.getPassword());
-
-        // 3) Persist
+        user.setPassword(req.getPassword()); // stored plain text for now
         userRepository.save(user);
+    }
+
+    public LoginResponse login(LoginRequest req) {
+        User user = userRepository.findByEmail(req.getEmail())
+                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+
+        // plain text comparison (no encryption yet)
+        if (!user.getPassword().equals(req.getPassword())) {
+            throw new RuntimeException("Invalid email or password");
+        }
+
+        var claims = new HashMap<String, Object>();
+        claims.put("role", user.getRole());
+        claims.put("username", user.getUsername());
+
+        String accessToken = jwtUtils.generateToken(user.getEmail(), claims);
+        String refreshToken = jwtUtils.generateToken(user.getEmail(), new HashMap<>());
+
+        return new LoginResponse(accessToken, refreshToken);
     }
 }
