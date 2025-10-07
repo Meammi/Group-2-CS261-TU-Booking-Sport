@@ -8,8 +8,11 @@ import com.example.tu_bookingsports.exception.DuplicateResourceException;
 import com.example.tu_bookingsports.model.User;
 import com.example.tu_bookingsports.repository.UserRepository;
 import com.example.tu_bookingsports.config.JwtUtils;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
 
@@ -56,5 +59,20 @@ public class AuthService {
         String refreshToken = jwtUtils.generateToken(user.getEmail(), new HashMap<>());
 
         return new LoginResponse(accessToken, refreshToken);
+    }
+    // decode the token → get the email → fetch the user
+    public User getCurrentUser(String token) {
+        if (!jwtUtils.isTokenValid(token)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid or expired token");
+        }
+
+        String email = jwtUtils.getSubject(token);
+
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+    }
+
+    public JwtUtils getJwtUtils() {
+        return jwtUtils;
     }
 }

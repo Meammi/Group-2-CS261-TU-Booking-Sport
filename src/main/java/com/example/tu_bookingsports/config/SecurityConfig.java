@@ -23,9 +23,11 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/**").permitAll()
-                .anyRequest().permitAll() // TODO: later change to authenticated() when JWT is in place
+                .requestMatchers("/auth/register", "/auth/login").permitAll()
+                .anyRequest().permitAll()
             );
         return http.build();
     }
+
+
 }
