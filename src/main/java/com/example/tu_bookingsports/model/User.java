@@ -1,3 +1,4 @@
+//src\main\java\com\example\tu_bookingsports\model\User.java
 package com.example.tu_bookingsports.model;
 
 import jakarta.persistence.*;
