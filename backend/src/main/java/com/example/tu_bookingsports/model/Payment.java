@@ -34,8 +34,6 @@ public class Payment {
     @Column(name = "payment_date", nullable = false)
     private LocalDateTime paymentDate;
 
-    @Column(name = "transaction_id", length = 128, unique = true,nullable = false)
-    private String transactionId;
 
     @PrePersist
     void onCreate() {
@@ -83,11 +81,7 @@ public class Payment {
         this.paymentDate = paymentDate;
     }
 
-    public String getTransactionId() {
-        return transactionId;
-    }
 
-    public void setTransactionId(String transactionId) {
-        this.transactionId = transactionId;
-    }
+
+
 }
