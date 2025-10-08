@@ -1,11 +1,11 @@
 //src\main\java\com\example\tu_bookingsports\controller\AuthController.java
 package com.example.tu_bookingsports.controller;
 
-import com.example.tu_bookingsports.dto.LoginRequest;
-import com.example.tu_bookingsports.dto.LoginResponse;
-import com.example.tu_bookingsports.dto.RegisterRequest;
-import com.example.tu_bookingsports.dto.SimpleMessageResponse;
-import com.example.tu_bookingsports.dto.UserResponse;
+import com.example.tu_bookingsports.DTO.LoginRequest;
+import com.example.tu_bookingsports.DTO.LoginResponse;
+import com.example.tu_bookingsports.DTO.RegisterRequest;
+import com.example.tu_bookingsports.DTO.SimpleMessageResponse;
+import com.example.tu_bookingsports.DTO.UserResponse;
 import com.example.tu_bookingsports.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;

@@ -1,9 +1,9 @@
 //src\main\java\com\example\tu_bookingsports\service\AuthService.java
 package com.example.tu_bookingsports.service;
 
-import com.example.tu_bookingsports.dto.LoginRequest;
-import com.example.tu_bookingsports.dto.LoginResponse;
-import com.example.tu_bookingsports.dto.RegisterRequest;
+import com.example.tu_bookingsports.DTO.LoginRequest;
+import com.example.tu_bookingsports.DTO.LoginResponse;
+import com.example.tu_bookingsports.DTO.RegisterRequest;
 import com.example.tu_bookingsports.exception.DuplicateResourceException;
 import com.example.tu_bookingsports.model.User;
 import com.example.tu_bookingsports.repository.UserRepository;
