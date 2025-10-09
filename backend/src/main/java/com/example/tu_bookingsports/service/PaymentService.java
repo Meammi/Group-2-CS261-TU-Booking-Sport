@@ -55,11 +55,9 @@ public class PaymentService {
         Payment payment = paymentRepository.findByReservationId(reservationId).orElse(null);
         try{
             if(payment != null) {
-                String url = "https://api.slipok.com/api/line/apikey/54265";
                 HttpHeaders headers;
                 headers = new HttpHeaders();
                 headers.setContentType(MediaType.APPLICATION_JSON);
-                headers.add("x-authorization", "SLIPOKRP0GXW1");
 
                 Map<String, Object> body = new HashMap<>();
                 body.put("data", qrData);
