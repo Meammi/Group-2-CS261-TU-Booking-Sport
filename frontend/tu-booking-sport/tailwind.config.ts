@@ -9,7 +9,6 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        // This setup is correct for both v3 and v4
         sans: ["var(--font-nunito)"],
       },
     },
@@ -17,3 +16,4 @@ const config: Config = {
   plugins: [],
 };
 export default config;
+
