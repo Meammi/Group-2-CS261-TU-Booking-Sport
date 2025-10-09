@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function Home() {
   return (
     <div className="flex items-center justify-center min-h-screen">
@@ -36,10 +38,12 @@ export default function Home() {
           <a href="#" className="text-black hover:underline">Forgot Password?</a>
         </div>
 
-        <button type="submit"
+        <Link href="/homepage" className="w-full">
+          <button type="button" 
           className="w-full bg-black text-white py-2 rounded-md hover:bg-gray-800 transition duration-200">
           Log-in
-        </button>
+          </button>
+        </Link>
     </form>
   </div>
 </div>
