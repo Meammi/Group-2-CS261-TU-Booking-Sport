@@ -17,7 +17,7 @@ public class Reservations {
     @GeneratedValue(strategy = GenerationType.UUID)
     @JdbcTypeCode(SqlTypes.CHAR)
     @Column(name = "reservation_id" , updatable = false , nullable = false)
-    private UUID reservationID;
+    private UUID reservationId;
 
     @Column(name = "room_id", nullable = false)
     private UUID room;

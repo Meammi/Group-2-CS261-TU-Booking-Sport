@@ -1,4 +1,6 @@
 package com.example.tu_bookingsports.service;
+import com.example.tu_bookingsports.model.Reservations;
+import com.example.tu_bookingsports.repository.ReservationRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pheerathach.ThaiQRPromptPay;
@@ -22,19 +24,21 @@ import org.springframework.web.client.RestTemplate;
 public class PaymentService {
 
     private final PaymentRepository paymentRepository;
+    private final ReservationService reservationService;
 
-    public PaymentService(PaymentRepository paymentRepository) {
+    public PaymentService(PaymentRepository paymentRepository, ReservationService reservationService) {
         this.paymentRepository = paymentRepository;
+        this.reservationService = reservationService;
     }
 
     public Payment createPayment(UUID reservationId) throws IOException, WriterException {
         Payment payment = new Payment();
-
+        BigDecimal price = reservationService.getPriceByReservationId(reservationId);
         ThaiQRPromptPay qr = new ThaiQRPromptPay.Builder()
                 .staticQR()
                 .creditTransfer()
                 .mobileNumber("0634199693")
-                .amount(new BigDecimal("1.00"))
+                .amount(price)
                 .build();
         String folderPath = "uploads";
         File folder = new File(folderPath);
@@ -55,11 +59,13 @@ public class PaymentService {
         Payment payment = paymentRepository.findByReservationId(reservationId).orElse(null);
         try{
             if(payment != null) {
-                String url = "https://api.slipok.com/api/line/apikey/54265";
+                String branchId = System.getenv("BRANCH_ID");
+                String apiKey = System.getenv("API_KEY");
+                String url = "https://api.slipok.com/api/line/apikey/"+branchId;
                 HttpHeaders headers;
                 headers = new HttpHeaders();
                 headers.setContentType(MediaType.APPLICATION_JSON);
-                headers.add("x-authorization", "SLIPOKRP0GXW1");
+                headers.add("x-authorization", apiKey);
 
                 Map<String, Object> body = new HashMap<>();
                 body.put("data", qrData);
@@ -74,10 +80,9 @@ public class PaymentService {
 
                 ObjectMapper mapper = new ObjectMapper();
                 JsonNode root = mapper.readTree(response.getBody());
-                String message = root.path("data").path("message").asText();
                 boolean success = root.path("success").asBoolean();
                 result.put("success", success);
-                result.put("message", message);
+                result.put("message", "การชำระเงินสำเร็จ");
                 payment.setPaymentStatus(Payment.PaymentStatus.APPROVED);
                 paymentRepository.save(payment);
             }else {
@@ -87,7 +92,18 @@ public class PaymentService {
 
         }catch (Exception e){
             result.put("success", false);
-            result.put("message", "เกิดข้อผิดพลาด: " + e.getMessage());
+            String fullMessage = e.getMessage();
+            String search = "\"message\":\"";
+            int start = fullMessage.indexOf(search);
+            if (start != -1) {
+                start += search.length();
+                int end = fullMessage.indexOf("\"", start);
+                if (end != -1) {
+                    String message = fullMessage.substring(start, end);
+                    result.put("message", message);
+                }
+            }
+
             if(payment != null) {
                 payment.setPaymentStatus(Payment.PaymentStatus.REJECTED);
                 paymentRepository.save(payment);
