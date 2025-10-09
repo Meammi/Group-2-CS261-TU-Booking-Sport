@@ -1,6 +1,8 @@
 package com.example.tu_bookingsports.DTO;
-import java.util.UUID;
+import lombok.Data;
 
+import java.util.UUID;
+@Data
 public class PaymentRequest {
     private UUID reservationId;
     public UUID getReservationId() { return reservationId; }
