@@ -4,6 +4,8 @@ import lombok.Data;
 import java.math.BigDecimal;
 import java.util.UUID;
 
+import java.util.UUID;
+@Data
 public class PaymentRequest {
     private UUID reservationId;
     public UUID getReservationId() { return reservationId; }
