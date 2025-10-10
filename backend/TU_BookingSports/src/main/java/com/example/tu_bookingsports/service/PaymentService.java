@@ -55,51 +55,6 @@ public class PaymentService {
 
         return paymentRepository.save(payment);
     }
-    public Map<String,Object> checkSlipData(UUID reservationId,String qrData,BigDecimal amount) {
-        Map<String, Object> result = new HashMap<>();
-        Payment payment = paymentRepository.findByReservationId(reservationId).orElse(null);
-        try{
-            if(payment != null) {
-                HttpHeaders headers;
-                headers = new HttpHeaders();
-                headers.setContentType(MediaType.APPLICATION_JSON);
-
-                Map<String, Object> body = new HashMap<>();
-                body.put("data", qrData);
-                body.put("log", true);
-                if (amount != null) {
-                    body.put("amount", amount);
-                }
-                HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-
-                RestTemplate restTemplate = new RestTemplate();
-                ResponseEntity<String> response = restTemplate.postForEntity(url, requestEntity, String.class);
-
-                ObjectMapper mapper = new ObjectMapper();
-                JsonNode root = mapper.readTree(response.getBody());
-                String message = root.path("data").path("message").asText();
-                boolean success = root.path("success").asBoolean();
-                result.put("success", success);
-                result.put("message", message);
-                payment.setPaymentStatus(Payment.PaymentStatus.APPROVED);
-                paymentRepository.save(payment);
-            }else {
-                result.put("success", false);
-                result.put("message", "Don't have payment data");
-            }
-
-        }catch (Exception e){
-            result.put("success", false);
-            result.put("message", "เกิดข้อผิดพลาด: " + e.getMessage());
-            if(payment != null) {
-                payment.setPaymentStatus(Payment.PaymentStatus.REJECTED);
-                paymentRepository.save(payment);
-            }
-                    }
-        return result;
-
-    }
-
 
     public Map<String,Object> checkSlipData(UUID reservationId,String qrData,BigDecimal amount) {
         Map<String, Object> result = new HashMap<>();
