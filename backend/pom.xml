@@ -85,12 +85,7 @@
             <artifactId>promptpay</artifactId>
             <version>1.0.3-SNAPSHOT</version>
         </dependency>
-<<<<<<< HEAD
-=======
 
-
-
->>>>>>> f57ac6a (remove essential data)
     </dependencies>
 
     <build>
