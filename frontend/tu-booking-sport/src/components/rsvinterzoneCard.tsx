@@ -1,38 +1,74 @@
+"use client";
+import React, { useState } from "react";
+import { FaRegStar, FaStar } from "react-icons/fa";
+
 type Props = {
-  title: string;                 // "Interzone 01"
-  slotTimes?: string[];          // ["16:00","17:00","18:00","19:00","20:00"]
+  title: string;
+  slotTimes?: string[];
+  onSelectTime?: (payload: { spot: string; time: string }) => void; // ✅ รับ callback
 };
 
 export default function RsvInterzoneCard({
   title,
   slotTimes = ["16:00", "17:00", "18:00", "19:00", "20:00"],
+  onSelectTime, // ✅ รับจาก props
 }: Props) {
+  const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [isFavorite, setIsFavorite] = useState(false);
+
+  const handleClick = (time: string) => {
+    setSelectedTime(time);
+    // ส่งข้อมูลให้หน้า parent ถ้ามี onSelectTime
+    if (onSelectTime) {
+      onSelectTime({ spot: title, time }); // ✅ ปลอดภัยสุด
+    } else {
+      console.warn("onSelectTime not passed!");
+    }
+  };
+
+  const toggleFavorite = () => setIsFavorite(!isFavorite);
+
   return (
-    <div className="flex items-center gap-4 rounded-lg bg-white p-4 shadow-md border border-gray-100">
-      {/* Image Placeholder */}
-      <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-md bg-gray-200">
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
+    <div className="relative flex items-center gap-4 p-4 bg-white rounded-lg shadow-md border border-gray-100 hover:shadow-lg transition">
+      {/* ⭐ ปุ่มดาว */}
+      <button
+        onClick={toggleFavorite}
+        className="absolute top-3 right-3 text-gray-400 hover:text-yellow-500 transition"
+      >
+        {isFavorite ? (
+          <FaStar className="text-yellow-400 text-xl" />
+        ) : (
+          <FaRegStar className="text-xl" />
+        )}
+      </button>
+
+      {/* 🏸 รูป */}
+      <div className="w-32 h-24 overflow-hidden rounded-md bg-gray-200 flex-shrink-0">
+        <img
+          src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhAwJaSG_wgOtVj06BOUspGXRpQF_znpSZlC9eEZlHWItjRxmpyYntGNrBiuo-a4RVhgU0V9SitMSDcurYTHFmMetk0-fZ_QTUjEj9MAz8GiTuMaNb1dbpXVW9TXTjND1reTuP0DHYa8mo/s1133/Inter02.jpg"
+          alt="Interzone court"
+          className="w-full h-full object-cover"
+        />
       </div>
 
-      {/* เนื้อหาขวา */}
+      {/* 🕐 เนื้อหาฝั่งขวา */}
       <div className="flex-1 text-center">
-        {/* ชื่อ Interzone อยู่ตรงกลาง */}
-        <h3 className="text-2xl font-bold text-slate-800">{title}</h3>
+        <h3 className="text-xl font-bold text-slate-800 mb-2">{title}</h3>
+        <div className="h-[2px] w-full bg-black mb-3" />
 
-        {/* เส้นคั่นใต้หัวข้อ */}
-        <div className="mt-3 h-[2px] w-full rounded bg-black" />
-
-        {/* เวลาแต่ละช่วง */}
-        <div className="mt-3 flex flex-wrap justify-center gap-2">
+        <div className="flex flex-wrap justify-center gap-2">
           {slotTimes.map((t) => (
-            <span
+            <button
               key={t}
-              className="rounded-lg bg-black px-3 py-1 text-[14px] font-semibold text-white shadow"
+              onClick={() => handleClick(t)} // ✅ ใช้ฟังก์ชันใน scope
+              className={`rounded-md px-3 py-1 text-white font-semibold text-sm shadow transition ${
+                selectedTime === t
+                  ? "bg-red-600"
+                  : "bg-black hover:bg-gray-800 active:scale-95"
+              }`}
             >
               {t}
-            </span>
+            </button>
           ))}
         </div>
       </div>

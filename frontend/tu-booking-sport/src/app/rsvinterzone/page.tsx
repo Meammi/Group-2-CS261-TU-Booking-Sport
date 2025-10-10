@@ -1,8 +1,12 @@
+"use client";
+
+import React from "react";
 import Header from "@/components/Header";
-import RsvInterzoneCard from "@/components/rsvinterzoneCard";
 import ReservationHeader from "@/components/ReservationHeader";
+import RsvInterzoneCard from "@/components/rsvinterzoneCard";
+import ConfirmModal from "@/components/confirmcard";
 
-
+// ---- data เดิมของหน้า ----
 const reservations = [
   { id: 1, title: "Interzone 01", location: "Interzone", total: 5 },
   { id: 2, title: "Interzone 02", location: "Interzone", total: 5 },
@@ -27,35 +31,64 @@ const reservations = [
 ];
 
 export default function ReservationPage() {
-  return (
+  // ------ state สำหรับ modal ยืนยัน ------
+  const [open, setOpen] = React.useState(false);
+  const [spot, setSpot] = React.useState("");
+  const [time, setTime] = React.useState("");
+  const dateStr = new Date().toLocaleDateString("en-GB");
 
+  // รับ event จากการ์ด
+  const handleSelectTime = ({ spot, time }: { spot: string; time: string }) => {
+    setSpot(spot);
+    setTime(time);
+    setOpen(true);
+  };
+
+  const handleConfirm = async () => {
+    setOpen(false);
+    // TODO: call backend ได้ที่นี่
+    alert(`Booked: ${spot} @ ${time} on ${dateStr}`);
+  };
+
+  return (
     <div className="bg-gray-50 min-h-screen">
+      {/* กล่องขาวความกว้างเท่าเดิม */}
       <div className="mx-auto max-w-md bg-white min-h-screen">
-        
+        {/* header เดิม */}
         <Header studentId="6709616376" />
-        
+
         <main className="p-4">
-          
           <ReservationHeader />
 
-          {/* ส่วนหัวแสดง Badminton และ Interzone */}
+          {/* ส่วนหัว “Badminton / Interzone” (สไตล์เดิม) */}
           <div className="text-2xl font-nunito font-bold text-center mb-4">
-            <h2 className="text-2xl font-nunito font-bold text-center mb-4">Badminton</h2>
-            <p className="text-2xl font-nunito font-bold text-center mb-4">Interzone</p>
+            <h2 className="text-2xl font-bold text-center mb-4">Badminton</h2>
+            <p className="text-2xl font-bold text-center mb-4">Interzone</p>
           </div>
 
+          {/* แสดงการ์ดแบบ list แนวตั้งระยะห่างเดิม */}
           <div className="space-y-4">
             {reservations.map((item) => (
               <RsvInterzoneCard
                 key={item.id}
                 title={item.title}
+                // ส่ง callback ไปยังการ์ด
+                onSelectTime={handleSelectTime}
               />
             ))}
           </div>
-
         </main>
       </div>
+
+      {/* Modal ยืนยันการจอง */}
+      <ConfirmModal
+        open={open}
+        spot={spot}
+        date={dateStr}
+        time={time}
+        onClose={() => setOpen(false)}
+        onConfirm={handleConfirm}
+      />
     </div>
   );
 }
-
