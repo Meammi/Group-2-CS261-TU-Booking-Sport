@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import ReservationHeader from "@/components/ReservationHeader";
 import RsvInterzoneCard from "@/components/rsvinterzoneCard";
@@ -32,6 +33,7 @@ const reservations = [
 
 export default function ReservationPage() {
   // ------ state สำหรับ modal ยืนยัน ------
+  const router = useRouter();
   const [open, setOpen] = React.useState(false);
   const [spot, setSpot] = React.useState("");
   const [time, setTime] = React.useState("");
@@ -46,8 +48,7 @@ export default function ReservationPage() {
 
   const handleConfirm = async () => {
     setOpen(false);
-    // TODO: call backend ได้ที่นี่
-    alert(`Booked: ${spot} @ ${time} on ${dateStr}`);
+    router.push('/successful?spot=' + encodeURIComponent(spot) + '&date=' + encodeURIComponent(dateStr) + '&time=' + encodeURIComponent(time));
   };
 
   return (
