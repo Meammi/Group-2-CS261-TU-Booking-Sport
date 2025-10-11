@@ -64,7 +64,7 @@ export default function RsvInterzoneCard({
               className={`rounded-md px-3 py-1 text-white font-semibold text-sm shadow transition ${
                 selectedTime === t
                   ? "bg-red-600"
-                  : "bg-black hover:bg-gray-800 active:scale-95"
+                  : "bg-tu-navy hover:bg-gray-400 active:scale-95"
               }`}
             >
               {t}
