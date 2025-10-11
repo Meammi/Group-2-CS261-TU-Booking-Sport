@@ -4,7 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a24da115-901c-4c46-ade9-b5422aac0952" name="Changes" comment="" />
+    <list default="true" id="a24da115-901c-4c46-ade9-b5422aac0952" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/backend/TU_BookingSports/src/main/java/com/example/tu_bookingsports/DTO/RoomReservationDTO" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/TU_BookingSports/src/main/java/com/example/tu_bookingsports/DTO/SlotDetailDTO.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/TU_BookingSports/src/main/java/com/example/tu_bookingsports/controller/ReservationController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/TU_BookingSports/src/main/java/com/example/tu_bookingsports/repository/RoomRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/TU_BookingSports/src/main/java/com/example/tu_bookingsports/repository/SlotRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -17,6 +24,7 @@
   &quot;associatedIndex&quot;: 6
 }</component>
   <component name="ProjectId" id="33rwg3sDykEdqEG3k8OWtDEKPCO" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -25,7 +33,7 @@
   "keyToString": {
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "main",
+    "git-widget-placeholder": "ReservationBackend",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "/home/ben/Group-2-CS261-TU-Booking-Sport/backend/pom.xml",
     "node.js.detected.package.eslint": "true",
@@ -36,6 +44,11 @@
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\user\Lucky\homework\CS261\Group-2-CS261-TU-Booking-Sport\backend\TU_BookingSports\src\main\java\com\example\tu_bookingsports\service" />
+    </key>
+  </component>
   <component name="RunManager">
     <configuration default="true" type="JetRunConfigurationType">
       <module name="Group-2-CS261-TU-Booking-Sport" />
