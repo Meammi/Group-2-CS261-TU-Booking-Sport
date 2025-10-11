@@ -1,5 +1,5 @@
-//src\main\java\com\example\tu_bookingsports\dto\RegisterRequest.java
-package com.example.tu_bookingsports.dto;
+//src\main\java\com\example\tu_bookingsports\DTO\RegisterRequest.java
+package com.example.tu_bookingsports.DTO;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;

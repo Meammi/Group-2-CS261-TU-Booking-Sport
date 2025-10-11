@@ -1,5 +1,5 @@
-// src\main\java\com\example\tu_bookingsports\dto\LoginResponse.java
-package com.example.tu_bookingsports.dto;
+// src\main\java\com\example\tu_bookingsports\DTO\LoginResponse.java
+package com.example.tu_bookingsports.DTO;
 
 public class LoginResponse {
     private String access_token;

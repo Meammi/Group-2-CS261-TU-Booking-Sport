@@ -1,5 +1,5 @@
-//src\main\java\com\example\tu_bookingsports\dto\SimpleMessageResponse.java
-package com.example.tu_bookingsports.dto;
+//src\main\java\com\example\tu_bookingsports\DTO\SimpleMessageResponse.java
+package com.example.tu_bookingsports.DTO;
 
 public class SimpleMessageResponse {
     private String message;

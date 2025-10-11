@@ -1,4 +1,4 @@
-package com.example.tu_bookingsports.dto;
+package com.example.tu_bookingsports.DTO;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
