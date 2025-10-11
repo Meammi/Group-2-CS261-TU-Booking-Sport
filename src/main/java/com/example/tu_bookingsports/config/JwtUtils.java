@@ -53,11 +53,10 @@ public class JwtUtils {
                 .parseClaimsJws(token);
     }
 
-    // 🆕 Extract Bearer token from Authorization header
-    public String extractTokenFromHeader(String header) {
-        if (header != null && header.startsWith("Bearer ")) {
-            return header.substring(7);
-        }
-        return null;
-    }
+    // public String extractTokenFromHeader(String header) {
+    //     if (header != null && header.startsWith("Bearer ")) {
+    //         return header.substring(7);
+    //     }
+    //     return null;
+    // }
 }

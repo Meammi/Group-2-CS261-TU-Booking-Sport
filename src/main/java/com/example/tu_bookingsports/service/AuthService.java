@@ -41,7 +41,6 @@ public class AuthService {
         user.setPassword(req.getPassword()); // stored plain text for now
         userRepository.save(user);
     }
-
     public LoginResponse login(LoginRequest req) {
         User user = userRepository.findByEmail(req.getEmail())
                 .orElseThrow(() -> new RuntimeException("Invalid email or password"));
@@ -74,5 +73,9 @@ public class AuthService {
 
     public JwtUtils getJwtUtils() {
         return jwtUtils;
+    }
+
+    public UserRepository getUserRepository() {
+        return userRepository;
     }
 }

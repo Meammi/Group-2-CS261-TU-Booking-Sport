@@ -14,6 +14,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpHeaders;
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -26,7 +27,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<SimpleMessageResponse> register(@Valid @RequestBody RegisterRequest req) {
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest req) {
         authService.register(req);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -34,13 +35,13 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<SimpleMessageResponse> login(@RequestBody LoginRequest req, HttpServletResponse response) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest req, HttpServletResponse response) {
         LoginResponse tokens = authService.login(req);
 
         //access token
         ResponseCookie cookie = ResponseCookie.from("access_token", tokens.getAccess_token())
             .httpOnly(true)
-            .secure(false)//for http
+            .secure(false) //for http
             .path("/")
             .sameSite("Strict")
             .maxAge(60 * 60) // 1 hour
@@ -53,7 +54,7 @@ public class AuthController {
             .secure(false)
             .path("/")
             .sameSite("Strict")
-            .maxAge(7 * 24 * 60 * 60) // 7 days
+            .maxAge(24 * 60 * 60) // 1 days
             .build();
         response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
 
@@ -80,5 +81,41 @@ public class AuthController {
                 user.getRole()
         );
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refresh(@CookieValue(value = "refresh_token", required = false) String refreshToken,HttpServletResponse response){
+         if (refreshToken == null || !authService.getJwtUtils().isTokenValid(refreshToken)) {
+            return ResponseEntity.status(401).body(Map.of("error", "Invalid or missing refresh token"));
+        }
+
+        String email = authService.getJwtUtils().getSubject(refreshToken);
+
+        var userOpt = authService.getUserRepository().findByEmail(email);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(404).body(Map.of("error", "User not found"));
+        }
+
+        var user = userOpt.get();
+
+        //new access token
+        var claims = new HashMap<String, Object>();
+        claims.put("role", user.getRole());
+        claims.put("username", user.getUsername());
+
+        String newAccessToken = authService.getJwtUtils().generateToken(user.getEmail(), claims);
+
+        //set new access_token cookie
+        ResponseCookie accessCookie = ResponseCookie.from("access_token", newAccessToken)
+            .httpOnly(true)
+            .secure(false)
+            .path("/")
+            .sameSite("Strict")
+            .maxAge(60 * 60)    // 1 hour
+            .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
+
+        return ResponseEntity.ok(new SimpleMessageResponse("Access token refreshed"));
     }
 }
