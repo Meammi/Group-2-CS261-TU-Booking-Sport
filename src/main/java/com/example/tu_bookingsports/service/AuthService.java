@@ -10,6 +10,7 @@ import com.example.tu_bookingsports.repository.UserRepository;
 import com.example.tu_bookingsports.config.JwtUtils;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -21,10 +22,12 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final JwtUtils jwtUtils;
+    private final PasswordEncoder passwordEncoder;
 
-    public AuthService(UserRepository userRepository, JwtUtils jwtUtils) {
+    public AuthService(UserRepository userRepository, JwtUtils jwtUtils, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.jwtUtils = jwtUtils;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional
@@ -38,18 +41,16 @@ public class AuthService {
         user.setEmail(req.getEmail());
         user.setUsername(req.getUsername());
         user.setPhoneNumber(req.getPhoneNumber());
-        user.setPassword(req.getPassword()); // stored plain text for now
+        user.setPassword(passwordEncoder.encode(req.getPassword()));
         userRepository.save(user);
     }
     public LoginResponse login(LoginRequest req) {
         User user = userRepository.findByEmail(req.getEmail())
                 .orElseThrow(() -> new RuntimeException("Invalid email or password"));
 
-        // plain text comparison (no encryption yet)
-        if (!user.getPassword().equals(req.getPassword())) {
+        if (!passwordEncoder.matches(req.getPassword(), user.getPassword())) {
             throw new RuntimeException("Invalid email or password");
         }
-
         var claims = new HashMap<String, Object>();
         claims.put("role", user.getRole());
         claims.put("username", user.getUsername());
