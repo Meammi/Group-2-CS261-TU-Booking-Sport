@@ -1,4 +1,5 @@
 package com.example.tu_bookingsports.service;
+
 import com.example.tu_bookingsports.model.Reservations;
 import com.example.tu_bookingsports.repository.ReservationRepository;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -54,6 +55,7 @@ public class PaymentService {
 
         return paymentRepository.save(payment);
     }
+
     public Map<String,Object> checkSlipData(UUID reservationId,String qrData,BigDecimal amount) {
         Map<String, Object> result = new HashMap<>();
         Payment payment = paymentRepository.findByReservationId(reservationId).orElse(null);
