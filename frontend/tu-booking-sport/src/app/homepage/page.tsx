@@ -26,7 +26,7 @@ export default function HomePage() {
       <Header studentId={userStudentId} />
       <main className="p-4">
         {/* Header ต้อนรับ */}
-        <header className="text-center my-4">
+        <header className="text-center my-4 text-tu-navy">
           <h1 className="text-lg font-bold">Welcome to TU Booking Sports</h1>
           <p className="text-sm text-gray-500">Book your sport!!!</p>
         </header>
@@ -54,7 +54,7 @@ export default function HomePage() {
 
         {/* === SPORTS SECTION === */}
         <section className="my-8">
-          <h2 className="text-xl font-bold text-center mb-4">Sports</h2>
+          <h2 className="text-xl text-tu-navy font-bold text-center mb-4">Sports</h2>
           <div className="grid grid-cols-2 gap-4">
             {sportsData.map((sport) => (
               <SportCard 
@@ -69,7 +69,7 @@ export default function HomePage() {
 
         {/* === YOUR FAVORITE SECTION === */}
         <section className="my-8">
-          <h2 className="text-xl font-bold text-center mb-4">Your Favorite</h2>
+          <h2 className="text-xl text-tu-navy font-bold text-center mb-4">Your Favorite</h2>
           <div className="p-4 bg-white border rounded-md text-center text-gray-400">Favorite Card Placeholder</div>
         </section>
       </main>

@@ -46,7 +46,7 @@ export default function AnnouncementCard({ type, title, children }: Announcement
       <div className="flex items-start gap-4 p-4">
         <div className="flex-shrink-0 pt-1">{styles.icon}</div>
         <div className="flex-grow">
-          <strong className="block font-bold text-gray-800">{title}</strong>
+          <strong className="block font-bold text-tu-navy">{title}</strong>
           <div
             ref={contentRef} 
             className={`mt-1 text-sm text-gray-600 transition-all duration-300 ${!isExpanded ? 'line-clamp-2' : ''}`}
