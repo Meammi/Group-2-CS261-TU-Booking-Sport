@@ -58,6 +58,43 @@ public class Rooms {
     public void preUpdate() {
         updated_at = LocalDateTime.now();
     }
+
+
+    public UUID getRoom_id() {
+        return room_id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public int getCapacity() {
+        return capacity;
+    }
+
+    public String getLoc_name() {
+        return loc_name;
+    }
+
+    public GeoLocation getLocation() {
+        return location;
+    }
+
+    public BigDecimal getPrice() {
+        return price;
+    }
+
+    public LocalDateTime getCreated_at() {
+        return created_at;
+    }
+
+    public LocalDateTime getUpdated_at() {
+        return updated_at;
+    }
 }
 @Embeddable
 class GeoLocation {

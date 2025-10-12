@@ -40,5 +40,20 @@ public class Slot {
     }
     public Slot(){}
 
+    public Long getSlotId() {
+        return slotId;
+    }
+
+    public Rooms getRoom() {
+        return room;
+    }
+
+    public LocalTime getSlotTime() {
+        return slotTime;
+    }
+
+    public SlotStatus getStatus() {
+        return status;
+    }
 
 }

@@ -13,7 +13,6 @@ public class SlotDetailDTO {
     private String status;
 
     public SlotDetailDTO(LocalTime slotTime, String status) {
-        // จัดรูปแบบเวลาเป็น HH:mm
         this.slotTime = slotTime;
         this.status = status;
     }

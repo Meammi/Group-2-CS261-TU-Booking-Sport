@@ -1,4 +1,4 @@
-/*package com.example.tu_bookingsports.DTO;
+package com.example.tu_bookingsports.DTO;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -11,4 +11,3 @@ public class PaymentRequest {
     public UUID getReservationId() { return reservationId; }
     public void setReservationId(UUID reservationId) { this.reservationId = reservationId; }
 }
-*/
