@@ -1,4 +1,4 @@
-package com.example.tu_bookingsports.service;
+/*package com.example.tu_bookingsports.service;
 
 import com.example.tu_bookingsports.model.Reservations;
 import org.springframework.stereotype.Service;
@@ -20,3 +20,4 @@ public class ReservationService {
     }
 
 }
+*/

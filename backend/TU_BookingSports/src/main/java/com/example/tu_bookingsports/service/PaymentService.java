@@ -1,4 +1,4 @@
-package com.example.tu_bookingsports.service;
+/*package com.example.tu_bookingsports.service;
 
 import com.example.tu_bookingsports.model.Reservations;
 import com.example.tu_bookingsports.repository.ReservationRepository;
@@ -123,3 +123,4 @@ public class PaymentService {
 
 
 }
+*/
