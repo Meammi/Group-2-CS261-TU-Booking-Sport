@@ -46,9 +46,6 @@ public class Reservations {
 
     @Column(name = "updated", nullable = false)
     private LocalDateTime updatedAt;
-    @Column(name = "price",nullable = false,precision = 10,scale = 2)
-
-    private BigDecimal price;
     //Constuctor
     public Reservations() {
         this.createdAt = LocalDateTime.now();
