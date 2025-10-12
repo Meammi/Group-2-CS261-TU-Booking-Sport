@@ -1,13 +1,19 @@
 import Image from 'next/image'; 
+import Link from 'next/link';
+
 
 interface SportCardProps {
   imageUrl: string;
   title: string;
   subtitle: string;
+  href:string;
 }
 
-export default function SportCard({ imageUrl, title, subtitle }: SportCardProps) {
+export default function SportCard({ imageUrl, title, subtitle,href }: SportCardProps) {
   return (
+        
+        <Link href={href}>
+
     <div className="rounded-lg overflow-hidden shadow-md bg-white flex flex-col items-center text-center cursor-pointer hover:opacity-80 transition-opacity">
       <div className="relative w-full h-24">
         <Image
@@ -25,5 +31,6 @@ export default function SportCard({ imageUrl, title, subtitle }: SportCardProps)
         <p className="text-xs text-gray-600">{title}</p>
       </div>
     </div>
+    </Link>
   );
 }

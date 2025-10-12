@@ -2,9 +2,9 @@
 import SportCard from "@/components/SportCard"; 
 import Header from "@/components/Header";
 import AnnouncementCard from "@/components/AnnouncementCard"; 
-import CoverFlowCarousel from "@/components/Carousel"; // 1. Import Component ใหม่ของเรา
+import CoverFlowCarousel from "@/components/Carousel"; 
 
-// สร้างข้อมูลจำลองสำหรับ Carousel
+
 const announcementImages = [
   { id: 1, imageUrl: "/images/karaoke.jpg", alt: "Announcement 1" },
   { id: 2, imageUrl: "/images/announce1.jpg", alt: "Announcement 2" },
@@ -12,10 +12,10 @@ const announcementImages = [
 ];
 
 const sportsData = [
-  { id: 1, title: "Badminton", subtitle: "Interzone", imageUrl: "/images/interzone.jpg" },
-  { id: 2, title: "Badminton", subtitle: "Gym 4", imageUrl: "/images/gym4.jpg" },
-  { id: 3, title: "Music", subtitle: "Karaoke", imageUrl: "/images/karaoke.jpg" },
-  { id: 4, title: "Music", subtitle: "Music Room", imageUrl: "/images/musicroom.jpg" },
+  { id: 1, title: "Badminton", subtitle: "Interzone", imageUrl: "/images/interzone.jpg",href: "/rsvinterzone"},
+  { id: 2, title: "Badminton", subtitle: "Gym 4", imageUrl: "/images/gym4.jpg",href: "/rsvinterzone" },
+  { id: 3, title: "Music", subtitle: "Karaoke", imageUrl: "/images/karaoke.jpg",href: "/rsvinterzone" },
+  { id: 4, title: "Music", subtitle: "Music Room", imageUrl: "/images/musicroom.jpg",href: "/rsvinterzone" },
 ];
 
 const userStudentId = "6709616376"
@@ -62,6 +62,7 @@ export default function HomePage() {
                 title={sport.title}
                 subtitle={sport.subtitle}
                 imageUrl={sport.imageUrl}
+                href={sport.href}
               />
             ))}
           </div>
