@@ -23,9 +23,9 @@ export default async function BookingDetailPage({ params }: { params: { id: stri
 
   return (
     <div className="bg-gray-50 min-h-screen">
-      <div className="mx-auto max-w-md bg-white min-h-screen">
+      <div className="mx-auto max-w-md bg-gray-100 min-h-screen">
         
-        <header className="relative flex items-center justify-center p-4 border-b">
+        <header className="relative flex items-center justify-center p-4 border-b bg-white">
           <Link href="/mybooking" className="absolute left-4 p-2 rounded-full hover:bg-gray-100 transition-colors">
             <ArrowLeftIcon className="h-6 w-6 text-gray-700" />
           </Link>
