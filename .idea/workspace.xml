@@ -4,7 +4,25 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a24da115-901c-4c46-ade9-b5422aac0952" name="Changes" comment="" />
+    <list default="true" id="a24da115-901c-4c46-ade9-b5422aac0952" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/backend/TU_BookingSports/src/main/java/com/example/tu_bookingsports/DTO/HomepageResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/TU_BookingSports/src/main/java/com/example/tu_bookingsports/repository/HomepageRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/TU_BookingSports/src/main/java/com/example/tu_bookingsports/service/HomepageService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/TU_BookingSports/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/TU_BookingSports/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/TU_BookingSports/src/main/java/com/example/tu_bookingsports/DTO/CheckingSlipRequest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/TU_BookingSports/src/main/java/com/example/tu_bookingsports/DTO/PaymentRequest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/TU_BookingSports/src/main/java/com/example/tu_bookingsports/TuBookingSportsApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/TU_BookingSports/src/main/java/com/example/tu_bookingsports/TuBookingSportsApplication.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/TU_BookingSports/src/main/java/com/example/tu_bookingsports/controller/HomepageController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/TU_BookingSports/src/main/java/com/example/tu_bookingsports/controller/HomepageController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/TU_BookingSports/src/main/java/com/example/tu_bookingsports/controller/PaymentController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/TU_BookingSports/src/main/java/com/example/tu_bookingsports/controller/SlipCheckController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/TU_BookingSports/src/main/java/com/example/tu_bookingsports/model/Reservations.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/TU_BookingSports/src/main/java/com/example/tu_bookingsports/model/Reservations.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/TU_BookingSports/src/main/java/com/example/tu_bookingsports/repository/PaymentRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/TU_BookingSports/src/main/java/com/example/tu_bookingsports/repository/ReservationRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/TU_BookingSports/src/main/java/com/example/tu_bookingsports/service/PaymentService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/TU_BookingSports/src/main/java/com/example/tu_bookingsports/service/ReservationService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/TU_BookingSports/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend/TU_BookingSports/src/main/resources/application.properties" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -24,15 +42,18 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "main",
+    "git-widget-placeholder": "HomepageBackend",
+    "junie.onboarding.icon.badge.shown": "true",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "/home/ben/Group-2-CS261-TU-Booking-Sport/backend/pom.xml",
+    "last_opened_file_path": "C:/Users/print/OneDrive/Desktop/MyWork/CS261/Group-2-CS261-TU-Booking-Sport",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
+    "to.speed.mode.migration.done": "true",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -52,8 +73,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-9823dce3aa75-125ca727e0f0-intellij.indexing.shared.core-IU-243.24978.46" />
-        <option value="bundled-js-predefined-d6986cc7102b-76f8388c3a79-JavaScript-IU-243.24978.46" />
+        <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.23892.409" />
       </set>
     </attachedChunks>
   </component>
