@@ -52,6 +52,10 @@ public class User {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    @Column(name = "is_verified")
+    private boolean isVerified = false;
+
+
     // --- Constructors ---
     public User() {
         super();
@@ -143,5 +147,11 @@ public class User {
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
+    }
+    public boolean isVerified() {
+        return isVerified;
+    }
+    public void setVerified(boolean verified) {
+        isVerified = verified;
     }
 }
