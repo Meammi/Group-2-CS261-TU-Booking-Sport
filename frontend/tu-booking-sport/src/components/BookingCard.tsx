@@ -1,42 +1,44 @@
-import Image from 'next/image';
-import Link from 'next/link';
+    import Image from 'next/image';
+    import Link from 'next/link';
 
-interface BookingCardProps {
-  id: number;
-  imageUrl: string;
-  title: string;
-  location: string;
-  date: string;
-  time: string;
-}
+    interface BookingCardProps {
+      id: number;
+      imageUrl: string;
+      title: string;
+      location: string;
+      date: string;
+      time: string;
+    }
 
-export default function BookingCard({ id, imageUrl, title, location, date, time }: BookingCardProps) {
-  return (
-    <div className="flex items-center gap-4 rounded-lg bg-white p-3 shadow-md border border-gray-100">
-      <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-md">
-        <Image
-          src={imageUrl}
-          alt={`Image of ${title}`}
-          layout="fill"
-          objectFit="cover"
-          className="bg-gray-200"
-        />
-      </div>
+    export default function BookingCard({ id, imageUrl, title, location, date, time }: BookingCardProps) {
+      return (
+        <div className="flex items-center gap-4 rounded-lg bg-white p-3 shadow-md border border-gray-100">
+          <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-md">
+            <Image
+              src={imageUrl}
+              alt={`Image of ${title}`}
+              layout="fill"
+              objectFit="cover"
+              className="bg-gray-200"
+            />
+          </div>
 
-      <div className="flex-grow">
-        <h3 className="text-lg font-bold text-blue-600">{title}</h3>
-        <p className="text-sm text-gray-600">Location: {location}</p>
-        <p className="text-sm text-gray-600">Date: {date}</p>
-        <p className="text-sm text-gray-600">Time: {time}</p>
-      </div>
+          <div className="flex-grow">
+            <h3 className="text-lg font-bold text-blue-600">{title}</h3>
+            <p className="text-sm text-gray-600">Location: {location}</p>
+            <p className="text-sm text-gray-600">Date: {date}</p>
+            <p className="text-sm text-gray-600">Time: {time}</p>
+          </div>
 
-      <div className="flex-shrink-0 self-end">
-        <Link href={`/booking/detail/${id}`}>
-          <button className="rounded-md bg-tu-navy px-4 py-1 text-sm font-semibold text-white transition hover:bg-gray-800">
-            Detail
-          </button>
-        </Link>
-      </div>
-    </div>
-  );
-}
+          <div className="flex-shrink-0 self-end">
+            <Link href={`/booking/detail/${id}`}>
+              <button className="rounded-md bg-tu-navy px-4 py-1 text-sm font-semibold text-white transition hover:bg-gray-800">
+                Detail
+              </button>
+            </Link>
+          </div>
+        </div>
+      );
+    }
+    
+

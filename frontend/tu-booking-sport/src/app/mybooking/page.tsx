@@ -1,24 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Header from '@/components/Header';
 import BookingCard from '@/components/BookingCard';
-import {InboxIcon } from '@heroicons/react/24/solid'; 
-
-
-//ข้อมูลจำลอง (Mock Data)
-
-const mockBookings = [
-    { id: 1, title: 'Interzone 01', location: 'Interzone', date: '11/04/2025', time: '20:00', imageUrl: '/images/interzone.jpg', status: 'current' },
-    { id: 2, title: 'Interzone 01', location: 'Interzone', date: '10/04/2025', time: '20:00', imageUrl: '/images/interzone.jpg', status: 'history' },
-    { id: 3, title: 'Interzone 01', location: 'Interzone', date: '09/04/2025', time: '20:00', imageUrl: '/images/interzone.jpg', status: 'history' },
-    { id: 4, title: 'Gym 4 Court 2', location: 'Gym 4', date: '12/04/2025', time: '18:00', imageUrl: '/images/gym4.jpg', status: 'current' },
-];
+import { InboxIcon } from '@heroicons/react/24/solid';
+import { mockBookings } from '@/lib/data'; 
 
 export default function MyBookingPage() {
   const [bookings, setBookings] = useState(mockBookings);
 
- 
   const currentBookings = bookings.filter(b => b.status === 'current');
   const historyBookings = bookings.filter(b => b.status === 'history');
 
@@ -95,3 +85,4 @@ export default function MyBookingPage() {
     </div>
   );
 }
+
