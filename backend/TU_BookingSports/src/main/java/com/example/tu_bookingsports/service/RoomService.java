@@ -28,7 +28,9 @@ public class RoomService {
      */
     public List<RoomReservationDTO> getRoomDetailsWithSlotsFiltered(String type, String locName) {
 
-        // 1. ดึง Rooms ที่กรองแล้ว (ใช้ findByType และ findByTypeAndLocName ใน RoomRepository)
+        // 1. ดึง Rooms ที่กรองแล้ว (Assuming RoomRepository method follows Spring Data JPA convention)
+        // NOTE: The method in the repository should ideally be findByTypeAndLocName
+        // to match the DTO/Service convention, but we must use loc_name for now to match the Rooms entity field.
         List<Rooms> rooms;
         rooms = roomRepository.findByTypeAndLoc_name(type, locName);
 
@@ -40,12 +42,21 @@ public class RoomService {
 
     private RoomReservationDTO mapToRoomReservationDTO(Rooms room) {
         RoomReservationDTO dto = new RoomReservationDTO();
+
+        // CORRECTION 1: Align DTO setter with DTO field naming convention (camelCase)
+        // DTO has roomId, so setter is setRoomId(). Model has getRoom_id().
         dto.setRoomId(room.getRoom_id());
-        dto.setName(room.getName());
-        dto.setType(room.getType());
+
+        // CORRECTION 2: Align DTO setter with DTO field naming convention (camelCase)
+        // DTO has locName, so setter is setLocName(). Model has getLoc_name().
         dto.setLocName(room.getLoc_name());
 
+        // These fields are already in sync
+        dto.setName(room.getName());
+        dto.setType(room.getType());
+
         // 3. ดึง Slots ที่เกี่ยวข้องกับ Room ID นี้
+        // Method name in repository should be findSlotsByRoomId
         List<Slot> slots = slotRepository.findSlotsByRoomId(room.getRoom_id());
 
         // 4. แปลง Slot Entities ไปยัง SlotDetailDTOs
