@@ -1,4 +1,4 @@
-package com.example.tu_bookingsports.dto;
+package com.example.tu_bookingsports.DTO;
 
 import java.util.List;
 import java.util.UUID;

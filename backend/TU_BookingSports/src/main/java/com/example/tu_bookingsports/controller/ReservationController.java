@@ -1,9 +1,16 @@
 package com.example.tu_bookingsports.controller;
-import com.example.tu_bookingsports.DTO.PaymentRequest;
-import com.example.tu_bookingsports.model.Payment;
-import com.example.tu_bookingsports.service.PaymentService;
 import com.google.zxing.WriterException;
 import org.springframework.web.bind.annotation.*;
+import com.example.tu_bookingsports.service.RoomService;
+import com.example.tu_bookingsports.DTO.RoomReservationDTO;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import java.util.List;
+
+
 
 import java.io.IOException;
 import java.util.UUID;
@@ -19,13 +26,13 @@ public class ReservationController {
 
 
     @GetMapping("/rooms")
-    public ResponseEntity<List<RoomReservationDTO>> getReservationView(
+    public List<RoomReservationDTO> getReservationView(
             @RequestParam(required = true) String type,
             @RequestParam(required = true) String locName) // type อาจถูกบังคับให้ส่งมา
     {
         // เรียก Service โดยส่งตัวกรองเข้าไป
         List<RoomReservationDTO> details = roomService.getRoomDetailsWithSlotsFiltered(type, locName);
-        return ResponseEntity.ok(details);
+        return details;
     }
 }
 

@@ -4,8 +4,8 @@ import com.example.tu_bookingsports.model.Rooms;
 import com.example.tu_bookingsports.model.Slot;
 import com.example.tu_bookingsports.repository.RoomRepository;
 import com.example.tu_bookingsports.repository.SlotRepository;
-import com.example.tu_bookingsports.dto.RoomReservationDTO; // Import DTO
-import com.example.tu_bookingsports.dto.SlotDetailDTO;   // Import DTO
+import com.example.tu_bookingsports.DTO.RoomReservationDTO; // Import DTO
+import com.example.tu_bookingsports.DTO.SlotDetailDTO;   // Import DTO
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -24,19 +24,15 @@ public class RoomService {
      * ดึง Room ทั้งหมด พร้อมรายละเอียด Slot ที่เกี่ยวข้อง โดยมีการกรอง (Filter)
      * @param type ประเภทกีฬา (Required)
      * @param locName ชื่อสถานที่ (Optional)
-     * @return List ของ RoomReservationDTO
+     * @return List ของ RoomReservationDTO.java
      */
     public List<RoomReservationDTO> getRoomDetailsWithSlotsFiltered(String type, String locName) {
 
         // 1. ดึง Rooms ที่กรองแล้ว (ใช้ findByType และ findByTypeAndLocName ใน RoomRepository)
         List<Rooms> rooms;
-        if (locName != null && !locName.isEmpty()) {
-            rooms = roomRepository.findByTypeAndLocName(type, locName);
-        } else {
-            rooms = roomRepository.findByType(type);
-        }
+        rooms = roomRepository.findByTypeAndLoc_name(type, locName);
 
-        // 2. Map แต่ละ Room ไปยัง RoomReservationDTO
+        // 2. Map แต่ละ Room ไปยัง RoomReservationDTO.java
         return rooms.stream()
                 .map(this::mapToRoomReservationDTO)
                 .collect(Collectors.toList());
@@ -50,7 +46,7 @@ public class RoomService {
         dto.setLocName(room.getLoc_name());
 
         // 3. ดึง Slots ที่เกี่ยวข้องกับ Room ID นี้
-        List<Slot> slots = slotRepository.findByRoom_RoomIdOrderBySlotTimeAsc(room.getRoom_id());
+        List<Slot> slots = slotRepository.findSlotsByRoomId(room.getRoom_id());
 
         // 4. แปลง Slot Entities ไปยัง SlotDetailDTOs
         List<SlotDetailDTO> slotDTOs = slots.stream()

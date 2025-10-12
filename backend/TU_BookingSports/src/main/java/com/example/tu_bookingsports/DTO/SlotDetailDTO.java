@@ -1,4 +1,4 @@
-package com.example.tu_bookingsports.dto;
+package com.example.tu_bookingsports.DTO;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -9,12 +9,12 @@ import lombok.Setter;
 @Getter
 @Setter
 public class SlotDetailDTO {
-    private String slotTime;
+    private LocalTime slotTime;
     private String status;
 
     public SlotDetailDTO(LocalTime slotTime, String status) {
         // จัดรูปแบบเวลาเป็น HH:mm
-        this.slotTime = slotTime.format(DateTimeFormatter.ofPattern("HH:mm"));
+        this.slotTime = slotTime;
         this.status = status;
     }
 }

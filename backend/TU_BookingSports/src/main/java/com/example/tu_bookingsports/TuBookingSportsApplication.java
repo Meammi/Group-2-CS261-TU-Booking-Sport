@@ -1,6 +1,6 @@
 package com.example.tu_bookingsports;
 
-import com.github.pheerathach.ThaiQRPromptPay;
+//import com.github.pheerathach.ThaiQRPromptPay;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 

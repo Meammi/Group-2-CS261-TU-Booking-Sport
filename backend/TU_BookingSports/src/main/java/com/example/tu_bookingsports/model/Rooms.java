@@ -71,7 +71,7 @@ class GeoLocation {
 
 }
 
-@Data
+/*@Data
 @Entity
 @Table(name = "slots")
 class Slot {
@@ -107,4 +107,4 @@ class Slot {
     public Slot(){}
 
 
-}
+}*/

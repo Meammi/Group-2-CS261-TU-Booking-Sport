@@ -1,4 +1,4 @@
-package com.example.tu_bookingsports.DTO;
+/*package com.example.tu_bookingsports.DTO;
 
 import lombok.Data;
 
@@ -16,3 +16,4 @@ public class CheckingSlipRequest {
        this.amount = amount;
     }
 }
+*/
