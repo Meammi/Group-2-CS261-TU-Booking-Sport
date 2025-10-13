@@ -6,19 +6,14 @@ import com.example.tu_bookingsports.DTO.LoginResponse;
 import com.example.tu_bookingsports.DTO.RegisterRequest;
 import com.example.tu_bookingsports.DTO.SimpleMessageResponse;
 import com.example.tu_bookingsports.DTO.UserResponse;
-import com.example.tu_bookingsports.model.VerificationToken;
 import com.example.tu_bookingsports.service.AuthService;
-import com.example.tu_bookingsports.model.User;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpHeaders;
-
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -44,8 +39,6 @@ public class AuthController {
         authService.verifyAccount(token);
         return ResponseEntity.ok("Account verified successfully!");
     }
-
-
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest req, HttpServletResponse response) {

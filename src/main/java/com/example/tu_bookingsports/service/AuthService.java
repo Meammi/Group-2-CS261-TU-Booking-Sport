@@ -13,13 +13,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.web.server.ResponseStatusException;
 import com.example.tu_bookingsports.repository.VerificationTokenRepository;
 import com.example.tu_bookingsports.model.VerificationToken;
-import com.example.tu_bookingsports.service.EmailService;
 
-
+import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.Optional;
+import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 @Service
 public class AuthService {
@@ -29,6 +34,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final VerificationTokenRepository tokenRepository;
     private final EmailService emailService;
+    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
 
     public AuthService(UserRepository userRepository,
                        JwtUtils jwtUtils,
@@ -41,11 +47,42 @@ public class AuthService {
         this.tokenRepository = tokenRepository;
         this.emailService = emailService;
     }
+    //delete verify token 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void deleteOldTokens(User user) {
+        tokenRepository.deleteAllByUser_UserId(user.getUserId());
+        tokenRepository.flush();
+    }
+    //create verify token 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void createVerificationToken(User user) {
+        String newToken = UUID.randomUUID().toString();
 
-    @Transactional
+        VerificationToken vt = new VerificationToken();
+        vt.setUser(user);
+        vt.setToken(newToken);
+        vt.setExpiresAt(LocalDateTime.now().plusHours(1));
+
+        tokenRepository.saveAndFlush(vt);
+        emailService.sendVerificationEmail(user.getEmail(), newToken);
+    }
+
+    @Transactional(noRollbackFor = ResponseStatusException.class)
     public void register(RegisterRequest req) {
-        if (userRepository.existsByEmail(req.getEmail())) {
-            throw new DuplicateResourceException("Email is already registered");
+        Optional<User> existingUserOpt = userRepository.findByEmail(req.getEmail());
+
+        if (existingUserOpt.isPresent()) {
+            User existingUser = existingUserOpt.get();
+            if (!existingUser.isVerified()) {
+                // Token regeneration
+                deleteOldTokens(existingUser);
+                createVerificationToken(existingUser);
+                throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Account already exists but not verified. New verification link sent."
+                );
+            }
+            throw new DuplicateResourceException("Email is already registered and verified.");
         }
 
         User user = new User();
@@ -56,18 +93,9 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(req.getPassword()));
         userRepository.save(user);
 
-        // Create a verification token
-        String token = java.util.UUID.randomUUID().toString();
-
-        VerificationToken verification = new VerificationToken();
-        verification.setToken(token);
-        verification.setUser(user);
-        verification.setExpiresAt(java.time.LocalDateTime.now().plusHours(1));
-        tokenRepository.save(verification);
-
-        // Send verification email
-        emailService.sendVerificationEmail(user.getEmail(), token);
+        createVerificationToken(user);
     }
+
     public LoginResponse login(LoginRequest req) {
         User user = userRepository.findByEmail(req.getEmail())
                 .orElseThrow(() -> new RuntimeException("Invalid email or password"));
@@ -113,12 +141,9 @@ public class AuthService {
 
         tokenRepository.delete(vt);
     }
-
-
     public JwtUtils getJwtUtils() {
         return jwtUtils;
     }
-
     public UserRepository getUserRepository() {
         return userRepository;
     }
