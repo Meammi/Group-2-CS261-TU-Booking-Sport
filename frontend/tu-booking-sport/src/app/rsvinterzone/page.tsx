@@ -54,7 +54,7 @@ export default function ReservationPage() {
   return (
     <div className="bg-gray-50 min-h-screen">
       {/* กล่องขาวความกว้างเท่าเดิม */}
-      <div className="mx-auto max-w-md bg-white min-h-screen">
+      <div className="mx-auto max-w-md bg-gray-100 min-h-screen">
         {/* header เดิม */}
         <Header studentId="6709616376" />
 

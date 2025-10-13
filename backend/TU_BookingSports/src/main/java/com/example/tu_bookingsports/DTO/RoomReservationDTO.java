@@ -3,8 +3,10 @@ package com.example.tu_bookingsports.DTO;
 import java.util.List;
 import java.util.UUID;
 
-// Removed Lombok imports
-
+import lombok.Getter;
+import lombok.Setter;
+@Getter
+@Setter
 public class RoomReservationDTO {
 
     // Private Fields (Data Structure)
@@ -12,7 +14,7 @@ public class RoomReservationDTO {
     private String name;
     private String type;
     private String locName;
-    private List<SlotDetailDTO> availableSlots;
+    private List<SlotDetailDTO> Slots;
 
     // Default Constructor (Required by many frameworks like Spring/Jackson)
     public RoomReservationDTO() {
@@ -36,8 +38,8 @@ public class RoomReservationDTO {
         return locName;
     }
 
-    public List<SlotDetailDTO> getAvailableSlots() {
-        return availableSlots;
+    public List<SlotDetailDTO> getSlots() {
+        return Slots;
     }
 
     // --- Public Setter Methods (Required by RoomService.java) ---
@@ -58,7 +60,7 @@ public class RoomReservationDTO {
         this.locName = locName;
     }
 
-    public void setAvailableSlots(List<SlotDetailDTO> availableSlots) {
-        this.availableSlots = availableSlots;
+    public void setSlots(List<SlotDetailDTO> Slots) {
+        this.Slots = Slots;
     }
 }

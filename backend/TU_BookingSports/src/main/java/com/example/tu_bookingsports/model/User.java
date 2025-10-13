@@ -1,12 +1,13 @@
 package com.example.tu_bookingsports.model;
 
 import jakarta.persistence.*;
+import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-//@Data
+@Data
 @Entity
 @Table(name = "users")
 public class User {

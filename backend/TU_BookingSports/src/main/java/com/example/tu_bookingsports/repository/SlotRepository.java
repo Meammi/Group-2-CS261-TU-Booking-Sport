@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 @Repository
-public interface SlotRepository extends JpaRepository<Slot, Long> {
+public interface SlotRepository extends JpaRepository<Slot, UUID> {
 
     // ดึง Slot ทั้งหมดสำหรับ Room ID ที่ระบุ โดยเรียงตามเวลา
     //List<Slot> findByRoom_Room_idOrderBySlotTimeAsc(UUID roomId);

@@ -62,12 +62,13 @@ public class RoomService {
         // 4. แปลง Slot Entities ไปยัง SlotDetailDTOs
         List<SlotDetailDTO> slotDTOs = slots.stream()
                 .map(slot -> new SlotDetailDTO(
+                        slot.getSlotId(),
                         slot.getSlotTime(),
                         slot.getStatus().toString()
                 ))
                 .collect(Collectors.toList());
 
-        dto.setAvailableSlots(slotDTOs);
+        dto.setSlots(slotDTOs);
         return dto;
     }
 }

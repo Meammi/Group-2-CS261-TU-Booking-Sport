@@ -1,7 +1,8 @@
 package com.example.tu_bookingsports.model;
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.UUID;
+
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
 
@@ -10,10 +11,14 @@ import org.hibernate.annotations.GenericGenerator;
 @Table(name = "slots")
 public class Slot {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "slot_id")
-    private Long slotId;
+
+    //@GeneratedValue(strategy = GenerationType.IDENTITY)
+    //@Column(name = "slot_id")
+	@Id
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @Column(name = "slot_id", columnDefinition = "uniqueidentifier")
+    private UUID slotId;
 
     @ManyToOne
     @JoinColumn(name = "room_id", nullable = false)
@@ -40,7 +45,7 @@ public class Slot {
     }
     public Slot(){}
 
-    public Long getSlotId() {
+    public UUID getSlotId() {
         return slotId;
     }
 

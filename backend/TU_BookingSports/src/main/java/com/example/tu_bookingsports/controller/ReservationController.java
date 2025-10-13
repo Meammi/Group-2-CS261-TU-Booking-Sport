@@ -17,7 +17,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = "")
+@CrossOrigin(origins = "") //ยิงจากท่ไหนก็ได้
 public class ReservationController {
     private final RoomService roomService;
     public ReservationController(RoomService roomService) {
