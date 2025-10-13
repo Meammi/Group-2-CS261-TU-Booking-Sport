@@ -124,4 +124,17 @@ public class AuthController {
 
         return ResponseEntity.ok(new SimpleMessageResponse("Access token refreshed"));
     }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> body) {
+        authService.requestPasswordReset(body.get("email"));
+        return ResponseEntity.ok(new SimpleMessageResponse("Password reset email sent."));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> body) {
+        authService.resetPassword(body.get("token"), body.get("newPassword"));
+        return ResponseEntity.ok(new SimpleMessageResponse("Password has been reset successfully."));
+    }
+
 }
