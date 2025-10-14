@@ -15,5 +15,38 @@ public class CheckingSlipRequest {
        this.slipId = slipId;
        this.amount = amount;
     }
+
+
+    // ----------------------
+    // GETTERS
+    // ----------------------
+
+    public String getReservationId() {
+        return reservationId;
+    }
+
+    public String getSlipId() {
+        return slipId;
+    }
+
+    public BigDecimal getAmount() {
+        return amount;
+    }
+
+    // ----------------------
+    // SETTERS
+    // ----------------------
+
+    public void setReservationId(String reservationId) {
+        this.reservationId = reservationId;
+    }
+
+    public void setSlipId(String slipId) {
+        this.slipId = slipId;
+    }
+
+    public void setAmount(BigDecimal amount) {
+        this.amount = amount;
+    }
 }
 */

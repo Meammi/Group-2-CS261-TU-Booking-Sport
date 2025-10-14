@@ -7,3 +7,4 @@ import java.util.Optional;
 public interface ReservationRepository extends JpaRepository<Reservations,UUID>{
     Reservations findByReservationId(UUID reservationId);
 }
+

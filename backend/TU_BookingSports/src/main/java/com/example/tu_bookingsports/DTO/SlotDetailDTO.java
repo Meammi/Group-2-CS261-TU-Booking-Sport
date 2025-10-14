@@ -13,9 +13,35 @@ public class SlotDetailDTO {
     private LocalTime slotTime;
     private String status;
 
+    public SlotDetailDTO() {
+    }
     public SlotDetailDTO(UUID slotId, LocalTime slotTime, String status) {
     	this.slotId = slotId;
         this.slotTime = slotTime;
+        this.status = status;
+    }
+    
+    public UUID getSlotId() {
+        return slotId;
+    }
+
+    public void setSlotId(UUID slotId) {
+        this.slotId = slotId;
+    }
+
+    public LocalTime getSlotTime() {
+        return slotTime;
+    }
+
+    public void setSlotTime(LocalTime slotTime) {
+        this.slotTime = slotTime;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
         this.status = status;
     }
 }

@@ -1,5 +1,6 @@
 package com.example.tu_bookingsports.model;
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.UUID;
 
@@ -61,4 +62,19 @@ public class Slot {
         return status;
     }
 
+    public void setSlotId(UUID slotId) {
+        this.slotId = slotId;
+    }
+
+    public void setRoom(Rooms room) {
+        this.room = room;
+    }
+
+    public void setSlotTime(LocalTime slotTime) {
+        this.slotTime = slotTime;
+    }
+
+    public void setStatus(SlotStatus status) {
+        this.status = status;
+    }
 }

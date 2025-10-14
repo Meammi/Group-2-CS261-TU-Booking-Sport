@@ -17,8 +17,8 @@ public class Rooms {
     @Id
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-    @Column(columnDefinition = "uniqueidentifier")
-    private UUID room_id;
+    @Column(name = "room_id",columnDefinition = "uniqueidentifier")
+    private UUID roomId;
 
     @Column(name = "name",nullable = false)
     private String name;
@@ -61,7 +61,7 @@ public class Rooms {
 
 
     public UUID getRoom_id() {
-        return room_id;
+        return roomId;
     }
 
     public String getName() {
@@ -95,6 +95,8 @@ public class Rooms {
     public LocalDateTime getUpdated_at() {
         return updated_at;
     }
+
+    public void setRoomId(UUID roomId) { this.roomId = roomId; }
 }
 @Embeddable
 class GeoLocation {
@@ -107,41 +109,3 @@ class GeoLocation {
     }
 
 }
-
-/*@Data
-@Entity
-@Table(name = "slots")
-class Slot {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "slot_id")
-    private Long slotId;
-
-    @ManyToOne
-    @JoinColumn(name = "room_id", nullable = false)
-    private Rooms room;
-
-
-    @Column(name = "slot_time", nullable = false)
-    private LocalTime slotTime;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private SlotStatus status;
-
-    public enum SlotStatus {
-        AVAILABLE,
-        BOOKED,
-        MAINTENANCE
-    }
-
-    public Slot(SlotStatus status, LocalTime slotTime, Rooms room) {
-        this.status = status;
-        this.slotTime = slotTime;
-        this.room = room;
-    }
-    public Slot(){}
-
-
-}*/
