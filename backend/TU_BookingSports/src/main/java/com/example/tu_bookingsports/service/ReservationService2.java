@@ -63,15 +63,15 @@ public class ReservationService2 {
         UUID roomId = request.getRoomId();
 
         // 1. เช็คว่า Slot มีอยู่จริงและสัมพันธ์กับ Room ID ที่ส่งมาหรือไม่
-        Optional<Slot> optionalSlot = slotRepository.findBySlotIdAndRoom_RoomId(slotId, roomId);
+        Slot slot = slotRepository.findBySlotIdAndRoom_RoomId(slotId, roomId);
 
         // A. ถ้าไม่มี slot/room ที่ตรงกัน
-        // if (slot == null) {
-        //    throw new RuntimeException("Error: Slot ID or Room ID is invalid or mismatched.");
-        //}
-        Slot slot = optionalSlot.orElseThrow(
-                () -> new RuntimeException("Error: Slot ID or Room ID is invalid or mismatched.")
-        );
+        if (slot == null) {
+            throw new RuntimeException("Error: Slot ID or Room ID is invalid or mismatched.");
+        }
+        //Slot slot = optionalSlot.orElseThrow(
+        //        () -> new RuntimeException("Error: Slot ID or Room ID is invalid or mismatched.")
+        //);
 
         // B. ถ้า status slot เป็น BOOKED
         if (slot.getStatus() == SlotStatus.BOOKED) {
@@ -101,6 +101,7 @@ public class ReservationService2 {
         reservation.setEndTime(endTime);
         reservation.setPrice(room.getPrice()); // ใช้ price จาก Rooms
         reservation.setStatus(ReservationStatus.PENDING); // สถานะเริ่มต้นเป็น PENDING
+        reservation.setSlotId(slotId);
 
         // 5. บันทึก Reservation และส่งกลับ
         return reservationRepository.save(reservation);
@@ -129,9 +130,13 @@ public class ReservationService2 {
         // 2. คืนสถานะ Slot ให้เป็น AVAILABLE (ต้องดึง slot ID จาก Reservation)
         // เนื่องจาก Reservations entity ของคุณขาด slot_id เราจะหา slot จาก room ID และ start_time
         // NOTE: หากคุณปรับ Reservations model ให้มี slot_id จะง่ายกว่ามาก
-        Slot slotToUpdate = slotRepository.findByRoomRoomIdAndSlotTime(
-                reservation.getRoom(),
-                reservation.getStartTime()
+        //Slot slotToUpdate = slotRepository.findByRoom_RoomIdAndSlotTime(
+        //        reservation.getRoom(),
+        //        reservation.getStartTime()
+        //);
+        Slot slotToUpdate = slotRepository.findBySlotIdAndRoom_RoomId(
+                reservation.getSlotId(),
+                reservation.getRoom()
         );
 
         if (slotToUpdate != null) {

@@ -82,7 +82,7 @@ public class ReservationController {
      * (กดปุ่ม Confirm บนหน้า Confirmation)
      * POST /api/reservations/confirm
      */
-    @PostMapping("/reservation")
+    @PostMapping("/reservation/confirm")
     public ResponseEntity<?> confirmReservation(@RequestBody ConfirmationRequest request) {
         try {
             // Service จะส่ง Reservation (ถ้า price=0) หรือ Payment object (ถ้า price>0) กลับมา

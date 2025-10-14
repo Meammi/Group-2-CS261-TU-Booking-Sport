@@ -47,8 +47,11 @@ public class Reservations {
     @Column(name = "updated", nullable = false)
     private LocalDateTime updatedAt;
     @Column(name = "price",nullable = false,precision = 10,scale = 2)
-
     private BigDecimal price;
+
+    @Column(name = "slot_id", nullable = false)
+    private UUID slotId;
+
     //Constuctor
     public Reservations() {
         this.createdAt = LocalDateTime.now();
@@ -56,7 +59,7 @@ public class Reservations {
         this.status = ReservationStatus.PENDING;
     }
 
-    public Reservations(UUID room, UUID user, LocalTime startTime, LocalTime endTime, ReservationStatus status) {
+    public Reservations(UUID room, UUID user, LocalTime startTime, LocalTime endTime, ReservationStatus status,UUID slot) {
         this.room = room;
         this.user = user;
         this.startTime = startTime;
@@ -64,6 +67,7 @@ public class Reservations {
         this.status = status != null ? status : ReservationStatus.PENDING;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
+        this.slotId = slot;
     }
 
     @PreUpdate
@@ -137,6 +141,8 @@ public class Reservations {
         this.updatedAt = updatedAt;
     }
 
+
+
     public BigDecimal getPrice() {
         return price;
     }
@@ -145,4 +151,10 @@ public class Reservations {
         this.price = price;
     }
 
+    public void setSlotId(UUID slotId) {
+        this.slotId = slotId;
+    }
+    public UUID getSlotId() {
+        return slotId;
+    }
 }

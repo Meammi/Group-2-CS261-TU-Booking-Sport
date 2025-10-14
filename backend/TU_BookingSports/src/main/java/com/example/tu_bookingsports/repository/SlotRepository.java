@@ -20,9 +20,9 @@ public interface SlotRepository extends JpaRepository<Slot, UUID> {
     List<Slot> findSlotsByRoomId(@Param("roomId") UUID roomId);
 
     @Query("SELECT s FROM Slot s WHERE s.slotId = :slotId AND s.room.roomId = :roomId")
-    Optional<Slot> findBySlotIdAndRoom_RoomId(@Param("slotId") UUID slotId, @Param("roomId") UUID roomId);
+    Slot findBySlotIdAndRoom_RoomId(@Param("slotId") UUID slotId, @Param("roomId") UUID roomId);
     // ใน SlotRepository.java
 
-    @Query("SELECT s FROM Slot s WHERE s.room.roomId = :roomId AND s.slotTime = :slotTime")
-    Slot findByRoomRoomIdAndSlotTime(@Param("roomId") UUID roomId, LocalTime slotTime);
+
+    Slot findByRoom_RoomIdAndSlotTime(UUID roomId,LocalTime slotTime);
 }
