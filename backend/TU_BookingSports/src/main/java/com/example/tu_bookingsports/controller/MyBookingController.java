@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.Map;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping("/MyBookings")
@@ -20,13 +22,18 @@ public class MyBookingController {
         this.myBookingService = myBookingService;
     }
 
-    @GetMapping("/current/{userId}")
-    public List<MyBookingResponse> getCurrentBookings(@PathVariable UUID userId) {
-        return myBookingService.getCurrentBookings(userId);
+    @GetMapping("/{userId}")
+    public Map<String, List<MyBookingResponse>> getAllBookings(@PathVariable UUID userId) {
+        List<MyBookingResponse> currentBookings = myBookingService.getCurrentBookings(userId);
+        List<MyBookingResponse> historyBookings = myBookingService.getHistoryBookings(userId);
+
+        // สร้าง Map เพื่อแยก current / history
+        Map<String, List<MyBookingResponse>> response = new HashMap<>();
+        response.put("current", currentBookings);
+        response.put("history", historyBookings);
+
+        return response;
     }
 
-    @GetMapping("/history/{userId}")
-    public List<MyBookingResponse> getHistoryBookings(@PathVariable UUID userId) {
-        return myBookingService.getHistoryBookings(userId);
-    }
+
 }
