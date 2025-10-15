@@ -8,7 +8,7 @@ import RsvInterzoneCard from "@/components/rsvinterzoneCard";
 import ConfirmModal from "@/components/confirmcard";
 
 // ---- data เดิมของหน้า ----
-const reservations = [
+const initialReservations = [
   { id: 1, title: "Interzone 01", location: "Interzone", total: 5 },
   { id: 2, title: "Interzone 02", location: "Interzone", total: 5 },
   { id: 3, title: "Interzone 03", location: "Interzone", total: 5 },
@@ -32,8 +32,12 @@ const reservations = [
 ];
 
 export default function ReservationPage() {
-  // ------ state สำหรับ modal ยืนยัน ------
   const router = useRouter();
+
+   // ทำ reservations เป็น state
+  const [reservations, setReservations] = React.useState(initialReservations);
+  
+  // state สำหรับ modal ยืนยัน
   const [open, setOpen] = React.useState(false);
   const [spot, setSpot] = React.useState("");
   const [time, setTime] = React.useState("");
