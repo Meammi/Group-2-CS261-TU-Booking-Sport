@@ -6,9 +6,6 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.UUID;
 
-//          |
-//boss code V
-
 import com.example.tu_bookingsports.DTO.ReservationRequest;
 import com.example.tu_bookingsports.model.Reservations;
 import com.example.tu_bookingsports.model.Rooms;
@@ -33,20 +30,13 @@ import java.util.UUID;
 import com.google.zxing.WriterException;
 import java.io.IOException;
 
-//  ^
-//  |
-
 @Service
 public class ReservationService2 {
 
-
-
     @Autowired
     private SlotRepository slotRepository;
-
     @Autowired
     private ReservationRepository reservationRepository;
-
     @Autowired
     private RoomRepository roomRepository; // ต้องมีการ Autowired RoomRepository
 
@@ -63,6 +53,8 @@ public class ReservationService2 {
         UUID roomId = request.getRoomId();
 
         // 1. เช็คว่า Slot มีอยู่จริงและสัมพันธ์กับ Room ID ที่ส่งมาหรือไม่
+        System.out.println("in service slotid"+slotId); // Prints "Hello, World!" and then a new line
+        System.out.println("in service roomId"+roomId); // Prints on the next line
         Slot slot = slotRepository.findBySlotIdAndRoom_RoomId(slotId, roomId);
 
         // A. ถ้าไม่มี slot/room ที่ตรงกัน
@@ -151,7 +143,7 @@ public class ReservationService2 {
      * ขั้นตอนที่ 3: จัดการการ Confirm (ไปหน้า Payment หรือยืนยันทันที)
      */
     @Transactional
-    public Object confirmReservation(UUID reservationId) throws IOException, WriterException {
+    public Reservations confirmReservation(UUID reservationId) {
         Optional<Reservations> resOpt = reservationRepository.findById(reservationId);
         if (!resOpt.isPresent()) {
             throw new RuntimeException("Error: Reservation not found.");
@@ -169,16 +161,14 @@ public class ReservationService2 {
         }
         // 2. ถ้า price > 0 ให้เรียก Payment Service
         else {
-            reservationRepository.save(reservation); // บันทึก update_at ก่อนเรียก payment
+            //reservationRepository.save(reservation); // บันทึก update_at ก่อนเรียก payment
 
             //if (paymentService == null) {
                 // สำหรับกรณีที่ยังไม่ได้สร้าง PaymentService จริง
             //    throw new RuntimeException("Payment service is not configured.");
             //}
-
-            // เรียก Payment Service
-            //////////////<-เอาcommentออกถ้าbenจะรันรวมintegrateหมด return paymentService.createPayment(reservation.getReservationId());
-            return "creating payment";
+            reservation.setStatus(ReservationStatus.PENDING);
+            return reservationRepository.save(reservation);
         }
     }
 
