@@ -2,6 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}
+
+input[type="password"]::-webkit-credentials-auto-fill-button,
+input[type="password"]::-webkit-clear-button,
+input[type="password"]::-webkit-password-toggle-button {
+  display: none;
+}
+
 body {
   font-family: var(--font-nunito), sans-serif;
 }
