@@ -1,4 +1,4 @@
-/*package com.example.tu_bookingsports.controller;
+package com.example.tu_bookingsports.controller;
 
 import com.example.tu_bookingsports.DTO.CheckingSlipRequest;
 import com.example.tu_bookingsports.model.Payment;
@@ -22,4 +22,3 @@ public class SlipCheckController {
         return paymentService.checkSlipData(java.util.UUID.fromString(request.getReservationId()),request.getSlipId(),request.getAmount());
     }
 }
-*/

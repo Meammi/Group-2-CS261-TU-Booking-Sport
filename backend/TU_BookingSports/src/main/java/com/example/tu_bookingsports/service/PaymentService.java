@@ -1,4 +1,4 @@
-/*package com.example.tu_bookingsports.service;
+package com.example.tu_bookingsports.service;
 
 import com.example.tu_bookingsports.model.Reservations;
 import com.example.tu_bookingsports.repository.ReservationRepository;
@@ -110,7 +110,7 @@ public class PaymentService {
                 payment.setPaymentStatus(Payment.PaymentStatus.REJECTED);
                 paymentRepository.save(payment);
             }
-                    }
+        }
         return result;
 
     }
@@ -123,4 +123,3 @@ public class PaymentService {
 
 
 }
-*/

@@ -1,4 +1,4 @@
-/*package com.example.tu_bookingsports.DTO;
+package com.example.tu_bookingsports.DTO;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,4 +14,4 @@ public class ConfirmationRequest {
     public void setReservationId(UUID reservationId) {
         this.reservationId = reservationId;
     }
-}*/
+}
