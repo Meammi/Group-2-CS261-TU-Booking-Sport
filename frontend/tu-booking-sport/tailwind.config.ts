@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+const { fontFamily } = require("tailwindcss/defaultTheme");
 
 const config: Config = {
   content: [
@@ -9,11 +10,14 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["var(--font-nunito)"],
+        sans: ["var(--font-nunito)", ...fontFamily.sans],
+      },
+     
+      colors: {
+        'tu-navy': '#2C323F',
       },
     },
   },
   plugins: [],
 };
 export default config;
-

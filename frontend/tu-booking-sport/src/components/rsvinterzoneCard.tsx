@@ -53,7 +53,7 @@ export default function RsvInterzoneCard({
 
       {/* 🕐 เนื้อหาฝั่งขวา */}
       <div className="flex-1 text-center">
-        <h3 className="text-xl font-bold text-slate-800 mb-2">{title}</h3>
+        <h3 className="text-xl font-bold text-blue-600 mb-2">{title}</h3>
         <div className="h-[2px] w-full bg-black mb-3" />
 
         <div className="flex flex-wrap justify-center gap-2">
@@ -64,7 +64,7 @@ export default function RsvInterzoneCard({
               className={`rounded-md px-3 py-1 text-white font-semibold text-sm shadow transition ${
                 selectedTime === t
                   ? "bg-red-600"
-                  : "bg-black hover:bg-gray-800 active:scale-95"
+                  : "bg-tu-navy hover:bg-gray-400 active:scale-95"
               }`}
             >
               {t}
