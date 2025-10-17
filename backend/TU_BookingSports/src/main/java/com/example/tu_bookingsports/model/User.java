@@ -1,3 +1,4 @@
+//backend\TU_BookingSports\src\main\java\com\example\tu_bookingsports\model\User.java
 package com.example.tu_bookingsports.model;
 
 import jakarta.persistence.*;
@@ -50,6 +51,9 @@ public class User {
     // @PreUpdate: กำหนดค่าอัตโนมัติเมื่อมีการอัปเดต Entity
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+    @Column(name = "is_verified")
+    private boolean isVerified = false;
 
     // --- Constructors ---
     public User() {
@@ -142,5 +146,11 @@ public class User {
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
+    }
+    public boolean isVerified() {
+        return isVerified;
+    }
+    public void setVerified(boolean verified) {
+        isVerified = verified;
     }
 }

@@ -1,3 +1,4 @@
+//backend\TU_BookingSports\src\main\java\com\example\tu_bookingsports\controller\SlipCheckController.java
 package com.example.tu_bookingsports.controller;
 
 import com.example.tu_bookingsports.DTO.CheckingSlipRequest;

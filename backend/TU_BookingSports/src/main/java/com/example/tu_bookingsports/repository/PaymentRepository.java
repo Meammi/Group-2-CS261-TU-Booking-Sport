@@ -1,3 +1,4 @@
+//backend\TU_BookingSports\src\main\java\com\example\tu_bookingsports\repository\PaymentRepository.java
 package com.example.tu_bookingsports.repository;
 import com.example.tu_bookingsports.model.Payment;
 import org.springframework.data.jpa.repository.JpaRepository;
