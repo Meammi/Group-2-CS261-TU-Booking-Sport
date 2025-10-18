@@ -1,4 +1,4 @@
-// src/main/java/com/example/demo/model/Payment.java
+// backend\TU_BookingSports\src\main\java\com\example\tu_bookingsports\model\Payment.java
 package com.example.tu_bookingsports.model;
 import jakarta.persistence.*;
 import lombok.Data;
