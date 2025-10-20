@@ -1,6 +1,7 @@
 package com.example.tu_bookingsports.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.Nationalized;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDateTime;
@@ -29,16 +30,19 @@ public class User {
     @Column(name = "password")
     private String password;
 
-    @Column(name = "tu_status")
+    @Nationalized
+    @Column(name = "tu_status", columnDefinition = "NVARCHAR(255)")
     private String tuStatus;
 
     @Column(name = "statusid")
     private String statusId;
 
-    @Column(name = "displayname_th")
+    @Nationalized
+    @Column(name = "displayname_th", columnDefinition = "NVARCHAR(255)")
     private String displayNameTh;
 
-    @Column(name = "displayname_en")
+    @Nationalized
+    @Column(name = "displayname_en", columnDefinition = "NVARCHAR(255)")
     private String displayNameEn;
 
     @Column(name = "created_at", nullable = false, updatable = false)

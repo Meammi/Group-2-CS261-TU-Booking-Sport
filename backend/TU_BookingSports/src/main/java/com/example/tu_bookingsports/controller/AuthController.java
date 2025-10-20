@@ -115,6 +115,27 @@ public class AuthController {
         return ResponseEntity.ok(new SimpleMessageResponse("Access token refreshed"));
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+        ResponseCookie clearAccess = ResponseCookie.from("access_token", "")
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .sameSite("Strict")
+                .maxAge(0)
+                .build();
+        ResponseCookie clearRefresh = ResponseCookie.from("refresh_token", "")
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .sameSite("Strict")
+                .maxAge(0)
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, clearAccess.toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, clearRefresh.toString());
+        return ResponseEntity.ok(new SimpleMessageResponse("Logged out"));
+    }
+
     // Password reset is not supported in TUAPI login flow on this backend.
 
 }
