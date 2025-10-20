@@ -26,10 +26,10 @@ public class Reservations {
     private UUID user;
 
     @Column(name = "start_time", nullable = false)
-    private LocalTime startTime;
+    private LocalDateTime startTime;
 
     @Column(name = "end_time", nullable = false)
-    private LocalTime endTime;
+    private LocalDateTime endTime;
 
     public enum ReservationStatus {
         PENDING,     // 0 รอการยืนยัน
@@ -46,9 +46,6 @@ public class Reservations {
 
     @Column(name = "updated", nullable = false)
     private LocalDateTime updatedAt;
-    @Column(name = "price",nullable = false,precision = 10,scale = 2)
-
-    private BigDecimal price;
     //Constuctor
     public Reservations() {
         this.createdAt = LocalDateTime.now();
@@ -56,7 +53,7 @@ public class Reservations {
         this.status = ReservationStatus.PENDING;
     }
 
-    public Reservations(UUID room, UUID user, LocalTime startTime, LocalTime endTime, ReservationStatus status) {
+    public Reservations(UUID room, UUID user, LocalDateTime startTime, LocalDateTime endTime, ReservationStatus status) {
         this.room = room;
         this.user = user;
         this.startTime = startTime;
