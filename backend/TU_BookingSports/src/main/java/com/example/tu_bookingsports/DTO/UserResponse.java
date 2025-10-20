@@ -10,8 +10,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UserResponse {
     private String id;
-    private String email;
+    private String type;
     private String username;
-    private String phoneNumber;
-    private String role;
+    private String email;
+    private String tu_status;
+    private String statusid;
+    private String displayname_th;
+    private String displayname_en;
 }

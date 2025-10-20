@@ -3,7 +3,6 @@ package com.example.tu_bookingsports.controller;
 
 import com.example.tu_bookingsports.DTO.LoginRequest;
 import com.example.tu_bookingsports.DTO.LoginResponse;
-import com.example.tu_bookingsports.DTO.RegisterRequest;
 import com.example.tu_bookingsports.DTO.SimpleMessageResponse;
 import com.example.tu_bookingsports.DTO.UserResponse;
 import com.example.tu_bookingsports.service.AuthService;
@@ -26,19 +25,7 @@ public class AuthController {
         this.authService = authService;
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest req) {
-        authService.register(req);
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(new SimpleMessageResponse("Registration successful"));
-    }
-
-    @GetMapping("/verify")
-    public ResponseEntity<String> verifyAccount(@RequestParam("token") String token) {
-        authService.verifyAccount(token);
-        return ResponseEntity.ok("Account verified successfully!");
-    }
+    // Registration and email verification are handled by TU authentication; endpoints removed.
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest req, HttpServletResponse response) {
@@ -81,10 +68,13 @@ public class AuthController {
         var user = authService.getCurrentUser(token);
         UserResponse response = new UserResponse(
                 user.getUserId().toString(),
-                user.getEmail(),
+                user.getType(),
                 user.getUsername(),
-                user.getPhoneNumber(),
-                user.getRole()
+                user.getEmail(),
+                user.getTuStatus(),
+                user.getStatusId(),
+                user.getDisplayNameTh(),
+                user.getDisplayNameEn()
         );
         return ResponseEntity.ok(response);
     }
@@ -106,7 +96,7 @@ public class AuthController {
 
         //new access token
         var claims = new HashMap<String, Object>();
-        claims.put("role", user.getRole());
+        claims.put("type", user.getType());
         claims.put("username", user.getUsername());
 
         String newAccessToken = authService.getJwtUtils().generateToken(user.getEmail(), claims);
@@ -125,16 +115,6 @@ public class AuthController {
         return ResponseEntity.ok(new SimpleMessageResponse("Access token refreshed"));
     }
 
-    @PostMapping("/forgot-password")
-    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> body) {
-        authService.requestPasswordReset(body.get("email"));
-        return ResponseEntity.ok(new SimpleMessageResponse("Password reset email sent."));
-    }
-
-    @PostMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> body) {
-        authService.resetPassword(body.get("token"), body.get("newPassword"));
-        return ResponseEntity.ok(new SimpleMessageResponse("Password has been reset successfully."));
-    }
+    // Password reset is not supported in TUAPI login flow on this backend.
 
 }
