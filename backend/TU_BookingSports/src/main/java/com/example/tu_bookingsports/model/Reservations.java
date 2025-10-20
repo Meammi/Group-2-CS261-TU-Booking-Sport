@@ -43,7 +43,10 @@ public class Reservations {
 
     @Column(name = "updated", nullable = false)
     private LocalDateTime updatedAt;
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/main
     //Constuctor
     public Reservations() {
         this.createdAt = LocalDateTime.now();
