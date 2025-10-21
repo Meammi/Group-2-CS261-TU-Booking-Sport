@@ -3,6 +3,7 @@ package com.example.tu_bookingsports.DTO;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.UUID;
 
 import com.example.tu_bookingsports.model.Reservations;
 import lombok.Data;
@@ -10,6 +11,7 @@ import lombok.Data;
 @Data
 public class MyBookingResponse {
 
+    private UUID reservationId;
     private String name;
     private String locationName;
     private LocalDate bookingDate;
@@ -18,9 +20,10 @@ public class MyBookingResponse {
     private Boolean isCurrent;
     private Reservations.ReservationStatus status;
 
-    public MyBookingResponse(String name, String locationName,
+    public MyBookingResponse(UUID reservationId,String name, String locationName,
                              LocalDateTime startDateTime, LocalDateTime endDateTime,
                              Boolean isCurrent, Reservations.ReservationStatus status) {
+        this.reservationId = reservationId;
         this.name = name;
         this.locationName = locationName;
         this.bookingDate = startDateTime.toLocalDate();

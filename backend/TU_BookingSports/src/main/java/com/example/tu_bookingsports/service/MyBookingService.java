@@ -6,6 +6,7 @@ import com.example.tu_bookingsports.model.Reservations;
 import com.example.tu_bookingsports.model.Rooms;
 import com.example.tu_bookingsports.repository.HomepageRepository;
 import com.example.tu_bookingsports.repository.MyBookingRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -39,6 +40,7 @@ public class MyBookingService {
                     if (room == null) return null;
 
                     return new MyBookingResponse(
+                            b.getReservationID(),
                             room.getName(),
                             room.getLoc_name(),
                             b.getStartTime(),
@@ -65,6 +67,7 @@ public class MyBookingService {
                     if (room == null) return null;
 
                     return new MyBookingResponse(
+                            b.getReservationID(),
                             room.getName(),
                             room.getLoc_name(),
                             b.getStartTime(),
@@ -75,5 +78,22 @@ public class MyBookingService {
                 })
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public boolean cancelBooking(UUID reservationId) {
+        Optional<Reservations> optionalReservation = bookingRepository.findById(reservationId);
+
+        if (optionalReservation.isPresent()) {
+            Reservations reservation = optionalReservation.get();
+
+            // ถ้ายังไม่ CANCELLED หรือยังไม่หมดเวลา
+            if (reservation.getStatus() != Reservations.ReservationStatus.CANCELLED) {
+                //ลบออกจากฐานข้อมูลโดยตรง
+                bookingRepository.delete(reservation);
+                return true;
+            }
+        }
+        return false;
     }
 }

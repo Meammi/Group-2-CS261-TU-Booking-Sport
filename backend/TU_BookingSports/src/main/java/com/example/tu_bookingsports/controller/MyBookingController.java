@@ -2,11 +2,7 @@ package com.example.tu_bookingsports.controller;
 
 import com.example.tu_bookingsports.DTO.MyBookingResponse;
 import com.example.tu_bookingsports.service.MyBookingService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -15,7 +11,6 @@ import java.util.HashMap;
 
 @RestController
 @RequestMapping("/MyBookings")
-@CrossOrigin(origins = "http://localhost:3000")
 public class MyBookingController {
 
     private final MyBookingService myBookingService;
@@ -37,5 +32,13 @@ public class MyBookingController {
         return response;
     }
 
-
+    @DeleteMapping("/cancel/{reservationId}")
+    public String cancelBooking(@PathVariable UUID reservationId) {
+        boolean cancelled = myBookingService.cancelBooking(reservationId);
+        if (cancelled) {
+            return "{\"Reservation cancelled successfully.\"}";
+        } else {
+            return "{\"Reservation not found or already cancelled.\"}";
+        }
+    }
 }
