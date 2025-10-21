@@ -3,7 +3,6 @@ package com.example.tu_bookingsports.model;
 import jakarta.persistence.*;
 import java.util.UUID;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -43,10 +42,6 @@ public class Reservations {
 
     @Column(name = "updated", nullable = false)
     private LocalDateTime updatedAt;
-<<<<<<< HEAD
-
-=======
->>>>>>> origin/main
     //Constuctor
     public Reservations() {
         this.createdAt = LocalDateTime.now();
@@ -95,19 +90,19 @@ public class Reservations {
     }
 
 
-    public LocalTime getStartTime() {
+    public LocalDateTime getStartTime() {
         return startTime;
     }
 
-    public void setStartTime(LocalTime startTime) {
+    public void setStartTime(LocalDateTime startTime) {
         this.startTime = startTime;
     }
 
-    public LocalTime getEndTime() {
+    public LocalDateTime getEndTime() {
         return endTime;
     }
 
-    public void setEndTime(LocalTime endTime) {
+    public void setEndTime(LocalDateTime endTime) {
         this.endTime = endTime;
     }
 
