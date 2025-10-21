@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import LogoutModal from "@/components/LogoutCard";
+
 
 import { 
   Bars3Icon, 
@@ -22,11 +24,12 @@ const navLinks = [
   { href: '/notification', label: 'Notification', icon: BellIcon },
   { href: '/support', label: 'Support', icon: LifebuoyIcon },
   { href: '/setting', label: 'Setting', icon: Cog6ToothIcon },
-  { href: '/logout', label: 'Logout', icon: ArrowRightStartOnRectangleIcon },
+  { label: 'Logout', icon: ArrowRightStartOnRectangleIcon, action: 'logout'  },
 ];
 
 export default function HamburgerMenu() {
   const [isOpen, setIsOpen] = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
@@ -61,17 +64,36 @@ export default function HamburgerMenu() {
         <nav className="mt-20 flex flex-col space-y-2">
           {navLinks.map((link) => {
             const Icon = link.icon; 
-            return (
-              <Link 
-                key={link.href} 
-                href={link.href} 
-                className="flex items-center gap-4 p-3 rounded-lg text-gray-700 hover:bg-gray-100 hover:text-tu-navy transition-colors" 
-                onClick={toggleMenu}
-              >
-                <Icon className="h-6 w-6" />
-                <span className="text-lg font-medium">{link.label}</span>
-              </Link>
-            );
+            if (link.href) {
+              return (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  className="flex items-center gap-4 p-3 rounded-lg text-gray-700 hover:bg-gray-100 hover:text-tu-navy transition-colors"
+                  onClick={toggleMenu}
+                >
+                  <Icon className="h-6 w-6" />
+                  <span className="text-lg font-medium">{link.label}</span>
+                </Link>
+              );
+            }
+
+            if (link.action === "logout") {
+              return (
+                <button
+                  key={link.label}
+                  onClick={() => {
+                    toggleMenu();
+                    setShowLogout(true);
+                  }}
+                  className="flex items-center gap-4 p-3 rounded-lg text-gray-700 hover:bg-gray-100 hover:text-tu-navy transition-colors"
+                >
+                  <Icon className="h-6 w-6" />
+                  <span className="text-lg font-medium">{link.label}</span>
+                </button>
+              );
+            }
+
           })}
         </nav>
       </div>
@@ -83,6 +105,8 @@ export default function HamburgerMenu() {
           onClick={toggleMenu}
         ></div>
       )}
+
+      {showLogout && <LogoutModal onClose={() => setShowLogout(false)} />}
     </div>
   );
 }

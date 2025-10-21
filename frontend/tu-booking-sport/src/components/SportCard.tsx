@@ -27,8 +27,8 @@ export default function SportCard({ imageUrl, title, subtitle,href }: SportCardP
       
       {/* Text Content */}
       <div className="p-2 w-full bg-white">
-        <p className="font-bold text-sm text-gray-800">{subtitle}</p>
-        <p className="text-xs text-gray-600">{title}</p>
+        <p className="font-bold text-sm text-gray-800">{title}</p>
+        <p className="text-xs text-gray-600">{subtitle}</p>
       </div>
     </div>
     </Link>

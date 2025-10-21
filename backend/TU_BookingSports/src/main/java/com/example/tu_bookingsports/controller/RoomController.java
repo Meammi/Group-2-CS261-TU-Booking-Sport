@@ -9,6 +9,7 @@ import com.example.tu_bookingsports.repository.SlotTimeStatusProjection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.data.domain.Sort;
 
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
@@ -27,7 +28,7 @@ public class RoomController {
 
     @GetMapping("/rooms")
     public List<RoomResponse> getRooms() {
-        List<Rooms> rooms = roomRepository.findAll();
+        List<Rooms> rooms = roomRepository.findAll(Sort.by(Sort.Order.asc("orderId")));
         return rooms.stream().map(room -> {
             RoomResponse dto = new RoomResponse();
             dto.setRoomId(room.getRoom_id());

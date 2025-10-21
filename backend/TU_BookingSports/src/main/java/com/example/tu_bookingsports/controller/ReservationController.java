@@ -38,15 +38,15 @@ public class ReservationController {
         this.reservationService = reservationService;
     }
 
-    @GetMapping("/rooms")
-    public List<RoomReservationDTO> getReservationView(
-            @RequestParam(required = true) String type,
-            @RequestParam(required = true) String locName) // type อาจถูกบังคับให้ส่งมา
-    {
-        // เรียก Service โดยส่งตัวกรองเข้าไป
-        List<RoomReservationDTO> details = roomService.getRoomDetailsWithSlotsFiltered(type, locName);
-        return details;
-    }
+    // @GetMapping("/rooms")
+    // public List<RoomReservationDTO> getReservationView(
+    //         @RequestParam(required = true) String type,
+    //         @RequestParam(required = true) String locName) // type อาจถูกบังคับให้ส่งมา
+    // {
+    //     // เรียก Service โดยส่งตัวกรองเข้าไป
+    //     List<RoomReservationDTO> details = roomService.getRoomDetailsWithSlotsFiltered(type, locName);
+    //     return details;
+    // }
 
 
     /**

@@ -7,7 +7,7 @@ import { InboxIcon, ArrowPathIcon } from '@heroicons/react/24/solid';
 
 // Interface นี้ควรจะถูกย้ายไปที่ไฟล์กลางในอนาคต
 interface BookingItem {
-  id: number; // เราจะเพิ่ม ID นี้เข้าไปเอง
+  id: number;
   name: string;
   locationName: string;
   isCurrent: boolean;
@@ -22,7 +22,7 @@ const getImageForLocation = (locationName: string): string => {
   const normalizedLocation = locationName.toLowerCase().trim();
   switch (normalizedLocation) {
     case 'interzone': return '/images/interzone.jpg';
-    case 'gym4': return '/images/gym4.jpg';
+    case 'gym 4': return '/images/gym4.jpg';
     case 'sport complex tu': return 'https://placehold.co/100x100/2c3e50/FFFFFF?text=Football';
     default: return 'https://placehold.co/100x100/cccccc/FFFFFF?text=Image';
   }
@@ -46,17 +46,16 @@ export default function MyBookingPage() {
 
         const data: { current: Omit<BookingItem, 'id'>[], history: Omit<BookingItem, 'id'>[] } = await response.json();
 
-        // --- นี่คือส่วนที่แก้ไข: เพิ่ม ID ชั่วคราวเข้าไปในข้อมูล ---
         const processedCurrent = data.current.map((item, index) => ({
           ...item,
-          id: index, // ใช้ index เป็น ID ชั่วคราว (เช่น 0, 1, 2, ...)
+          id: index, 
         }));
         
         const processedHistory = data.history.map((item, index) => ({
           ...item,
-          id: data.current.length + index, // ทำให้ ID ไม่ซ้ำกับ current
+          id: data.current.length + index, 
         }));
-        // ---------------------------------------------------
+        
         
         setCurrentBookings(processedCurrent);
         setHistoryBookings(processedHistory);
@@ -71,7 +70,6 @@ export default function MyBookingPage() {
     fetchBookings();
   }, []);
 
-  // --- UI สำหรับ Loading และ Error (เหมือนเดิม) ---
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
@@ -110,7 +108,7 @@ export default function MyBookingPage() {
                 currentBookings.map(item => (
                   <BookingCard
                     key={item.id}
-                    id={item.id} // <-- ตอนนี้ item.id จะมีค่าเป็นตัวเลขแล้ว
+                    id={item.id} 
                     imageUrl={getImageForLocation(item.locationName)}
                     title={item.name}
                     location={item.locationName}
@@ -138,7 +136,7 @@ export default function MyBookingPage() {
                 historyBookings.map(item => (
                   <BookingCard
                     key={item.id}
-                    id={item.id} // <-- ตอนนี้ item.id จะมีค่าเป็นตัวเลขแล้ว
+                    id={item.id} 
                     imageUrl={getImageForLocation(item.locationName)}
                     title={item.name}
                     location={item.locationName}
@@ -160,4 +158,3 @@ export default function MyBookingPage() {
     </div>
   )
 }
-
