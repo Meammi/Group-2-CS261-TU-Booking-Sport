@@ -51,7 +51,8 @@ public class AuthController {
             .build();
         response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
 
-        return ResponseEntity.ok(new SimpleMessageResponse("Login successful"));
+        // Return tokens in the body for SPA clients while also setting cookies.
+        return ResponseEntity.ok(tokens);
     }
     @GetMapping("/me")
     public ResponseEntity<?> getMe(@CookieValue(value = "access_token", required = false) String token) {
