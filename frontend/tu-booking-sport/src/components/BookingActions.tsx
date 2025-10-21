@@ -2,34 +2,61 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation'; 
-import { MapPinIcon, ExclamationTriangleIcon, CheckCircleIcon } from '@heroicons/react/24/solid';
+import { MapPinIcon, ExclamationTriangleIcon, CheckCircleIcon, ArrowPathIcon, XCircleIcon } from '@heroicons/react/24/solid';
 
 interface BookingActionsProps {
   bookingId: number;
   status: string;
+  isCurrent: boolean;
 }
 
-export default function BookingActions({ bookingId, status }: BookingActionsProps) {
+export default function BookingActions({ bookingId, status, isCurrent }: BookingActionsProps) {
   const router = useRouter();
 
-  const [modalState, setModalState] = useState<'closed' | 'confirm' | 'success'>('closed');
+  const [modalState, setModalState] = useState<'closed' | 'confirm' | 'success' | 'error'>('closed');
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
-  const handleOpenConfirmModal = () => {
-    setModalState('confirm');
-  };
+  const handleOpenConfirmModal = () => { setModalState('confirm'); };
+  const handleCloseModal = () => { setModalState('closed'); };
 
-  const handleCloseModal = () => {
-    setModalState('closed');
-  };
+  const handleConfirmCancel = async () => {
+    setIsCancelling(true);
+    setErrorMessage('');
 
-  const handleConfirmCancel = () => {
-    console.log(`Cancelling booking ID: ${bookingId}`);
+    try {
+      // --- นี่คือส่วนที่แก้ไข: Hardcode UUID สำหรับการทดสอบ ---
+      const reservationIdToCancel = 'B59E1C0A-6C64-4BFF-A50A-EFDBFCE96E54';
+      console.log(`Attempting to cancel reservation with hardcoded ID: ${reservationIdToCancel}`);
+      // --------------------------------------------------------
 
-    setModalState('success');
+      const response = await fetch(`http://localhost:8081/MyBookings/cancel/${reservationIdToCancel}`, {
+        method: 'DELETE',
+      });
 
-    setTimeout(() => {
-      router.push('/mybooking');
-    }, 2000); 
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || `Server responded with status ${response.status}`);
+      }
+
+      setModalState('success');
+
+      setTimeout(() => {
+        router.push('/mybooking');
+        router.refresh();
+      }, 2000); 
+
+    } catch (err: any) {
+      console.error("Cancellation API call failed:", err);
+      if (err.message.includes('Failed to fetch')) {
+        setErrorMessage('Cannot connect to the server. Please check if the backend is running and verify CORS configuration for DELETE method.');
+      } else {
+        setErrorMessage(err.message);
+      }
+      setModalState('error');
+    } finally {
+      setIsCancelling(false);
+    }
   };
 
   return (
@@ -37,8 +64,8 @@ export default function BookingActions({ bookingId, status }: BookingActionsProp
       <div className="mt-6 grid grid-cols-2 gap-4">
         <button 
           onClick={handleOpenConfirmModal}
-          className="rounded-md bg-red-600 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:bg-red-300" 
-          disabled={status !== 'current'}
+          className="rounded-md bg-red-600 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:bg-red-300 disabled:cursor-not-allowed" 
+          disabled={!isCurrent} 
         >
           Cancel
         </button>
@@ -59,11 +86,11 @@ export default function BookingActions({ bookingId, status }: BookingActionsProp
                 Do you really want to cancel this booking? This process cannot be undone.
               </p>
               <div className="mt-6 grid grid-cols-2 gap-4">
-                <button onClick={handleCloseModal} className="rounded-md border border-gray-300 bg-white py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+                <button onClick={handleCloseModal} disabled={isCancelling} className="rounded-md border border-gray-300 bg-white py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50">
                   Go Back
                 </button>
-                <button onClick={handleConfirmCancel} className="rounded-md bg-red-600 py-2 text-sm font-semibold text-white hover:bg-red-700">
-                  Confirm
+                <button onClick={handleConfirmCancel} disabled={isCancelling} className="flex items-center justify-center rounded-md bg-red-600 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:bg-red-400">
+                  {isCancelling ? <ArrowPathIcon className="h-5 w-5 animate-spin" /> : 'Confirm'}
                 </button>
               </div>
             </div>
@@ -78,8 +105,24 @@ export default function BookingActions({ bookingId, status }: BookingActionsProp
               </p>
             </div>
           )}
+
+          {modalState === 'error' && (
+             <div className="w-full max-w-sm rounded-lg bg-white p-6 shadow-xl text-center">
+              <XCircleIcon className="mx-auto h-12 w-12 text-red-500" />
+              <h3 className="mt-4 text-lg font-bold">Cancellation Failed</h3>
+              <p className="mt-2 text-sm text-gray-600">
+                {errorMessage}
+              </p>
+              <div className="mt-6">
+                <button onClick={handleCloseModal} className="w-full rounded-md border border-gray-300 bg-white py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+                  Close
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </>
   );
 }
+
