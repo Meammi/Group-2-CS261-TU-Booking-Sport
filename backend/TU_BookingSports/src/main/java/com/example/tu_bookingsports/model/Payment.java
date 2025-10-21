@@ -1,11 +1,10 @@
-// src/main/java/com/example/demo/model/Payment.java
+// backend\TU_BookingSports\src\main\java\com\example\tu_bookingsports\model\Payment.java
 package com.example.tu_bookingsports.model;
 import jakarta.persistence.*;
-import lombok.Data;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
-@Data
+
 @Entity
 @Table(name = "payments",
         uniqueConstraints = {
@@ -35,19 +34,53 @@ public class Payment {
     @Column(name = "payment_date", nullable = false)
     private LocalDateTime paymentDate;
 
-    @Column(name = "payment_QRgenerate_photo")
-    private String payment_QRgenerate_photo;
-
-    @Column(name = "token")
-    private String token;
-
-
-
 
     @PrePersist
     void onCreate() {
         if (paymentDate == null) paymentDate = LocalDateTime.now();
     }
+
+    // getters/setters
+    public UUID getId() {
+        return id;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public UUID getReservationId() {
+        return reservationId;
+    }
+
+    public void setReservationId(UUID reservationId) {
+        this.reservationId = reservationId;
+    }
+
+    public PaymentStatus getPaymentStatus() {
+        return paymentStatus;
+    }
+
+    public void setPaymentStatus(PaymentStatus paymentStatus) {
+        this.paymentStatus = paymentStatus;
+    }
+
+    public String getPaymentReceiptPhoto() {
+        return paymentReceiptPhoto;
+    }
+
+    public void setPaymentReceiptPhoto(String paymentReceiptPhoto) {
+        this.paymentReceiptPhoto = paymentReceiptPhoto;
+    }
+
+    public LocalDateTime getPaymentDate() {
+        return paymentDate;
+    }
+
+    public void setPaymentDate(LocalDateTime paymentDate) {
+        this.paymentDate = paymentDate;
+    }
+
 
 
 
