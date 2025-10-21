@@ -1,7 +1,9 @@
 // backend\TU_BookingSports\src\main\java\com\example\tu_bookingsports\model\Payment.java
 package com.example.tu_bookingsports.model;
 import jakarta.persistence.*;
+import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -12,6 +14,7 @@ import java.util.UUID;
                 @UniqueConstraint(name = "uk_payments_txn", columnNames = "transaction_id")
         })
 
+@Data
 public class Payment {
     public enum PaymentStatus {PENDING, APPROVED, REJECTED}
 
@@ -33,6 +36,12 @@ public class Payment {
 
     @Column(name = "payment_date", nullable = false)
     private LocalDateTime paymentDate;
+
+    @Column(name = "token")
+    private String token;
+
+    @Column(name = "price")
+    private BigDecimal price;
 
 
     @PrePersist

@@ -11,7 +11,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/payments")
-@CrossOrigin(origins = "")
+@CrossOrigin(origins = "http://localhost:3000")
 public class PaymentController {
     private final PaymentService paymentService;
     public PaymentController(PaymentService paymentService) {
@@ -26,4 +26,5 @@ public class PaymentController {
     public Payment getPayment(@PathVariable("id") String id) {
         return paymentService.getPaymentByReservationId(java.util.UUID.fromString(id));
     }
+
 }

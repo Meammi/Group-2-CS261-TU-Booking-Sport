@@ -1,8 +1,6 @@
 //backend\TU_BookingSports\src\main\java\com\example\tu_bookingsports\service\PaymentService.java
 package com.example.tu_bookingsports.service;
 
-import com.example.tu_bookingsports.model.Reservations;
-import com.example.tu_bookingsports.repository.ReservationRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pheerathach.ThaiQRPromptPay;
@@ -13,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.http.HttpHeaders;
 
 
-import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import org.springframework.http.*;
@@ -39,25 +36,19 @@ public class PaymentService {
         ThaiQRPromptPay qr = new ThaiQRPromptPay.Builder()
                 .staticQR()
                 .creditTransfer()
-                .mobileNumber("0634199693")
+                .mobileNumber("0822821693")
                 .amount(price)
                 .build();
-        String folderPath = "uploads";
-        File folder = new File(folderPath);
-        if (!folder.exists()) folder.mkdirs();
 
-        String filePath = folderPath + "/qr-" + reservationId + ".png";
-        File outputFile = new File(filePath);
-        qr.draw(300, 300, outputFile);
 
-        // payment.setToken(qr.toString());
-        // payment.setPayment_QRgenerate_photo(filePath);
+        payment.setToken(qr.toString());
         payment.setReservationId(reservationId);
+        payment.setPrice(price);
 
         return paymentRepository.save(payment);
     }
 
-    public Map<String,Object> checkSlipData(UUID reservationId,String qrData,BigDecimal amount) {
+    public Map<String,Object> checkSlipData(UUID reservationId,String qrData) {
         Map<String, Object> result = new HashMap<>();
         Payment payment = paymentRepository.findByReservationId(reservationId).orElse(null);
         try{
@@ -70,11 +61,13 @@ public class PaymentService {
                 headers.setContentType(MediaType.APPLICATION_JSON);
                 headers.add("x-authorization", apiKey);
 
+                BigDecimal price = reservationService.getPriceByReservationId(reservationId);
+
                 Map<String, Object> body = new HashMap<>();
                 body.put("data", qrData);
                 body.put("log", true);
-                if (amount != null) {
-                    body.put("amount", amount);
+                if (price != null) {
+                    body.put("amount", price);
                 }
                 HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(body, headers);
 
