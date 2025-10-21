@@ -44,20 +44,18 @@ export default function MyBookingPage() {
           throw new Error(`Failed to fetch bookings: ${response.status}`);
         }
 
-        // รับข้อมูลที่ยังไม่มี 'id' จาก Back-end
         const data: { current: Omit<BookingItem, 'id'>[], history: Omit<BookingItem, 'id'>[] } = await response.json();
 
-        // --- นี่คือส่วนที่แก้ไข: เพิ่ม ID ชั่วคราวเข้าไปในข้อมูล ---
         const processedCurrent = data.current.map((item, index) => ({
           ...item,
-          id: index, // ใช้ index เป็น ID ชั่วคราว (เช่น 0, 1, 2, ...)
+          id: index, 
         }));
         
         const processedHistory = data.history.map((item, index) => ({
           ...item,
-          id: data.current.length + index, // ทำให้ ID ไม่ซ้ำกับ current
+          id: data.current.length + index, 
         }));
-        // ---------------------------------------------------
+        
         
         setCurrentBookings(processedCurrent);
         setHistoryBookings(processedHistory);
@@ -72,7 +70,6 @@ export default function MyBookingPage() {
     fetchBookings();
   }, []);
 
-  // --- UI สำหรับ Loading และ Error (เหมือนเดิม) ---
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
@@ -105,22 +102,13 @@ export default function MyBookingPage() {
               <div className="w-10 border-t-2 border-gray-300"></div>
               <h2 className="bg-gray-100 text-lg font-bold text-tu-navy px-2">Current</h2>
               <div className="flex-grow border-t-2 border-gray-300"></div>
-              <div className="w-10 border-t-2 border-gray-300"></div>
-              <h2 className="bg-gray-100 text-lg font-bold text-tu-navy px-2">Current</h2>
-              <div className="flex-grow border-t-2 border-gray-300"></div>
             </div>
             <div className="space-y-4">
               {currentBookings.length > 0 ? (
                 currentBookings.map(item => (
                   <BookingCard
                     key={item.id}
-                    id={item.id} // <-- ตอนนี้ item.id จะมีค่าเป็นตัวเลขแล้ว
-                    imageUrl={getImageForLocation(item.locationName)}
-                    title={item.name}
-                    location={item.locationName}
-                    date={item.bookingDate}
-                    time={`${item.startTime.substring(0, 5)} - ${item.endTime.substring(0, 5)}`}
-                    id={item.id} // <-- ตอนนี้ item.id จะมีค่าเป็นตัวเลขแล้ว
+                    id={item.id} 
                     imageUrl={getImageForLocation(item.locationName)}
                     title={item.name}
                     location={item.locationName}
@@ -142,23 +130,13 @@ export default function MyBookingPage() {
               <div className="w-10 border-t-2 border-gray-300"></div>
               <h2 className="bg-gray-100 text-lg font-bold text-tu-navy px-2">History</h2>
               <div className="flex-grow border-t-2 border-gray-300"></div>
-              <div className="w-10 border-t-2 border-gray-300"></div>
-              <h2 className="bg-gray-100 text-lg font-bold text-tu-navy px-2">History</h2>
-              <div className="flex-grow border-t-2 border-gray-300"></div>
             </div>
             <div className="space-y-4">
-               {historyBookings.length > 0 ? (
                {historyBookings.length > 0 ? (
                 historyBookings.map(item => (
                   <BookingCard
                     key={item.id}
-                    id={item.id} // <-- ตอนนี้ item.id จะมีค่าเป็นตัวเลขแล้ว
-                    imageUrl={getImageForLocation(item.locationName)}
-                    title={item.name}
-                    location={item.locationName}
-                    date={item.bookingDate}
-                    time={`${item.startTime.substring(0, 5)} - ${item.endTime.substring(0, 5)}`}
-                    id={item.id} // <-- ตอนนี้ item.id จะมีค่าเป็นตัวเลขแล้ว
+                    id={item.id} 
                     imageUrl={getImageForLocation(item.locationName)}
                     title={item.name}
                     location={item.locationName}
@@ -179,6 +157,4 @@ export default function MyBookingPage() {
       </div>
     </div>
   )
-  )
 }
-

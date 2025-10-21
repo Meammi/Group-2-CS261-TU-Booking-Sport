@@ -11,7 +11,7 @@ interface BookingActionsProps {
 }
 
 export default function BookingActions({ bookingId, status, isCurrent }: BookingActionsProps) {
-export default function BookingActions({ bookingId, status, isCurrent }: BookingActionsProps) {
+
   const router = useRouter();
 
   const [modalState, setModalState] = useState<'closed' | 'confirm' | 'success' | 'error'>('closed');
@@ -26,10 +26,8 @@ export default function BookingActions({ bookingId, status, isCurrent }: Booking
     setErrorMessage('');
 
     try {
-      // --- นี่คือส่วนที่แก้ไข: Hardcode UUID สำหรับการทดสอบ ---
       const reservationIdToCancel = 'B59E1C0A-6C64-4BFF-A50A-EFDBFCE96E54';
       console.log(`Attempting to cancel reservation with hardcoded ID: ${reservationIdToCancel}`);
-      // --------------------------------------------------------
 
       const response = await fetch(`http://localhost:8081/MyBookings/cancel/${reservationIdToCancel}`, {
         method: 'DELETE',
@@ -126,4 +124,3 @@ export default function BookingActions({ bookingId, status, isCurrent }: Booking
     </>
   );
 }
-

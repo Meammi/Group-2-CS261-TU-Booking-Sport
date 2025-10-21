@@ -1,4 +1,4 @@
-'use client'; // 1. ทำให้หน้านี้เป็น Client Component ทั้งหมด
+'use client'; 
 
 import { useState, useEffect } from 'react';
 import Link from "next/link";
@@ -18,7 +18,6 @@ interface BookingItem {
   qrCodeId: string;
 }
 
-// 2. Component จะรับ params ที่มี bookingId เข้ามา
 export default function BookingDetailPage({ params }: { params: { id: string } }) {
   const [booking, setBooking] = useState<BookingItem | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -27,8 +26,8 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
   useEffect(() => {
     const fetchAndFindBooking = async () => {
       try {
-        // --- 3. ใช้ userId ที่คุณ hardcode ไว้สำหรับ fetch ---
-        const userId = 'F5276BC3-928C-44F1-95BC-EFE075ABFA49'; // <-- ใส่ userId ของคุณที่นี่
+        
+        const userId = 'F5276BC3-928C-44F1-95BC-EFE075ABFA49'; 
 
         const response = await fetch(`http://localhost:8081/MyBookings/${userId}`);
         
@@ -38,8 +37,7 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
 
         const data: { current: Omit<BookingItem, 'id'>[], history: Omit<BookingItem, 'id'>[] } = await response.json();
         
-        // --- 4. ค้นหา booking ที่ถูกต้องจากข้อมูลทั้งหมด ---
-        // เพิ่ม ID ชั่วคราวเข้าไปก่อนค้นหา
+   
         const allBookings = [
           ...data.current.map((item, index) => ({ ...item, id: index })),
           ...data.history.map((item, index) => ({ ...item, id: data.current.length + index }))
@@ -49,7 +47,7 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
         const foundBooking = allBookings.find(b => b.id === bookingIdFromUrl);
 
         if (foundBooking) {
-          setBooking(foundBooking); // <-- ถ้าเจอ ให้อัปเดต State
+          setBooking(foundBooking); 
         } else {
           throw new Error(`Booking with ID ${params.id} not found for this user.`);
         }
@@ -62,9 +60,8 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
     };
 
     fetchAndFindBooking();
-  }, [params.id]); // ให้ Effect นี้ทำงานใหม่ทุกครั้งที่ id ใน URL เปลี่ยนไป
+  }, [params.id]); 
 
-  // --- UI สำหรับสถานะ Loading ---
   if (isLoading) {
     return (
         <div className="flex flex-col items-center justify-center min-h-screen">
@@ -74,7 +71,6 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
     );
   }
 
-  // --- UI สำหรับสถานะ Error ---
   if (error || !booking) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
@@ -87,7 +83,6 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
     );
   }
 
-  // --- UI หลักเมื่อโหลดข้อมูลสำเร็จ ---
   const formattedTime = (booking.startTime && booking.endTime)
     ? `${booking.startTime.substring(0, 5)} - ${booking.endTime.substring(0, 5)}`
     : 'N/A';
