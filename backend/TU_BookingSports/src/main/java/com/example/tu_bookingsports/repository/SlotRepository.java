@@ -28,4 +28,8 @@ public interface SlotRepository extends JpaRepository<Slot, UUID> {
     // Lightweight projection to avoid reading GUID columns on Slot
     @Query("SELECT s.slotTime AS slotTime, s.status AS status FROM Slot s WHERE s.room.room_id = :roomId ORDER BY s.slotTime ASC")
     List<SlotTimeStatusProjection> findSlotTimeAndStatusByRoomId(@Param("roomId") UUID roomId);
+
+    // Native query to compare SQL TIME properly (avoids time vs datetime mismatch)
+    @Query(value = "SELECT TOP 1 s.* FROM slots s WHERE s.room_id = :roomId AND s.slot_time = CAST(:slotTime AS time)", nativeQuery = true)
+    Slot findByRoomIdAndSlotTimeNative(@Param("roomId") UUID roomId, @Param("slotTime") String slotTime);
 }

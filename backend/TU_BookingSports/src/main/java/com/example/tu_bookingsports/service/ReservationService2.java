@@ -81,10 +81,11 @@ public class ReservationService2 {
         reservation.setUpdatedAt(LocalDateTime.now());
         reservationRepository.save(reservation);
 
-        // Free the slot by resolving it from room + start time
-        Slot slotToUpdate = slotRepository.findByRoomIdAndSlotTime(
-                reservation.getRoom(),
-                reservation.getStartTime().toLocalTime()
+        // Free the slot by resolving it from room + start time (native TIME comparison; pass HH:mm:ss)
+        java.time.format.DateTimeFormatter fmt = java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss");
+        String timeStr = reservation.getStartTime().toLocalTime().format(fmt);
+        Slot slotToUpdate = slotRepository.findByRoomIdAndSlotTimeNative(
+                reservation.getRoom(), timeStr
         );
         if (slotToUpdate != null) {
             slotToUpdate.setStatus(SlotStatus.AVAILABLE);
