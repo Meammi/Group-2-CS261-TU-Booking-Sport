@@ -67,17 +67,16 @@ public class AuthController {
         }
 
         var user = authService.getCurrentUser(token);
-        UserResponse response = new UserResponse(
-                user.getUserId().toString(),
-                user.getType(),
-                user.getUsername(),
-                user.getEmail(),
-                user.getTuStatus(),
-                user.getStatusId(),
-                user.getDisplayNameTh(),
-                user.getDisplayNameEn()
-        );
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(Map.of(
+                "id", user.getUserId().toString(),
+                "type", user.getType(),
+                "username", user.getUsername(),
+                "email", user.getEmail(),
+                "tu_status", user.getTuStatus(),
+                "statusid", user.getStatusId(),
+                "displayname_th", user.getDisplayNameTh(),
+                "displayname_en", user.getDisplayNameEn()
+        ));
     }
 
     @PostMapping("/refresh")

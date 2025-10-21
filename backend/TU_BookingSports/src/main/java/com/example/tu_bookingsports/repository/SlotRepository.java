@@ -15,13 +15,13 @@ public interface SlotRepository extends JpaRepository<Slot, UUID> {
 
     // ดึง Slot ทั้งหมดสำหรับ Room ID ที่ระบุ โดยเรียงตามเวลา
     //List<Slot> findByRoom_Room_idOrderBySlotTimeAsc(UUID roomId);
-    @Query("SELECT s FROM Slot s WHERE s.room.roomId = :roomId ORDER BY s.slotTime ASC")
+    @Query("SELECT s FROM Slot s WHERE s.room.room_id = :roomId ORDER BY s.slotTime ASC")
     List<Slot> findSlotsByRoomId(@Param("roomId") UUID roomId);
 
-    @Query("SELECT s FROM Slot s WHERE s.slotId = :slotId AND s.room.roomId = :roomId")
+    @Query("SELECT s FROM Slot s WHERE s.slotId = :slotId AND s.room.room_id = :roomId")
     Slot findBySlotIdAndRoom_RoomId(@Param("slotId") UUID slotId, @Param("roomId") UUID roomId);
     // ใน SlotRepository.java
 
-
-    Slot findByRoom_RoomIdAndSlotTime(UUID roomId,LocalTime slotTime);
+    @Query("SELECT s FROM Slot s WHERE s.room.room_id = :roomId AND s.slotTime = :slotTime")
+    Slot findByRoomIdAndSlotTime(@Param("roomId") UUID roomId, @Param("slotTime") LocalTime slotTime);
 }

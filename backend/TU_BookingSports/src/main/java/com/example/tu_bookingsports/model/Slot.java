@@ -50,6 +50,9 @@ public class Slot {
         return slotId;
     }
 
+    // public void setSlotId(Long slotId) {
+//         this.slotId = slotId;
+//     }
     public Rooms getRoom() {
         return room;
     }
