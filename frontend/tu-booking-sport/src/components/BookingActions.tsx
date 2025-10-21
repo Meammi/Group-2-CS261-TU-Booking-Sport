@@ -11,6 +11,7 @@ interface BookingActionsProps {
 }
 
 export default function BookingActions({ bookingId, status, isCurrent }: BookingActionsProps) {
+export default function BookingActions({ bookingId, status, isCurrent }: BookingActionsProps) {
   const router = useRouter();
 
   const [modalState, setModalState] = useState<'closed' | 'confirm' | 'success' | 'error'>('closed');

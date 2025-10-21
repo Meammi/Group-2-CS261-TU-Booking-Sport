@@ -141,97 +141,70 @@ public class Rooms {
         updated_at = LocalDateTime.now();
     }
 }
-@Embeddable
-class GeoLocation {
-    private Double latitude;
-    private Double longitude;
-    public GeoLocation() {}
-    public GeoLocation(Double latitude, Double longitude) {
-        this.latitude = latitude;
-        this.longitude = longitude;
-    }
+// @Data
+// @Entity
+// @Table(name = "slots")
+// class Slot {
 
-    public Double getLatitude() {
-        return latitude;
-    }
+//     @Id
+//     @GeneratedValue(strategy = GenerationType.IDENTITY)
+//     @Column(name = "slot_id")
+//     private Long slotId;
 
-    public void setLatitude(Double latitude) {
-        this.latitude = latitude;
-    }
-
-    public Double getLongitude() {
-        return longitude;
-    }
-
-    public void setLongitude(Double longitude) {
-        this.longitude = longitude;
-    }
-}
-
-@Data
-@Entity
-@Table(name = "slots")
-class Slot {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "slot_id")
-    private Long slotId;
-
-    @ManyToOne
-    @JoinColumn(name = "room_id", nullable = false)
-    private Rooms room;
+//     @ManyToOne
+//     @JoinColumn(name = "room_id", nullable = false)
+//     private Rooms room;
 
 
-    @Column(name = "slot_time", nullable = false)
-    private LocalTime slotTime;
+//     @Column(name = "slot_time", nullable = false)
+//     private LocalTime slotTime;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private SlotStatus status;
+//     @Enumerated(EnumType.STRING)
+//     @Column(name = "status", nullable = false)
+//     private SlotStatus status;
 
-    public enum SlotStatus {
-        AVAILABLE,
-        BOOKED,
-        MAINTENANCE
-    }
+//     public enum SlotStatus {
+//         AVAILABLE,
+//         BOOKED,
+//         MAINTENANCE
+//     }
 
-    public Slot(SlotStatus status, LocalTime slotTime, Rooms room) {
-        this.status = status;
-        this.slotTime = slotTime;
-        this.room = room;
-    }
-    public Slot(){}
+//     public Slot(SlotStatus status, LocalTime slotTime, Rooms room) {
+//         this.status = status;
+//         this.slotTime = slotTime;
+//         this.room = room;
+//     }
+//     public Slot(){}
 
-    public Long getSlotId() {
-        return slotId;
-    }
+//     public Long getSlotId() {
+//         return slotId;
+//     }
 
-    public void setSlotId(Long slotId) {
-        this.slotId = slotId;
-    }
+//     public void setSlotId(Long slotId) {
+//         this.slotId = slotId;
+//     }
 
-    public Rooms getRoom() {
-        return room;
-    }
+//     public Rooms getRoom() {
+//         return room;
+//     }
 
-    public void setRoom(Rooms room) {
-        this.room = room;
-    }
+//     public void setRoom(Rooms room) {
+//         this.room = room;
+//     }
 
-    public LocalTime getSlotTime() {
-        return slotTime;
-    }
+//     public LocalTime getSlotTime() {
+//         return slotTime;
+//     }
 
-    public void setSlotTime(LocalTime slotTime) {
-        this.slotTime = slotTime;
-    }
+//     public void setSlotTime(LocalTime slotTime) {
+//         this.slotTime = slotTime;
+//     }
 
-    public SlotStatus getStatus() {
-        return status;
-    }
+//     public SlotStatus getStatus() {
+//         return status;
+//     }
 
-    public void setStatus(SlotStatus status) {
-        this.status = status;
-    }
-}
+//     public void setStatus(SlotStatus status) {
+//         this.status = status;
+//     }
+// }

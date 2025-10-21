@@ -105,12 +105,21 @@ export default function MyBookingPage() {
               <div className="w-10 border-t-2 border-gray-300"></div>
               <h2 className="bg-gray-100 text-lg font-bold text-tu-navy px-2">Current</h2>
               <div className="flex-grow border-t-2 border-gray-300"></div>
+              <div className="w-10 border-t-2 border-gray-300"></div>
+              <h2 className="bg-gray-100 text-lg font-bold text-tu-navy px-2">Current</h2>
+              <div className="flex-grow border-t-2 border-gray-300"></div>
             </div>
             <div className="space-y-4">
               {currentBookings.length > 0 ? (
                 currentBookings.map(item => (
                   <BookingCard
                     key={item.id}
+                    id={item.id} // <-- ตอนนี้ item.id จะมีค่าเป็นตัวเลขแล้ว
+                    imageUrl={getImageForLocation(item.locationName)}
+                    title={item.name}
+                    location={item.locationName}
+                    date={item.bookingDate}
+                    time={`${item.startTime.substring(0, 5)} - ${item.endTime.substring(0, 5)}`}
                     id={item.id} // <-- ตอนนี้ item.id จะมีค่าเป็นตัวเลขแล้ว
                     imageUrl={getImageForLocation(item.locationName)}
                     title={item.name}
@@ -133,12 +142,22 @@ export default function MyBookingPage() {
               <div className="w-10 border-t-2 border-gray-300"></div>
               <h2 className="bg-gray-100 text-lg font-bold text-tu-navy px-2">History</h2>
               <div className="flex-grow border-t-2 border-gray-300"></div>
+              <div className="w-10 border-t-2 border-gray-300"></div>
+              <h2 className="bg-gray-100 text-lg font-bold text-tu-navy px-2">History</h2>
+              <div className="flex-grow border-t-2 border-gray-300"></div>
             </div>
             <div className="space-y-4">
+               {historyBookings.length > 0 ? (
                {historyBookings.length > 0 ? (
                 historyBookings.map(item => (
                   <BookingCard
                     key={item.id}
+                    id={item.id} // <-- ตอนนี้ item.id จะมีค่าเป็นตัวเลขแล้ว
+                    imageUrl={getImageForLocation(item.locationName)}
+                    title={item.name}
+                    location={item.locationName}
+                    date={item.bookingDate}
+                    time={`${item.startTime.substring(0, 5)} - ${item.endTime.substring(0, 5)}`}
                     id={item.id} // <-- ตอนนี้ item.id จะมีค่าเป็นตัวเลขแล้ว
                     imageUrl={getImageForLocation(item.locationName)}
                     title={item.name}
@@ -159,6 +178,7 @@ export default function MyBookingPage() {
         </main>
       </div>
     </div>
+  )
   )
 }
 
