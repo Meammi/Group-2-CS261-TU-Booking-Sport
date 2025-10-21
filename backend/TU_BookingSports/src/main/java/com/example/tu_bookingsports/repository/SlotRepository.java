@@ -24,4 +24,8 @@ public interface SlotRepository extends JpaRepository<Slot, UUID> {
 
     @Query("SELECT s FROM Slot s WHERE s.room.room_id = :roomId AND s.slotTime = :slotTime")
     Slot findByRoomIdAndSlotTime(@Param("roomId") UUID roomId, @Param("slotTime") LocalTime slotTime);
+
+    // Lightweight projection to avoid reading GUID columns on Slot
+    @Query("SELECT s.slotTime AS slotTime, s.status AS status FROM Slot s WHERE s.room.room_id = :roomId ORDER BY s.slotTime ASC")
+    List<SlotTimeStatusProjection> findSlotTimeAndStatusByRoomId(@Param("roomId") UUID roomId);
 }
