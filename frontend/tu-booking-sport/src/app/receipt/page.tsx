@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import QrScanner from "qr-scanner";
 import QRCode from "qrcode";
+import { Suspense } from "react";
 
 interface ReceiptData {
   orderNo: string;
@@ -28,7 +29,8 @@ const INITIAL_DATA: ReceiptData = {
 
 const RIGHT_COL_WIDTH = "w-24";
 
-export default function ReceiptPage() {
+// แยก component ที่ใช้ useSearchParams ออกมา
+function ReceiptContent() {
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
 
@@ -284,6 +286,23 @@ export default function ReceiptPage() {
         </div>
       </section>
     </main>
+  );
+}
+
+// Component หลักที่ wrap ด้วย Suspense
+export default function ReceiptPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen w-full bg-neutral-100 flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-lg text-neutral-600">Loading receipt...</p>
+          </div>
+        </main>
+      }
+    >
+      <ReceiptContent />
+    </Suspense>
   );
 }
 
