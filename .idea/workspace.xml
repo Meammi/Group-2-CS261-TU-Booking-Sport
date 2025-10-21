@@ -4,7 +4,17 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a24da115-901c-4c46-ade9-b5422aac0952" name="Changes" comment="" />
+    <list default="true" id="a24da115-901c-4c46-ade9-b5422aac0952" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/TU_BookingSports/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/TU_BookingSports/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/TU_BookingSports/src/main/java/com/example/tu_bookingsports/DTO/HomepageResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/TU_BookingSports/src/main/java/com/example/tu_bookingsports/DTO/HomepageResponse.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/TU_BookingSports/src/main/java/com/example/tu_bookingsports/TuBookingSportsApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/TU_BookingSports/src/main/java/com/example/tu_bookingsports/TuBookingSportsApplication.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/TU_BookingSports/src/main/java/com/example/tu_bookingsports/controller/HomepageController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/TU_BookingSports/src/main/java/com/example/tu_bookingsports/controller/HomepageController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/TU_BookingSports/src/main/java/com/example/tu_bookingsports/model/Reservations.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/TU_BookingSports/src/main/java/com/example/tu_bookingsports/model/Reservations.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/TU_BookingSports/src/main/java/com/example/tu_bookingsports/repository/HomepageRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/TU_BookingSports/src/main/java/com/example/tu_bookingsports/repository/HomepageRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/TU_BookingSports/src/main/java/com/example/tu_bookingsports/service/HomepageService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/TU_BookingSports/src/main/java/com/example/tu_bookingsports/service/HomepageService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/TU_BookingSports/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend/TU_BookingSports/src/main/resources/application.properties" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -25,7 +35,7 @@
   "keyToString": {
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "main",
+    "git-widget-placeholder": "Merging HomepageBackend",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "/home/ben/Group-2-CS261-TU-Booking-Sport/backend/pom.xml",
     "node.js.detected.package.eslint": "true",

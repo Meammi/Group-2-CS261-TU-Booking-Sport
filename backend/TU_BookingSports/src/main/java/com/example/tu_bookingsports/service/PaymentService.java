@@ -50,8 +50,8 @@ public class PaymentService {
         File outputFile = new File(filePath);
         qr.draw(300, 300, outputFile);
 
-        payment.setToken(qr.toString());
-        payment.setPayment_QRgenerate_photo(filePath);
+        // payment.setToken(qr.toString());
+        // payment.setPayment_QRgenerate_photo(filePath);
         payment.setReservationId(reservationId);
 
         return paymentRepository.save(payment);
