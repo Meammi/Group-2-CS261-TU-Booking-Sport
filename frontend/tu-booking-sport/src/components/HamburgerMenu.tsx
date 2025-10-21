@@ -20,7 +20,7 @@ import {
 const navLinks = [
   { href: '/homepage', label: 'Homepage', icon: HomeIcon },
   { href: '/mybooking', label: 'My Booking', icon: CalendarDaysIcon },
-  { href: '/reservation', label: 'Reservation', icon: ClipboardDocumentListIcon },
+  { href: '/reservations', label: 'Reservation', icon: ClipboardDocumentListIcon },
   { href: '/notification', label: 'Notification', icon: BellIcon },
   { href: '/support', label: 'Support', icon: LifebuoyIcon },
   { href: '/setting', label: 'Setting', icon: Cog6ToothIcon },

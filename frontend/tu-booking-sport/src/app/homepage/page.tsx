@@ -7,11 +7,11 @@ import AnnouncementCard from "@/components/AnnouncementCard";
 import CoverFlowCarousel from "@/components/Carousel"; 
 import { ArrowPathIcon } from '@heroicons/react/24/solid';
 
+// ... interface definitions ...
 interface BackendSport {
   type: string;
   locationName: string;
 }
-
 interface Sport {
   id: number;
   title: string;
@@ -20,6 +20,7 @@ interface Sport {
   href: string;
 }
 
+// ... getImageForSport function ...
 const getImageForSport = (type: string, locationName: string): string => {
   const normalizedType = type.toLowerCase();
   const normalizedLocation = locationName.toLowerCase();
@@ -34,10 +35,11 @@ const getImageForSport = (type: string, locationName: string): string => {
   return 'https://placehold.co/400x300/cccccc/FFFFFF?text=Sport';
 };
 
+
 const announcementImages = [
-  { id: 1, imageUrl: "/images/karaoke.jpg", alt: "Announcement 1" },
-  { id: 2, imageUrl: "/images/announce1.jpg", alt: "Announcement 2" },
-  { id: 3, imageUrl: "/images/announce2.jpg", alt: "Announcement 3" },
+    { id: 1, imageUrl: "/images/karaoke.jpg", alt: "Announcement 1" },
+    { id: 2, imageUrl: "/images/announce1.jpg", alt: "Announcement 2" },
+    { id: 3, imageUrl: "/images/announce2.jpg", alt: "Announcement 3" },
 ];
 
 const userStudentId = "6709616376"
@@ -58,12 +60,8 @@ export default function HomePage() {
         const backendData: BackendSport[] = await response.json();
         
         const sortedData = backendData.sort((a, b) => {
-          if (a.type.toLowerCase().includes('badminton') && !b.type.toLowerCase().includes('badminton')) {
-            return -1;
-          }
-          if (!a.type.toLowerCase().includes('badminton') && b.type.toLowerCase().includes('badminton')) {
-            return 1;
-          }
+          if (a.type.toLowerCase().includes('badminton') && !b.type.toLowerCase().includes('badminton')) return -1;
+          if (!a.type.toLowerCase().includes('badminton') && b.type.toLowerCase().includes('badminton')) return 1;
           return 0;
         });
 
@@ -72,7 +70,9 @@ export default function HomePage() {
           title: item.type,
           subtitle: item.locationName,
           imageUrl: getImageForSport(item.type, item.locationName),
-          href: `/reservation_all_sport&service/${item.locationName.toLowerCase().replace(' ', '-')}`
+          // --- 1. แก้ไขที่นี่! ---
+          // สร้าง URL แบบไดนามิกให้ถูกต้องตามโครงสร้างใหม่
+          href: `/reservations/${encodeURIComponent(item.type)}/${encodeURIComponent(item.locationName)}` 
         }));
         
         setSports(transformedData);
@@ -87,6 +87,7 @@ export default function HomePage() {
     fetchSportsData();
   }, []);
 
+  // ... UI for Loading and Error ...
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
@@ -103,6 +104,7 @@ export default function HomePage() {
       </div>
     );
   }
+
 
   return (
     <div className="max-w-md mx-auto bg-gray-100 min-h-screen font-nunito">
@@ -138,7 +140,7 @@ export default function HomePage() {
                 title={sport.title}
                 subtitle={sport.subtitle}
                 imageUrl={sport.imageUrl}
-                href={sport.href}
+                href={sport.href} // <-- ตอนนี้ href จะเป็นค่าที่ถูกต้องแล้ว
               />
             ))}
           </div>
