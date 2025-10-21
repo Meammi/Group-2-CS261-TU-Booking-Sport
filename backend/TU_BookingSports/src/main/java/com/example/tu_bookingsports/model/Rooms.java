@@ -47,6 +47,10 @@ public class Rooms {
     @Embedded
     private GeoLocation location;
 
+    // Order index for sorting display (Court 1, Court 2, ...)
+    @Column(name = "id")
+    private Integer orderId;
+
 
     @Column(name = "price",nullable = false,precision = 10,scale = 2)
     private BigDecimal price;
@@ -105,6 +109,14 @@ public class Rooms {
 
     public void setLocation(GeoLocation location) {
         this.location = location;
+    }
+
+    public Integer getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(Integer orderId) {
+        this.orderId = orderId;
     }
 
     public BigDecimal getPrice() {
