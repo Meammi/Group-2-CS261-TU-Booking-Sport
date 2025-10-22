@@ -18,12 +18,17 @@ interface BookingItem {
   imageUrl?: string;
 }
 
-const getImageForLocation = (locationName: string): string => {
+const getImageForLocation = (locationName: string, roomName?: string): string => {
   const normalizedLocation = locationName.toLowerCase().trim();
+  if (normalizedLocation === 'melodysphere') {
+    const rn = (roomName || '').toLowerCase();
+    if (rn.includes('full')) return '/images/musicroom.jpg';
+    if (rn.includes('karaoke')) return '/images/karaoke.jpg';
+    return '/images/karaoke.jpg';
+  }
   switch (normalizedLocation) {
-    case 'interzone': return '/images/interzone.jpg';
     case 'gym 4': return '/images/gym4.jpg';
-    case 'sport complex tu': return 'https://placehold.co/100x100/2c3e50/FFFFFF?text=Football';
+    case 'karaoke': return '/images/karaoke.jpg';
     default: return 'https://placehold.co/100x100/cccccc/FFFFFF?text=Image';
   }
 };
@@ -127,7 +132,7 @@ export default function MyBookingPage() {
                   <BookingCard
                     key={item.id}
                     id={item.id} 
-                    imageUrl={getImageForLocation(item.locationName)}
+                    imageUrl={getImageForLocation(item.locationName, item.name)}
                     title={item.name}
                     location={item.locationName}
                     date={item.bookingDate}
@@ -155,7 +160,7 @@ export default function MyBookingPage() {
                   <BookingCard
                     key={item.id}
                     id={item.id} 
-                    imageUrl={getImageForLocation(item.locationName)}
+                    imageUrl={getImageForLocation(item.locationName, item.name)}
                     title={item.name}
                     location={item.locationName}
                     date={item.bookingDate}
