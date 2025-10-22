@@ -26,32 +26,51 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
   useEffect(() => {
     const fetchAndFindBooking = async () => {
       try {
-        
-        const userId = 'F5276BC3-928C-44F1-95BC-EFE075ABFA49'; 
+        const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+        if (!token) {
+          throw new Error('Please login to view your bookings.');
+        }
 
-        const response = await fetch(`http://localhost:8081/MyBookings/${userId}`);
-        
+        // 1) Get current user info to resolve userId
+        const meRes = await fetch('http://localhost:8081/auth/me', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+          credentials: 'include',
+        });
+        if (!meRes.ok) {
+          throw new Error(`Failed to fetch user info: ${meRes.status}`);
+        }
+        const me: { id: string } = await meRes.json();
+        const userId = me.id;
+
+        // 2) Fetch bookings for this user
+        const response = await fetch(`http://localhost:8081/MyBookings/${userId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+          credentials: 'include',
+        });
+
         if (!response.ok) {
           throw new Error(`Failed to fetch user bookings: ${response.status}`);
         }
 
-        const data: { current: Omit<BookingItem, 'id'>[], history: Omit<BookingItem, 'id'>[] } = await response.json();
-        
-   
+        const data: { current: Omit<BookingItem, 'id'>[]; history: Omit<BookingItem, 'id'>[] } = await response.json();
+
         const allBookings = [
           ...data.current.map((item, index) => ({ ...item, id: index })),
-          ...data.history.map((item, index) => ({ ...item, id: data.current.length + index }))
+          ...data.history.map((item, index) => ({ ...item, id: data.current.length + index })),
         ];
 
         const bookingIdFromUrl = parseInt(params.id, 10);
-        const foundBooking = allBookings.find(b => b.id === bookingIdFromUrl);
+        const foundBooking = allBookings.find((b) => b.id === bookingIdFromUrl);
 
         if (foundBooking) {
-          setBooking(foundBooking); 
+          setBooking(foundBooking);
         } else {
           throw new Error(`Booking with ID ${params.id} not found for this user.`);
         }
-
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -60,7 +79,7 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
     };
 
     fetchAndFindBooking();
-  }, [params.id]); 
+  }, [params.id]);
 
   if (isLoading) {
     return (

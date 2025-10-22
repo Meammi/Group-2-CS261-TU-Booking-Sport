@@ -37,8 +37,27 @@ export default function MyBookingPage() {
   useEffect(() => {
     const fetchBookings = async () => {
       try {
-        const userId = 'F5276BC3-928C-44F1-95BC-EFE075ABFA49';
-        const response = await fetch(`http://localhost:8081/MyBookings/${userId}`); 
+        const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+        if (!token) {
+          throw new Error('Please login to view your bookings.');
+        }
+
+        // Resolve userId from /auth/me
+        const meRes = await fetch('http://localhost:8081/auth/me', {
+          headers: { 'Authorization': `Bearer ${token}` },
+          credentials: 'include',
+        });
+        if (!meRes.ok) {
+          throw new Error(`Failed to fetch user info: ${meRes.status}`);
+        }
+        const me: { id: string } = await meRes.json();
+        const userId = me.id;
+
+        // Fetch bookings for this user
+        const response = await fetch(`http://localhost:8081/MyBookings/${userId}`, {
+          headers: { 'Authorization': `Bearer ${token}` },
+          credentials: 'include',
+        });
 
         if (!response.ok) {
           throw new Error(`Failed to fetch bookings: ${response.status}`);
@@ -48,15 +67,14 @@ export default function MyBookingPage() {
 
         const processedCurrent = data.current.map((item, index) => ({
           ...item,
-          id: index, 
+          id: index,
         }));
-        
+
         const processedHistory = data.history.map((item, index) => ({
           ...item,
-          id: data.current.length + index, 
+          id: data.current.length + index,
         }));
-        
-        
+
         setCurrentBookings(processedCurrent);
         setHistoryBookings(processedHistory);
 

@@ -26,11 +26,42 @@ export default function BookingActions({ bookingId, status, isCurrent }: Booking
     setErrorMessage('');
 
     try {
-      const reservationIdToCancel = 'B59E1C0A-6C64-4BFF-A50A-EFDBFCE96E54';
-      console.log(`Attempting to cancel reservation with hardcoded ID: ${reservationIdToCancel}`);
+      const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+      if (!token) {
+        throw new Error('Please login to cancel a booking.');
+      }
 
+      // 1) Resolve userId from /auth/me
+      const meRes = await fetch('http://localhost:8081/auth/me', {
+        headers: { 'Authorization': `Bearer ${token}` },
+        credentials: 'include',
+      });
+      if (!meRes.ok) {
+        throw new Error(`Failed to fetch user info: ${meRes.status}`);
+      }
+      const me: { id: string } = await meRes.json();
+
+      // 2) Get user's current bookings to find the matching reservationId by index (bookingId)
+      const bookingsRes = await fetch(`http://localhost:8081/MyBookings/${me.id}`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+        credentials: 'include',
+      });
+      if (!bookingsRes.ok) {
+        throw new Error(`Failed to fetch bookings: ${bookingsRes.status}`);
+      }
+      const data: { current: Array<{ reservationId: string }>; history: Array<{ reservationId: string }> } = await bookingsRes.json();
+
+      // Only allow cancel on current bookings; bookingId here is the index from the current list
+      const target = isCurrent ? data.current[bookingId] : undefined;
+      if (!target?.reservationId) {
+        throw new Error('Could not resolve reservationId for this card.');
+      }
+      const reservationIdToCancel = target.reservationId;
+      
       const response = await fetch(`http://localhost:8081/MyBookings/cancel/${reservationIdToCancel}`, {
         method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` },
+        credentials: 'include',
       });
 
       if (!response.ok) {
