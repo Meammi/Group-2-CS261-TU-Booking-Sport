@@ -29,6 +29,9 @@ public class Reservations {
     @Column(name = "end_time", nullable = false)
     private LocalDateTime endTime;
 
+    @Column(name = "slot_id", nullable = false)
+    private UUID slot;
+
     public enum ReservationStatus {
         PENDING,     // 0 รอการยืนยัน
         CONFIRMED,   // 1 ยืนยันแล้ว
@@ -69,6 +72,13 @@ public class Reservations {
     }
 
     //Setter Getter
+
+    public void setSlot(UUID slot) {
+        this.slot = slot;
+    }
+    public UUID getSlot() {
+            return slot;}
+
     public UUID getReservationID() {
         return reservationID;
     }
