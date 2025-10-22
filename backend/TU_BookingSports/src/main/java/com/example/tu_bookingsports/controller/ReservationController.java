@@ -49,27 +49,18 @@ public class ReservationController {
     // }
 
 
-    /**
-     * Endpoint สำหรับสร้าง Reservation
-     * (กดปุ่มเวลา)
-     * POST /api/reservations/create
-     *
+
+
      @PostMapping("/reservation/create")
      public ResponseEntity<?> createReservation(@RequestBody ReservationRequest request) {
      try {
      Reservations newReservation = reservationService.createReservation(request);
-     // ส่งค่าทั้งหมดใน reservation ที่สร้างกลับไป
      return ResponseEntity.status(HttpStatus.CREATED).body(newReservation);
      } catch (RuntimeException e) {
-     // รับ Error จาก Service (เช่น "This court was reserve!")
      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
      }
      }
-     /**
-      * Endpoint สำหรับยกเลิก Reservation
-      * (กดปุ่ม Cancel บนหน้า Confirmation)
-      * POST /api/reservations/cancel
-     *
+     /*
      @PostMapping("/reservation/cancel")
      public ResponseEntity<?> cancelReservation(@RequestBody ConfirmationRequest request) {
      try {
