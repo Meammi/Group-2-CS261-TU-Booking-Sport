@@ -73,7 +73,7 @@ export default function CourtCard({ court, selectedDate = today }: CourtCardProp
     };
 
     try {
-        const response = await fetch('http://localhost:8081/api/reservation/create', {
+        const response = await fetch('/api/reservation', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)

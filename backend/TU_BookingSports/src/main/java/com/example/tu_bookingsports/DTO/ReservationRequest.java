@@ -27,7 +27,12 @@ public class ReservationRequest {
         this.roomId = roomId;
     }
 
-
+    public UUID getSlotId() {
+        return slotId;
+    }
+    public void setSlotId(UUID slotId) {
+        this.slotId = slotId;
+    }
 
     private UUID reservationId;
 
