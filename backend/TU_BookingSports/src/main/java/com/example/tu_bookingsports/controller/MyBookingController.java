@@ -32,7 +32,7 @@ public class MyBookingController {
         return response;
     }
 
-    @DeleteMapping("/cancel/{reservationId}")
+    @PatchMapping("/cancel/{reservationId}")
     public String cancelBooking(@PathVariable UUID reservationId) {
         boolean cancelled = myBookingService.cancelBooking(reservationId);
         if (cancelled) {
