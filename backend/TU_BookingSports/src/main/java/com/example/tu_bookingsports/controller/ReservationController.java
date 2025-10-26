@@ -36,23 +36,35 @@ public class ReservationController {
     @PostMapping("/create")
     public ResponseEntity<?> createReservation(@RequestBody ReservationRequest request) {
 
-        System.out.println("test test");
-        System.out.println("getReservationId "+request.getReservationId());
-        System.out.println("getRoomId "+request.getRoomId());
-        System.out.println("getStatus "+request.getStatus());
-        System.out.println("getSlotId "+request.getSlotId());
+        System.out.println("getUserId "+request.getUserId());
+        System.out.println("getSlotId "+request.getSlotId()+"\n");
 
-        if (request.getUserId() != null && request.getSlotId() != null) {
-            try {
-                System.out.println("reservation controller is creating reservation");
-                Reservations newReservation = reservationService.createReservation(request);
-                return ResponseEntity.status(HttpStatus.CREATED).body(newReservation);
-            } catch (RuntimeException e) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        System.out.println("getRoomId "+request.getRoomId());
+        System.out.println("getSlotTime "+request.getSlotTime()+"\n");
+
+        if (request.getUserId() != null) {
+            if (request.getSlotId() != null) {
+                try {
+                    System.out.println("reservation controller using slotId");
+                    Reservations newReservation = reservationService.createReservation(request);
+
+                    return ResponseEntity.status(HttpStatus.CREATED).body(newReservation);
+                } catch (RuntimeException e) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+                }
+            }else if(request.getRoomId() != null && request.getSlotTime() != null) {
+                try {
+                    System.out.println("reservation controller using roomId and slotTime");
+                    Reservations newReservation = reservationService.createReservation(request);
+
+                    return ResponseEntity.status(HttpStatus.CREATED).body(newReservation);
+                } catch (RuntimeException e) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+                }
             }
         }
 
-        return ResponseEntity.ok("Invalid Arguments: Please send UserId, SlotId");
+        return ResponseEntity.ok("Invalid Arguments: Please send UserId + SlotId or UserId + RoomId + SlotTime");
     }
 
 }

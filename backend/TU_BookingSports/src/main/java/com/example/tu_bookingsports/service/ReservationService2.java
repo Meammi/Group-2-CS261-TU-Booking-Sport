@@ -17,8 +17,10 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.time.format.DateTimeFormatter;
 
 @Service
 public class ReservationService2 {
@@ -33,16 +35,37 @@ public class ReservationService2 {
         this.roomRepository = roomRepository;
     }
 
+    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss");
+
     @Transactional
     public Reservations createReservation(ReservationRequest request) {
-        //UUID slotId = request.getSlotId();
-        //UUID roomId = request.getRoomId();
+        System.out.println("request getUserId: "+request.getUserId());
+        System.out.println("request getRoomId: "+request.getRoomId());
+        System.out.println("request getSlotId: "+request.getSlotId());
+        System.out.println("request getSlotTime: "+request.getSlotTime());
 
-        Slot slot = slotRepository.findById(request.getSlotId()).orElse(null);;
-        if (slot == null) {
-            throw new RuntimeException("Error: Slot is not found");
+        Optional<Slot> slotOptional;
+        if (request.getSlotId() != null) {
+
+            slotOptional = slotRepository.findById(request.getSlotId());
+        }else{
+            if (request.getRoomId() != null && request.getSlotTime() != null) {
+                LocalTime slotTime = LocalTime.parse(request.getSlotTime(), TIME_FORMATTER);
+                System.out.println("ReservationService slotTime: "+slotTime);
+
+                slotOptional = Optional.ofNullable(slotRepository.findByRoomIdAndSlotTimeNative(request.getRoomId(), String.valueOf(slotTime)));
+            }else{
+                throw new RuntimeException("request Invalid pls send again");
+            }
         }
-        Rooms room = roomRepository.findById(slot.getRoom().getRoom_id()).orElse(null);;
+
+        Slot slot = slotOptional.orElseThrow(() -> new RuntimeException("Error: Slot is not found"));;
+
+        //got slot now start making reservation
+
+        //Rooms room = roomRepository.findById(slot.getRoom().getRoom_id()).orElse(null);
+        Rooms room = slot.getRoom();
+
         if (room == null) {
             throw new RuntimeException("Error: Room is not found");
         }
@@ -85,7 +108,7 @@ public class ReservationService2 {
             reservation.setStatus(ReservationStatus.PENDING);//6
         }
 
-        reservation.setPrice(room.getPrice()); //7
+        reservation.setPrice(price); //7
 
         return reservationRepository.save(reservation);
 
