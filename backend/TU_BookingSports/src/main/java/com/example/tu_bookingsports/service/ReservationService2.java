@@ -1,11 +1,5 @@
 package com.example.tu_bookingsports.service;
 
-import com.example.tu_bookingsports.model.Reservations;
-import org.springframework.stereotype.Service;
-
-import java.math.BigDecimal;
-import java.util.UUID;
-
 import com.example.tu_bookingsports.DTO.ReservationRequest;
 import com.example.tu_bookingsports.model.Reservations;
 import com.example.tu_bookingsports.model.Rooms;
@@ -13,165 +7,88 @@ import com.example.tu_bookingsports.model.Slot;
 import com.example.tu_bookingsports.model.Slot.SlotStatus;
 import com.example.tu_bookingsports.model.Reservations.ReservationStatus;
 import com.example.tu_bookingsports.repository.ReservationRepository;
+import com.example.tu_bookingsports.repository.RoomRepository;
 import com.example.tu_bookingsports.repository.SlotRepository;
-import com.example.tu_bookingsports.repository.RoomRepository; // ต้องใช้ RoomRepository ด้วย
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Optional;
 import java.util.UUID;
 
-// สมมติว่ามี PaymentService และ DTOs สำหรับการชำระเงินอยู่ในโปรเจ็กต์แล้ว
-//import com.example.tu_bookingsports.DTO.PaymentRequest;
-//import com.example.tu_bookingsports.service.PaymentService;
-import com.google.zxing.WriterException;
-import java.io.IOException;
-
 @Service
 public class ReservationService2 {
 
-    @Autowired
-    private SlotRepository slotRepository;
-    @Autowired
-    private ReservationRepository reservationRepository;
-    @Autowired
-    private RoomRepository roomRepository; // ต้องมีการ Autowired RoomRepository
+    private final SlotRepository slotRepository;
+    private final ReservationRepository reservationRepository;
+    private final RoomRepository roomRepository;
 
-    //@Autowired // ใช้ required = false ถ้ายังไม่มี PaymentService จริง
-    //private PaymentService paymentService;
+    public ReservationService2(SlotRepository slotRepository, ReservationRepository reservationRepository, RoomRepository roomRepository) {
+        this.slotRepository = slotRepository;
+        this.reservationRepository = reservationRepository;
+        this.roomRepository = roomRepository;
+    }
 
-
-    /**
-     * ขั้นตอนที่ 1: สร้าง Reservation (สถานะ PENDING) และตั้งค่า Slot เป็น BOOKED
-     */
     @Transactional
     public Reservations createReservation(ReservationRequest request) {
-        UUID slotId = request.getSlotId();
-        UUID roomId = request.getRoomId();
+        //UUID slotId = request.getSlotId();
+        //UUID roomId = request.getRoomId();
 
-        // 1. เช็คว่า Slot มีอยู่จริงและสัมพันธ์กับ Room ID ที่ส่งมาหรือไม่
-        System.out.println("in service slotid"+slotId); // Prints "Hello, World!" and then a new line
-        System.out.println("in service roomId"+roomId); // Prints on the next line
-        Slot slot = slotRepository.findBySlotIdAndRoom_RoomId(slotId, roomId);
-
-        // A. ถ้าไม่มี slot/room ที่ตรงกัน
+        Slot slot = slotRepository.findById(request.getSlotId()).orElse(null);;
         if (slot == null) {
-            throw new RuntimeException("Error: Slot ID or Room ID is invalid or mismatched.");
+            throw new RuntimeException("Error: Slot is not found");
         }
-        //Slot slot = optionalSlot.orElseThrow(
-        //        () -> new RuntimeException("Error: Slot ID or Room ID is invalid or mismatched.")
-        //);
+        Rooms room = roomRepository.findById(slot.getRoom().getRoom_id()).orElse(null);;
+        if (room == null) {
+            throw new RuntimeException("Error: Room is not found");
+        }
 
-        // B. ถ้า status slot เป็น BOOKED
+        System.out.println("getStatus from slotRepo         "+slot.getStatus());
+        System.out.println(" SlotId from request        "+request.getSlotId());
+        //System.out.println(" RoomId from request        "+request.getRoomId());
+        System.out.println("found SlotId from slotRepo         "+slot.getSlotId());
+        System.out.println("found RoomId from roomRepo         "+room.getRoom_id());
+
         if (slot.getStatus() == SlotStatus.BOOKED) {
-            throw new RuntimeException("Error, This court was reserve!");
+            throw new RuntimeException("Error, This court was reserve!, Slot Status: "+slot.getStatus()+", SlotId: "+slot.getSlotId());
         }
 
-        // 2. ถ้า AVAILABLE ให้เปลี่ยน status slot เป็น BOOKED
         slot.setStatus(SlotStatus.BOOKED);
-        slotRepository.save(slot); // บันทึกสถานะ slot ที่เปลี่ยนไป
+        slotRepository.save(slot);
 
-        // 3. ดึงข้อมูล Room เพื่อหา Price และ Time
-        Optional<Rooms> roomOpt = roomRepository.findById(roomId);
-        if (!roomOpt.isPresent()) {
-            // ควรจะถูกจับตั้งแต่ findBySlotIdAndRoomRoomId แล้ว แต่เพื่อความปลอดภัย
-            throw new RuntimeException("Room not found.");
-        }
-        Rooms room = roomOpt.get();
+        // Build reservation period from slot time
         LocalTime startTime = slot.getSlotTime();
-        // start_time + 1 ชม.
-        LocalTime endTime = startTime.plusHours(1);
+        LocalDateTime startDateTime = LocalDateTime.of(LocalDate.now(), startTime);
+        LocalDateTime endDateTime = startDateTime.plusHours(1);
 
-        // 4. สร้าง Reservations
+        // Create reservation
         Reservations reservation = new Reservations();
-        reservation.setRoom(roomId);
-        reservation.setUser(request.getUserId());
-        reservation.setStartTime(startTime);
-        reservation.setEndTime(endTime);
-        reservation.setPrice(room.getPrice()); // ใช้ price จาก Rooms
-        reservation.setStatus(ReservationStatus.PENDING); // สถานะเริ่มต้นเป็น PENDING
-        reservation.setSlotId(slotId);
 
-        // 5. บันทึก Reservation และส่งกลับ
-        return reservationRepository.save(reservation);
-    }
+        reservation.setUser(request.getUserId()); //1
+        reservation.setRoom(slot.getRoom().getRoom_id()); //2
+        reservation.setSlotId(slot.getSlotId()); //3
 
-    //----------------------------------------------------------------------
+        reservation.setStartTime(startDateTime); //4
+        reservation.setEndTime(endDateTime); //5
 
-    /**
-     * ขั้นตอนที่ 2: จัดการการ Cancel
-     */
-    @Transactional
-    public Reservations cancelReservation(UUID reservationId) {
-        Optional<Reservations> resOpt = reservationRepository.findById(reservationId);
-        if (!resOpt.isPresent()) {
-            throw new RuntimeException("Error: Reservation not found.");
-        }
+        BigDecimal price = roomRepository.findById(reservation.getRoom())
+                .map(Rooms::getPrice)
+                .orElse(BigDecimal.ZERO);
 
-        Reservations reservation = resOpt.get();
-
-        // 1. เปลี่ยนสถานะ Reservation เป็น CANCELLED
-        reservation.setStatus(ReservationStatus.CANCELLED);
-        // @PreUpdate จะจัดการ updatedAt อัตโนมัติ แต่ตั้งค่าตรงๆ ก็ปลอดภัย
-        reservation.setUpdatedAt(LocalDateTime.now());
-        reservationRepository.save(reservation);
-
-        // 2. คืนสถานะ Slot ให้เป็น AVAILABLE (ต้องดึง slot ID จาก Reservation)
-        // เนื่องจาก Reservations entity ของคุณขาด slot_id เราจะหา slot จาก room ID และ start_time
-        // NOTE: หากคุณปรับ Reservations model ให้มี slot_id จะง่ายกว่ามาก
-        //Slot slotToUpdate = slotRepository.findByRoom_RoomIdAndSlotTime(
-        //        reservation.getRoom(),
-        //        reservation.getStartTime()
-        //);
-        Slot slotToUpdate = slotRepository.findBySlotIdAndRoom_RoomId(
-                reservation.getSlotId(),
-                reservation.getRoom()
-        );
-
-        if (slotToUpdate != null) {
-            slotToUpdate.setStatus(SlotStatus.AVAILABLE);
-            slotRepository.save(slotToUpdate);
-        }
-
-        return reservation;
-    }
-
-    /**
-     * ขั้นตอนที่ 3: จัดการการ Confirm (ไปหน้า Payment หรือยืนยันทันที)
-     */
-    @Transactional
-    public Reservations confirmReservation(UUID reservationId) {
-        Optional<Reservations> resOpt = reservationRepository.findById(reservationId);
-        if (!resOpt.isPresent()) {
-            throw new RuntimeException("Error: Reservation not found.");
-        }
-
-        Reservations reservation = resOpt.get();
-        reservation.setUpdatedAt(LocalDateTime.now()); // ตั้งค่า update_at
-
-        BigDecimal price = reservation.getPrice() != null ? reservation.getPrice() : BigDecimal.ZERO;
-
-        // 1. ถ้า price == 0
         if (price.compareTo(BigDecimal.ZERO) <= 0) {
-            reservation.setStatus(ReservationStatus.CONFIRMED);
-            return reservationRepository.save(reservation); // บันทึกและส่ง Reservation กลับ
+            reservation.setStatus(ReservationStatus.CONFIRMED);//6
+        } else {
+            reservation.setStatus(ReservationStatus.PENDING);//6
         }
-        // 2. ถ้า price > 0 ให้เรียก Payment Service
-        else {
-            //reservationRepository.save(reservation); // บันทึก update_at ก่อนเรียก payment
 
-            //if (paymentService == null) {
-                // สำหรับกรณีที่ยังไม่ได้สร้าง PaymentService จริง
-            //    throw new RuntimeException("Payment service is not configured.");
-            //}
-            reservation.setStatus(ReservationStatus.PENDING);
-            return reservationRepository.save(reservation);
-        }
+        reservation.setPrice(room.getPrice()); //7
+
+        return reservationRepository.save(reservation);
+
     }
-
 
 }
-
