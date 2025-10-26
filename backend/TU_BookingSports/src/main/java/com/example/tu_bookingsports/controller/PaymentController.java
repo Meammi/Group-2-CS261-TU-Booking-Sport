@@ -1,3 +1,4 @@
+//backend\TU_BookingSports\src\main\java\com\example\tu_bookingsports\controller\PaymentController.java
 package com.example.tu_bookingsports.controller;
 import com.example.tu_bookingsports.DTO.PaymentRequest;
 import com.example.tu_bookingsports.model.Payment;
@@ -10,7 +11,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/payments")
-@CrossOrigin(origins = "")
+@CrossOrigin(origins = "http://localhost:3000")
 public class PaymentController {
     private final PaymentService paymentService;
     public PaymentController(PaymentService paymentService) {
@@ -25,5 +26,6 @@ public class PaymentController {
     public Payment getPayment(@PathVariable("id") String id) {
         return paymentService.getPaymentByReservationId(java.util.UUID.fromString(id));
     }
+
 }
 

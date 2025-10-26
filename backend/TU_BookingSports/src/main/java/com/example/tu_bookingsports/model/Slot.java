@@ -15,7 +15,7 @@ public class Slot {
 
     //@GeneratedValue(strategy = GenerationType.IDENTITY)
     //@Column(name = "slot_id")
-	@Id
+    @Id
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
     @Column(name = "slot_id", columnDefinition = "uniqueidentifier")
@@ -50,6 +50,9 @@ public class Slot {
         return slotId;
     }
 
+    // public void setSlotId(Long slotId) {
+//         this.slotId = slotId;
+//     }
     public Rooms getRoom() {
         return room;
     }

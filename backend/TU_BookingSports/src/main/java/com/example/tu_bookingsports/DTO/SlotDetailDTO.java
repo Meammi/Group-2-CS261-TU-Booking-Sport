@@ -9,18 +9,18 @@ import lombok.Setter;
 @Getter
 @Setter
 public class SlotDetailDTO {
-	private UUID slotId;
+    private UUID slotId;
     private LocalTime slotTime;
     private String status;
 
     public SlotDetailDTO() {
     }
     public SlotDetailDTO(UUID slotId, LocalTime slotTime, String status) {
-    	this.slotId = slotId;
+        this.slotId = slotId;
         this.slotTime = slotTime;
         this.status = status;
     }
-    
+
     public UUID getSlotId() {
         return slotId;
     }

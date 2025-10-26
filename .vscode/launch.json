@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-TuBookingSportsApplication<TU_BookingSports>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.example.tu_bookingsports.TuBookingSportsApplication",
+            "projectName": "TU_BookingSports",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
