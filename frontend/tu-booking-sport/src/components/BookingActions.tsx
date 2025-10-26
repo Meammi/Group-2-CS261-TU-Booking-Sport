@@ -59,7 +59,7 @@ export default function BookingActions({ bookingId, status, isCurrent }: Booking
       const reservationIdToCancel = target.reservationId;
       
       const response = await fetch(`http://localhost:8081/MyBookings/cancel/${reservationIdToCancel}`, {
-        method: 'DELETE',
+        method: 'PATCH',
         headers: { 'Authorization': `Bearer ${token}` },
         credentials: 'include',
       });

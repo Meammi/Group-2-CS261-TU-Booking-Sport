@@ -29,6 +29,7 @@ const getImageForLocation = (locationName: string, roomName?: string): string =>
   switch (normalizedLocation) {
     case 'gym 4': return '/images/gym4.jpg';
     case 'karaoke': return '/images/karaoke.jpg';
+    case 'interzone': return '/images/interzone.jpg';
     default: return 'https://placehold.co/100x100/cccccc/FFFFFF?text=Image';
   }
 };
