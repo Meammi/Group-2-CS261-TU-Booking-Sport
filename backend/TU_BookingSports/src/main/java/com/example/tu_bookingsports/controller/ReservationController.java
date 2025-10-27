@@ -1,5 +1,6 @@
 package com.example.tu_bookingsports.controller;
-import com.example.tu_bookingsports.service.ReservationService2;
+import com.example.tu_bookingsports.service.ReservationService;
+//import com.example.tu_bookingsports.service.ReservationService2;
 import com.google.zxing.WriterException;
 import org.springframework.web.bind.annotation.*;
 import com.example.tu_bookingsports.service.RoomService;
@@ -27,44 +28,29 @@ import java.util.UUID;
 @RequestMapping("/reservation")
 @CrossOrigin(origins = "") //ยิงจากท่ไหนก็ได้
 public class ReservationController {
-    private final ReservationService2 reservationService;
+    private final ReservationService reservationService;
 
-    public ReservationController(ReservationService2 reservationService) {
+    public ReservationController(ReservationService reservationService) {
         this.reservationService = reservationService;
     }
 
-    @PostMapping("/create")
+    @PostMapping
     public ResponseEntity<?> createReservation(@RequestBody ReservationRequest request) {
 
         System.out.println("getUserId "+request.getUserId());
-        System.out.println("getSlotId "+request.getSlotId()+"\n");
+        System.out.println("getSlotId "+request.getSlotId());
 
-        System.out.println("getRoomId "+request.getRoomId());
-        System.out.println("getSlotTime "+request.getSlotTime()+"\n");
-
-        if (request.getUserId() != null) {
-            if (request.getSlotId() != null) {
-                try {
-                    System.out.println("reservation controller using slotId");
-                    Reservations newReservation = reservationService.createReservation(request);
-
-                    return ResponseEntity.status(HttpStatus.CREATED).body(newReservation);
-                } catch (RuntimeException e) {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-                }
-            }else if(request.getRoomId() != null && request.getSlotTime() != null) {
-                try {
-                    System.out.println("reservation controller using roomId and slotTime");
-                    Reservations newReservation = reservationService.createReservation(request);
-
-                    return ResponseEntity.status(HttpStatus.CREATED).body(newReservation);
-                } catch (RuntimeException e) {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-                }
+        if (request.getUserId() != null && request.getSlotId() != null) {
+            try {
+                System.out.println("reservation controller is creating reservation");
+                Reservations newReservation = reservationService.createReservation(request);
+                return ResponseEntity.status(HttpStatus.CREATED).body(newReservation);
+            } catch (RuntimeException e) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
             }
         }
 
-        return ResponseEntity.ok("Invalid Arguments: Please send UserId + SlotId or UserId + RoomId + SlotTime");
+        return ResponseEntity.ok("Invalid Arguments: Please send UserId, SlotId");
     }
 
 }

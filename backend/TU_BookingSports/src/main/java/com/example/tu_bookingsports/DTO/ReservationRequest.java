@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 public class ReservationRequest {
     private UUID userId;
-    private UUID roomId;
+
     private UUID slotId;
-    private String slotTime;
+
 }
