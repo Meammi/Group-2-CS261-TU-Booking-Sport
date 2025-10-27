@@ -26,7 +26,7 @@ FROM openjdk:17-jdk-slim
 RUN apt-get update && \
     apt-get install -y curl gnupg && \
     curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
-    apt-get install -y nodejs tini && \
+    apt-get install -y nodejs tini bash && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -39,7 +39,8 @@ COPY --from=frontend-build /app/frontend/tu-booking-sport ./frontend
 
 # Copy entrypoint script
 COPY entrypoint.sh /app/entrypoint.sh
-RUN chmod +x /app/entrypoint.sh
+# Normalize line endings (CRLF -> LF) to avoid shebang interpreter issues and ensure executable
+RUN sed -i 's/\r$//' /app/entrypoint.sh && chmod +x /app/entrypoint.sh
 
 # Expose ports
 EXPOSE 8081 3000
