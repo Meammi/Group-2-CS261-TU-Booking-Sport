@@ -3,6 +3,7 @@
 
 import { useRouter } from "next/navigation";
 import React, { useState, useRef } from "react";
+import { useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import axios from "axios";
@@ -78,6 +79,12 @@ export default function Home() {
       setShowIcon(true);
     }
   }
+  useEffect(() => {
+  const token = localStorage.getItem("access_token");
+  if (token) {
+    router.push("/homepage"); // ✅ redirect ถ้า login แล้ว
+  }
+  }, []);
 
   return (
     <BackgroundLayout>
