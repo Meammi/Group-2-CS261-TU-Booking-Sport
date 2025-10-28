@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import BookingCard from '@/components/BookingCard';
+import AuthGuard from '@/components/AuthGuard';
 import { InboxIcon, ArrowPathIcon } from '@heroicons/react/24/solid';
 
 // Interface นี้ควรจะถูกย้ายไปที่ไฟล์กลางในอนาคต
@@ -111,6 +112,7 @@ export default function MyBookingPage() {
   }
 
   return (
+    <AuthGuard>
     <div className="bg-gray-50 min-h-screen">
       <div className="mx-auto max-w-md bg-gray-100 min-h-screen">
         <Header studentId="6709616376" />
@@ -179,5 +181,6 @@ export default function MyBookingPage() {
         </main>
       </div>
     </div>
+    </AuthGuard>
   )
 }
