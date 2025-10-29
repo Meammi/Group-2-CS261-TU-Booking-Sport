@@ -11,7 +11,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     axios
-      .get("http://localhost:8081/auth/me", {
+      .get("/auth/me", {
         withCredentials: true, // ✅ ส่ง cookie ไปด้วย
       })
       .then((res) => {
