@@ -28,7 +28,7 @@ export default function BookingActions({ bookingId, status, isCurrent }: Booking
     try {
       const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
       if (!token) {
-        throw new Error('Please login to cancel a booking.');
+        return;
       }
 
       // 1) Resolve userId from /auth/me
