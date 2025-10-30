@@ -34,7 +34,7 @@ public class ReservationController {
         this.reservationService = reservationService;
     }
 
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<?> createReservation(@RequestBody ReservationRequest request) {
 
         System.out.println("getUserId "+request.getUserId());
