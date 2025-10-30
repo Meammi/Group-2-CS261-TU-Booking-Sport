@@ -1,16 +1,12 @@
 'use client';
 
-import { useState } from 'react';
-import {
-  MapContainer as LeafletMapContainer,
-  TileLayer as LeafletTileLayer,
-  Marker as LeafletMarker,
-  Popup as LeafletPopup
-} from 'react-leaflet';
+import { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import { MapPinIcon } from '@heroicons/react/24/solid';
 
-// Fix default marker icon issue
+// ✅ แก้ปัญหา icon marker ของ Leaflet
 const defaultIcon = L.icon({
   iconUrl: '/marker-icon.png',
   shadowUrl: '/marker-shadow.png',
@@ -19,42 +15,51 @@ const defaultIcon = L.icon({
 });
 L.Marker.prototype.options.icon = defaultIcon;
 
-import dynamic from 'next/dynamic';
-import { MapPinIcon, ExclamationTriangleIcon, CheckCircleIcon, ArrowPathIcon, XCircleIcon, XMarkIcon } from '@heroicons/react/24/solid';
+// ✅ Dynamic import (เพื่อใช้ Leaflet เฉพาะฝั่ง client)
+const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false });
+const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLayer), { ssr: false });
+const Marker = dynamic(() => import('react-leaflet').then(mod => mod.Marker), { ssr: false });
+const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), { ssr: false });
 
 interface BookingActionsProps {
   bookingId: number;
   status: string;
   isCurrent: boolean;
+  locationName: string; // ✅ เพิ่มชื่อสถานที่เพื่อใช้เรียก API
 }
 
-// ใช้ dynamic import เพราะ Leaflet ต้องรันบน client เท่านั้น
-const MapContainer = dynamic(
-  () => import('react-leaflet').then(mod => mod.MapContainer),
-  { ssr: false }
-);
-const TileLayer = dynamic(
-  () => import('react-leaflet').then(mod => mod.TileLayer),
-  { ssr: false }
-);
-const Marker = dynamic(
-  () => import('react-leaflet').then(mod => mod.Marker),
-  { ssr: false }
-);
-const Popup = dynamic(
-  () => import('react-leaflet').then(mod => mod.Popup),
-  { ssr: false }
-);
-
-export default function BookingActions({ bookingId, status, isCurrent }: BookingActionsProps) {
+export default function BookingActions({ bookingId, status, isCurrent, locationName }: BookingActionsProps) {
   const [modalState, setModalState] = useState<'closed' | 'confirm' | 'success' | 'error'>('closed');
   const [isCancelling, setIsCancelling] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [isMapOpen, setIsMapOpen] = useState(false); // ✅ state สำหรับ map modal
+  const [isMapOpen, setIsMapOpen] = useState(false);
 
-  // mock data พิกัด
-  const mockLatitude = 14.073;
-  const mockLongitude = 100.602;
+  // ✅ state เก็บค่าพิกัดจริงจาก backend
+  const [coords, setCoords] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // ✅ เมื่อเปิด Map ให้ดึงข้อมูลจาก API
+  useEffect(() => {
+    if (!isMapOpen) return;
+
+    const fetchLocation = async () => {
+      try {
+        setIsLoading(true);
+        const res = await fetch(`http://localhost:8081/location/${locationName}`);
+        if (!res.ok) throw new Error('ไม่สามารถดึงข้อมูลตำแหน่งได้');
+
+        const data = await res.json();
+        setCoords({ latitude: data.latitude, longitude: data.longitude });
+      } catch (err: any) {
+        console.error(err);
+        setErrorMessage('เกิดข้อผิดพลาดในการดึงข้อมูลพิกัด');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchLocation();
+  }, [isMapOpen, locationName]);
 
   const handleOpenConfirmModal = () => setModalState('confirm');
   const handleCloseModal = () => setModalState('closed');
@@ -82,8 +87,6 @@ export default function BookingActions({ bookingId, status, isCurrent }: Booking
         </button>
       </div>
 
-      
-
       {/* ✅ Modal Map */}
       {isMapOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -95,19 +98,36 @@ export default function BookingActions({ bookingId, status, isCurrent }: Booking
               ✕
             </button>
 
-            <MapContainer
-              center={[14.073, 100.602]}
-              zoom={16}
-              className="h-full w-full"
-            >
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
-              <Marker position={[14.073, 100.602]}>
-                <Popup>Room location</Popup>
-              </Marker>
-            </MapContainer>
+            {isLoading ? (
+              <div className="flex items-center justify-center h-full text-gray-600">กำลังโหลดแผนที่...</div>
+            ) : coords ? (
+              <MapContainer
+                center={[coords.latitude, coords.longitude]}
+                zoom={16}
+                className="h-full w-full"
+              >
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                <Marker
+                  position={[coords.latitude, coords.longitude]}
+                  icon={L.icon({
+                    iconUrl: '/icons/leaflet/marker-icon-red.png',
+                    shadowUrl: '/icons/leaflet/marker-shadow.png',
+                    iconSize: [30, 45],
+                    iconAnchor: [15, 45],
+                  })}
+                >
+                  <Popup>{locationName}</Popup>
+                </Marker>
+              </MapContainer>
+
+            ) : (
+              <div className="flex items-center justify-center h-full text-red-600">
+                {errorMessage || 'ไม่พบข้อมูลพิกัด'}
+              </div>
+            )}
           </div>
         </div>
       )}
