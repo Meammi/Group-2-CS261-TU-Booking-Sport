@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { MapPinIcon } from '@heroicons/react/24/solid';
+import { renderToString } from 'react-dom/server';
 
 // ✅ แก้ปัญหา icon marker ของ Leaflet
 const defaultIcon = L.icon({
@@ -14,6 +15,18 @@ const defaultIcon = L.icon({
   iconAnchor: [12, 41],
 });
 L.Marker.prototype.options.icon = defaultIcon;
+
+const heroIcon = L.divIcon({
+  // แปลง React Component (Heroicon) ให้เป็น HTML string
+  html: renderToString(
+    // คุณสามารถใช้ Tailwind CSS ตกแต่ง icon ที่นี่ได้เลย
+    <MapPinIcon className="h-10 w-10 text-red-600" /> // 👈 เปลี่ยนสีหรือขนาดตามต้องการ
+  ),
+  className: '', // 👈 ตั้งค่านี้เพื่อลบพื้นหลังสี่เหลี่ยมสีขาว
+  iconSize: [40, 40], // 👈 ขนาด (h-10 w-10 = 40px)
+  iconAnchor: [20, 40], // 👈 จุดปักหมุด (กึ่งกลางแนวนอน, ปลายล่างสุด)
+});
+
 
 // ✅ Dynamic import (เพื่อใช้ Leaflet เฉพาะฝั่ง client)
 const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false });
@@ -27,6 +40,8 @@ interface BookingActionsProps {
   isCurrent: boolean;
   locationName: string; // ✅ เพิ่มชื่อสถานที่เพื่อใช้เรียก API
 }
+
+
 
 export default function BookingActions({ bookingId, status, isCurrent, locationName }: BookingActionsProps) {
   const [modalState, setModalState] = useState<'closed' | 'confirm' | 'success' | 'error'>('closed');
@@ -112,12 +127,7 @@ export default function BookingActions({ bookingId, status, isCurrent, locationN
                 />
                 <Marker
                   position={[coords.latitude, coords.longitude]}
-                  icon={L.icon({
-                    iconUrl: '/icons/leaflet/marker-icon-red.png',
-                    shadowUrl: '/icons/leaflet/marker-shadow.png',
-                    iconSize: [30, 45],
-                    iconAnchor: [15, 45],
-                  })}
+                  icon={heroIcon} // 👈 ✅ ใช้ตัวแปรที่เราสร้างไว้
                 >
                   <Popup>{locationName}</Popup>
                 </Marker>
