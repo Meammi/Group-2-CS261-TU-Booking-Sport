@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import CourtCard from "@/components/CourtCard";
 import Link from "next/link";
 import ReservationHeader from "@/components/ReservationHeader";
+import AuthGuard from '@/components/AuthGuard';
 
 import { ArrowLeftIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
 
@@ -69,6 +70,7 @@ export default function ReservationDetailPage({ params }: { params: { type: stri
   }
 
   return (
+    <AuthGuard>
     <div className="bg-gray-50 min-h-screen">
       <div className="mx-auto max-w-md bg-gray-100 min-h-screen">
         
@@ -104,6 +106,7 @@ export default function ReservationDetailPage({ params }: { params: { type: stri
         </main>
       </div>
     </div>
+    </AuthGuard>
   );
 }
 

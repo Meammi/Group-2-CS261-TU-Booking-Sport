@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Header from "@/components/Header";
 import ReservationCard from "@/components/ReservationCard";
 import ReservationHeader from "@/components/ReservationHeader";
+import AuthGuard from '@/components/AuthGuard';
 import { ArrowPathIcon } from '@heroicons/react/24/solid';
 
 // 1. กำหนด "หน้าตา" ข้อมูลดิบที่ได้รับจาก Back-end
@@ -97,6 +98,7 @@ export default function ReservationPage() {
   }
 
   return (
+    <AuthGuard>
     <div className="bg-white min-h-screen">
       <div className="mx-auto max-w-md bg-gray-100 min-h-screen">
         <Header studentId="6709616376" />
@@ -117,6 +119,7 @@ export default function ReservationPage() {
         </main>
       </div>
     </div>
+    </AuthGuard>
   );
 }
 

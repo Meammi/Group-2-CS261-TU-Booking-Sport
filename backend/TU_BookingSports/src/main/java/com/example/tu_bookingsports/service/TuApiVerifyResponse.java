@@ -1,6 +1,6 @@
+//Group-2-CS261-TU-Booking-Sport/backend/TU_BookingSports/src/main/java/com/example/tu_bookingsports/service/TuApiVerifyResponse.java
 package com.example.tu_bookingsports.service;
 
-// Minimal fields required from TUAPI verify response
 public class TuApiVerifyResponse {
     private boolean status;
     private String message;

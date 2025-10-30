@@ -5,6 +5,7 @@ import SportCard from "@/components/SportCard";
 import Header from "@/components/Header";
 import AnnouncementCard from "@/components/AnnouncementCard"; 
 import CoverFlowCarousel from "@/components/Carousel"; 
+import AuthGuard from '@/components/AuthGuard';
 import { ArrowPathIcon } from '@heroicons/react/24/solid';
 
 // ... interface definitions ...
@@ -107,6 +108,7 @@ export default function HomePage() {
 
 
   return (
+    <AuthGuard>
     <div className="max-w-md mx-auto bg-gray-100 min-h-screen font-nunito">
       <Header studentId={userStudentId} />
       <main className="p-4">
@@ -152,6 +154,7 @@ export default function HomePage() {
         </section>
       </main>
     </div>
+    </AuthGuard>
   );
 }
 

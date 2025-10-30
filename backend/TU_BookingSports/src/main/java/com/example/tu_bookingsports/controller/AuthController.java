@@ -1,4 +1,4 @@
-//backend\TU_BookingSports\src\main\java\com\example\tu_bookingsports\controller\AuthController.java
+//Group-2-CS261-TU-Booking-Sport/backend/TU_BookingSports/src/main/java/com/example/tu_bookingsports/controller/AuthController.java
 package com.example.tu_bookingsports.controller;
 
 import com.example.tu_bookingsports.DTO.LoginRequest;
@@ -52,7 +52,7 @@ public class AuthController {
         response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
 
         // Return tokens in the body for SPA clients while also setting cookies.
-        return ResponseEntity.ok(tokens);
+        return ResponseEntity.ok(new SimpleMessageResponse("Login successful"));
     }
     @GetMapping("/me")
     public ResponseEntity<?> getMe(@CookieValue(value = "access_token", required = false) String token) {

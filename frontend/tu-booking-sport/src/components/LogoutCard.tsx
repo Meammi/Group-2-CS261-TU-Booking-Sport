@@ -2,14 +2,23 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import axios from "axios";
 
 export default function LogoutModal({ onClose }: { onClose: () => void }) {
   const router = useRouter();
 
-  const handleConfirm = () => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
-    router.push("/login");
+  const handleConfirm = async () => {
+    try {
+      await axios.post("http://localhost:8081/auth/logout", {}, {
+        withCredentials: true, // ✅ ส่ง cookie ไปด้วย
+      });
+
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("refresh_token");
+      router.push("/login");
+    } catch (err) {
+      console.error("Logout failed:", err);
+    }
   };
 
   return (
