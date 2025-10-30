@@ -23,6 +23,9 @@ public class Reservations {
     @Column(name = "user_id", nullable = false)
     private UUID user;
 
+    @Column(name = "slot_id", nullable = false)
+    private UUID slot;
+
     @Column(name = "start_time", nullable = false)
     private LocalDateTime startTime;
 
@@ -46,6 +49,7 @@ public class Reservations {
 
     @Column(name = "updated", nullable = false)
     private LocalDateTime updatedAt;
+
     //Constuctor
     public Reservations() {
         this.createdAt = LocalDateTime.now();
@@ -93,6 +97,13 @@ public class Reservations {
         this.user = user;
     }
 
+    public  UUID getSlotId() {
+        return slot;
+    }
+
+    public void setSlotId(UUID slot) {
+        this.slot = slot;
+    }
 
     public LocalDateTime getStartTime() {
         return startTime;
