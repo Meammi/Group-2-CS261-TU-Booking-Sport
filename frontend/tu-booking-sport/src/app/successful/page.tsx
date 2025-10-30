@@ -52,10 +52,10 @@ function SuccessfulContent() {
           {/* ปุ่ม Cancel กลางจอ */}
           <div className="mt-8 flex justify-center">
             <button
-              onClick={() => router.push("/rsvinterzone")}
-              className="bg-red-500 text-white px-6 py-2 rounded-md"
+              onClick={() => router.push('/homepage')}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md"
             >
-              Cancel
+              Back to Homepage
             </button>
           </div>
         </main>

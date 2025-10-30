@@ -1,10 +1,9 @@
-
 'use client' // 1. ทำให้หน้านี้เป็น Client Component ทั้งหมด
 
 import { useState, useEffect } from 'react' // 2. Import hooks ที่จำเป็น
 import Header from '@/components/Header'
 import CourtCard from '@/components/CourtCard'
-import ConfirmModal from '@/components/confirmcard'
+import ConfirmModal from '@/components/ConfirmCard'
 import Link from 'next/link'
 import ReservationHeader from '@/components/ReservationHeader'
 import { useRouter } from 'next/navigation'
@@ -31,6 +30,7 @@ export default function ReservationDetailPage({ params }: { params: { type: stri
   const [courts, setCourts] = useState<Court[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [errorCode, setErrorCode] = useState<number | null>(null)
 
   // State สำหรับ ConfirmModal
   const [confirmOpen, setConfirmOpen] = useState(false)
@@ -41,10 +41,12 @@ export default function ReservationDetailPage({ params }: { params: { type: stri
   // 5. ใช้ useEffect เพื่อดึงและคัดกรองข้อมูลที่ฝั่ง Client
   useEffect(() => {
     const fetchAndFilterCourts = async () => {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 10000)
       try {
-        const response = await fetch('/api/rooms')
+        const response = await fetch('http://localhost:8081/rooms', { signal: controller.signal })
         if (!response.ok) {
-          throw new Error(`Error fetching data: ${response.status}`)
+          throw new Error(`HTTP_${response.status}`)
         }
         const allCourts: Court[] = await response.json()
 
@@ -55,8 +57,19 @@ export default function ReservationDetailPage({ params }: { params: { type: stri
 
         setCourts(filtered) // อัปเดต State ด้วยข้อมูลที่คัดกรองแล้ว
       } catch (err: any) {
-        setError(err.message)
+        if (err?.name === 'AbortError') {
+          setError('Request timed out, please try again')
+        } else if (typeof err?.message === 'string' && err.message.startsWith('HTTP_')) {
+          const status = Number(err.message.replace('HTTP_', ''))
+          setErrorCode(status)
+          if (status === 404) setError('Data not found (404)')
+          else if (status >= 500) setError('Server error, please try later')
+          else setError(`Request failed (${status})`)
+        } else {
+          setError('Network or unknown error')
+        }
       } finally {
+        clearTimeout(timeoutId)
         setIsLoading(false)
       }
     }
@@ -86,7 +99,18 @@ export default function ReservationDetailPage({ params }: { params: { type: stri
   }
 
   if (error) {
-    return <div className="text-center py-10 text-red-500">Error: {error}</div>
+    return (
+      <div className="text-center py-10">
+        <p className="text-red-500">Error: {error}</p>
+        {errorCode && <p className="text-gray-500 mt-1">Code: {errorCode}</p>}
+        <button
+          onClick={() => { setError(null); setIsLoading(true); /* trigger re-fetch */ (async () => { const controller = new AbortController(); const timeoutId = setTimeout(() => controller.abort(), 10000); try { const res = await fetch('http://localhost:8081/rooms', { signal: controller.signal }); if (!res.ok) { setErrorCode(res.status); throw new Error(`HTTP_${res.status}`); } const allCourts = await res.json(); const filtered = (allCourts as Court[]).filter(c => c.type === type && c.loc_name === location); setCourts(filtered); } catch (err: any) { if (err?.name === 'AbortError') setError('Request timed out, please try again'); else if (typeof err?.message === 'string' && err.message.startsWith('HTTP_')) { const status = Number(err.message.replace('HTTP_', '')); setErrorCode(status); setError(`Request failed (${status})`); } else setError('Network or unknown error'); } finally { clearTimeout(timeoutId); setIsLoading(false); } })() }}
+          className="mt-4 inline-flex items-center gap-2 rounded-md bg-gray-800 px-4 py-2 text-white hover:bg-gray-700"
+        >
+          <ArrowPathIcon className="h-4 w-4" /> Retry
+        </button>
+      </div>
+    )
   }
 
   return (
@@ -159,4 +183,5 @@ export default function ReservationDetailPage({ params }: { params: { type: stri
     </div>
   )
 }
+
 

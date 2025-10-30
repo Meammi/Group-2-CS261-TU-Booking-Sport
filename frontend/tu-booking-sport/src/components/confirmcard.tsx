@@ -1,19 +1,19 @@
-"use client";
-import React from "react";
+'use client'
+import React from 'react'
 
 type Props = {
-  open: boolean;
-  spot: string;
-  date: string;   // รูปแบบแสดงผล เช่น 11/04/2025
-  time: string;
-  onClose: () => void;
-  onConfirm: () => void;
-};
+  open: boolean
+  spot: string
+  date: string   // display like 11/04/2025
+  time: string
+  onClose: () => void
+  onConfirm: () => void
+}
 
-export default function ConfirmModal({
+export default function ConfirmCard({
   open, spot, date, time, onClose, onConfirm,
 }: Props) {
-  if (!open) return null;
+  if (!open) return null
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -41,5 +41,6 @@ export default function ConfirmModal({
         </div>
       </div>
     </div>
-  );
+  )
 }
+
