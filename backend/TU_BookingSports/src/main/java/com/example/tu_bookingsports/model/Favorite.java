@@ -23,7 +23,7 @@ public class Favorite {
     @Column(name = "room_id", nullable = false)
     private UUID roomId;
 
-    @Column(name = "slot_id")
+    @Column(name = "slot_id", nullable = false)
     private UUID slotId;
 
     @Column(name = "created", nullable = false)
@@ -35,6 +35,19 @@ public class Favorite {
     public Favorite() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
+    }
+
+    public Favorite(UUID userId, UUID roomId, UUID slotId) {
+        this.userId = userId;
+        this.roomId = roomId;
+        this.slotId = slotId;
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
     }
 
 }

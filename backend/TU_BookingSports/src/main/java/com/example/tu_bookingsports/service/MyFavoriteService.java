@@ -2,19 +2,17 @@ package com.example.tu_bookingsports.service;
 
 import com.example.tu_bookingsports.DTO.FavoriteRequest;
 import com.example.tu_bookingsports.DTO.MyFavoriteResponse;
-import com.example.tu_bookingsports.model.*;
+import com.example.tu_bookingsports.model.Favorite;
+import com.example.tu_bookingsports.model.Rooms;
+import com.example.tu_bookingsports.model.Slot;
 import com.example.tu_bookingsports.repository.FavoriteRepository;
 import com.example.tu_bookingsports.repository.RoomRepository;
 import com.example.tu_bookingsports.repository.SlotRepository;
-import com.example.tu_bookingsports.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class MyFavoriteService {
@@ -22,86 +20,78 @@ public class MyFavoriteService {
     private final FavoriteRepository favRepository;
     private final SlotRepository slotRepository;
     private final RoomRepository roomRepository;
-    private final UserRepository userRepository;
 
     private final int DURATION = 1;
 
-    public MyFavoriteService(FavoriteRepository favRepository, SlotRepository slotRepository, RoomRepository roomRepository,UserRepository userRepository) {
+    public MyFavoriteService(FavoriteRepository favRepository, SlotRepository slotRepository, RoomRepository roomRepository) {
         this.favRepository = favRepository;
         this.slotRepository = slotRepository;
         this.roomRepository = roomRepository;
-        this.userRepository = userRepository;
     }
 
-    public List<MyFavoriteResponse> getCurrentFavorite(UUID userId) {
-        List<Favorite> myFav = favRepository.findByUserId(userId);
-        LocalDateTime now = LocalDateTime.now();
+    public MyFavoriteResponse createFavorite(FavoriteRequest req,UUID loggedInUserId) {
+        UUID roomId = req.getRoomId();
+        UUID slotId = req.getSlotId();
 
-        System.out.println(myFav);
-        return myFav.stream()
-                .map(b -> {
-                    System.out.println("mapping for real "+b.getSlotId()+b.getRoomId());
-                    Slot slot = slotRepository.findById(b.getSlotId()).orElse(null);
-                    Rooms room = roomRepository.findById(b.getRoomId()).orElse(null);
-                    if (slot == null || room == null) return null;
+        // ตรวจสอบว่ามีการบันทึกที่ชอบนี้อยู่แล้วหรือไม่
+        Optional<Favorite> existing = favRepository.findByUserIdAndSlotIdAndRoomId(loggedInUserId, slotId, roomId);
+        if (existing.isPresent()) {
+            // ถ้ามีอยู่แล้ว ก็ส่งกลับ response เดิมได้เลย
+            return convertToResponse(existing.get());
+        }
 
-                    return new MyFavoriteResponse(
-                            b.getFavoriteId(),
-                            b.getUserId(),
-                            b.getRoomId(),
-                            b.getSlotId(),
-                            room.getName(),
-                            room.getLoc_name(),
-                            slot.getSlotTime(),
-                            slot.getSlotTime().plusHours(DURATION)
-                    );
-                })
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+        Favorite favorite = new Favorite(loggedInUserId, roomId, slotId);
+        Favorite saved = favRepository.save(favorite);
+        return convertToResponse(saved);
+    }
+
+    public List<MyFavoriteResponse> getFavoritesByUser(UUID userId) {
+        List<Favorite> favorites = favRepository.findByUserId(userId);
+        return favorites.stream().map(this::convertToResponse).toList();
     }
 
     @Transactional
-    public boolean deleteFavorite(UUID favoriteId) {
-        Optional<Favorite> optionalReservation = favRepository.findById(favoriteId);
+    public boolean deleteFavorite(UUID favoriteId, UUID loggedInUserId) {
 
-        if (optionalReservation.isPresent()) {
-            Favorite fav = optionalReservation.get();
+        Optional<Favorite> favoriteOpt = favRepository.findById(favoriteId);
 
-            favRepository.delete(fav);
-            return true;
+        if (favoriteOpt.isEmpty()) {
+            return false; // ไม่เจอ
         }
-        return false;
+
+        Favorite favorite = favoriteOpt.get();
+
+        //ตรวจสอบความเป็นเจ้าของ
+        if (!favorite.getUserId().equals(loggedInUserId)) {
+            return false; // เจอแต่ไม่ใช่เจ้าของ
+        }
+
+        // ถ้าเจอ และ เป็นเจ้าของ
+        favRepository.delete(favorite);
+        return true;
     }
 
-    public Favorite createFavorite(FavoriteRequest req) {
-        UUID userId = req.getUserId();
-        UUID slotId = req.getSlotId();
-        UUID roomId = req.getRoomId();
+    private MyFavoriteResponse convertToResponse(Favorite fav) {
+        // ดึงข้อมูล Room และ Slot
+        Rooms room = roomRepository.findById(fav.getRoomId())
+                .orElseThrow(() -> new IllegalArgumentException("Room not found"));
+        Slot slot = slotRepository.findById(fav.getSlotId())
+                .orElseThrow(() -> new IllegalArgumentException("Slot not found"));
 
-        User user = userRepository.findById(userId).orElse(null);
-        Slot slot = slotRepository.findById(slotId).orElse(null);
-        Rooms room = roomRepository.findById(roomId).orElse(null);
-        if (user == null) {
-            return null;
-        }
-        if (slot == null) {
-            return null;
-        }
-        if (room == null) {
-            return null;
-        }
+        // ดึงข้อมูลจาก Room และ Slot
+        String name = room.getName();
+        String locationName = room.getLoc_name();
+        LocalTime startTime =slot.getSlotTime();
+        LocalTime endTime = startTime.plusHours(DURATION);
 
-        Optional<Favorite> favoriteOptional = Optional.ofNullable(favRepository.findByUserIdAndSlotIdAndRoomId(userId, slotId, roomId));
-        if (favoriteOptional.isPresent()) {
-            return favRepository.findByUserIdAndSlotIdAndRoomId(userId, slotId, roomId);
-        }
-
-        // Create favorite
-        Favorite newFavorite = new Favorite();
-        newFavorite.setUserId(userId);
-        newFavorite.setRoomId(roomId);
-        newFavorite.setSlotId(slotId);
-
-        return favRepository.save(newFavorite);
+        return new MyFavoriteResponse(
+                fav.getFavoriteId(),
+                fav.getRoomId(),
+                fav.getSlotId(),
+                name,
+                locationName,
+                startTime,
+                endTime
+        );
     }
 }
