@@ -46,11 +46,15 @@ public class Reservations {
 
     @Column(name = "updated", nullable = false)
     private LocalDateTime updatedAt;
+
+    @Column(name = "reminder_sent", nullable = false)
+    private boolean reminderSent = false;
     //Constuctor
     public Reservations() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
         this.status = ReservationStatus.PENDING;
+        this.reminderSent = false;
     }
 
     public Reservations(UUID room, UUID user, LocalDateTime startTime, LocalDateTime endTime, ReservationStatus status) {
@@ -61,6 +65,7 @@ public class Reservations {
         this.status = status != null ? status : ReservationStatus.PENDING;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
+        this.reminderSent = false;
     }
 
     @PreUpdate
@@ -132,6 +137,14 @@ public class Reservations {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public boolean isReminderSent() {
+        return reminderSent;
+    }
+
+    public void setReminderSent(boolean reminderSent) {
+        this.reminderSent = reminderSent;
     }
 
 }
