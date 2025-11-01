@@ -1,7 +1,6 @@
 'use client';
 import { useState } from 'react';
-
-// NOTE: The BookingModal component has been moved inside this file to resolve the import error.
+import ConfirmModal from '@/components/confirmcard';
 
 interface Court {
   name: string;
@@ -97,34 +96,15 @@ export default function CourtCard({ court, selectedDate = today }: CourtCardProp
 
   return (
     <>
-      {/* Modal JSX is now included directly here */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm text-center">
-            <h3 className="text-xl font-bold text-tu-navy mb-2">Confirm Your Booking</h3>
-            <p className="text-gray-600 mb-6">
-              Are you sure you want to book <br />
-              <span className="font-bold">{court.name}</span> at <span className="font-bold">{selectedSlot}</span>?
-            </p>
-            <div className="flex justify-center gap-4">
-              <button
-                onClick={() => setIsModalOpen(false)}
-                disabled={isLoading}
-                className="px-6 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold transition disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleConfirmBooking}
-                disabled={isLoading}
-                className="px-6 py-2 rounded-lg bg-tu-navy hover:bg-tu-navy/90 text-white font-semibold transition disabled:opacity-50"
-              >
-                {isLoading ? 'Booking...' : 'Confirm'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmModal
+        open={isModalOpen}
+        spot={court.name}
+        date={selectedDate}
+        time={selectedSlot || ''}
+        onClose={() => setIsModalOpen(false)}
+        // Let ConfirmModal handle the API call itself
+        roomId={court.room_id}
+      />
 
       <div className="m-4 rounded-xl bg-white p-4 shadow-lg border-l-4 border-tu-navy transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
         <div className="flex justify-between items-start mb-4">
@@ -132,7 +112,7 @@ export default function CourtCard({ court, selectedDate = today }: CourtCardProp
             <h3 className="text-xl font-bold text-tu-navy">{court.name}</h3>
             <p className="text-sm text-gray-500">Capacity: {court.capacity} people</p>
           </div>
-          <span className="text-lg font-semibold text-gray-800">{court.price > 0 ? `${court.price}฿` : 'Free'}</span>
+          <span className="text-lg font-semibold text-gray-800">{court.price > 0 ? `${court.price}à¸¿` : 'Free'}</span>
         </div>
 
         <div className="border-t pt-4">
@@ -164,4 +144,3 @@ export default function CourtCard({ court, selectedDate = today }: CourtCardProp
     </>
   );
 }
-
