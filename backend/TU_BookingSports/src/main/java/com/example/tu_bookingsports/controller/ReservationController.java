@@ -22,6 +22,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -44,13 +46,21 @@ public class ReservationController {
             try {
                 System.out.println("reservation controller is creating reservation");
                 Reservations newReservation = reservationService.createReservation(request);
-                return ResponseEntity.status(HttpStatus.CREATED).body(newReservation);
+                Map<String, Object> body = new HashMap<>();
+                body.put("message", "Reservation created successfully");
+                body.put("reservation", newReservation);
+
+                return ResponseEntity.status(HttpStatus.CREATED).body(body);
             } catch (RuntimeException e) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+                Map<String, Object> errorBody = new HashMap<>();
+                errorBody.put("message", e.getMessage());
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorBody);
             }
         }
 
-        return ResponseEntity.ok("Invalid Arguments: Please send UserId, SlotId");
+        Map<String, Object> invalidBody = new HashMap<>();
+        invalidBody.put("message", "Invalid Arguments: Please send UserId, SlotId");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(invalidBody);
     }
 
 }
