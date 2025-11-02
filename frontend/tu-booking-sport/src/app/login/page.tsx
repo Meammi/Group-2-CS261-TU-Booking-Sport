@@ -6,8 +6,8 @@ import React, { useState, useRef } from "react";
 import { useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import axios from "axios";
 import BackgroundLayout from "@/components/BGlayout";
+import axios from "@/lib/axios";
 
 export default function Home() {
   const router = useRouter();
@@ -27,7 +27,7 @@ export default function Home() {
 
     try {
       const response = await axios.post(
-        "http://localhost:8081/auth/login",
+        "/auth/login",
         {
           username: studentId,
           password: password,
@@ -36,21 +36,11 @@ export default function Home() {
           headers: {
             "Content-Type": "application/json",
           },
-          withCredentials: true, // ✅ ถ้า backend ส่ง cookies (optional)
         }
       );
 
-      // ✅ ตรวจเช็ค response ตามที่ API ระบุ
-      if (response.data?.access_token) {
-        // เก็บ token ไว้ใน localStorage
-        localStorage.setItem("access_token", response.data.access_token);
-        localStorage.setItem("refresh_token", response.data.refresh_token);
-
-        console.log("Login successful:", response.data.message);
-        router.push("/homepage");
-      } else {
-        setError("Unexpected response from server");
-      }
+      console.log("Login successful");
+      router.push("/homepage");
     } catch (error: any) {
       console.error("Login failed:", error);
 
@@ -80,11 +70,17 @@ export default function Home() {
     }
   }
   useEffect(() => {
-  const token = localStorage.getItem("access_token");
-  if (token) {
-    router.push("/homepage"); // ✅ redirect ถ้า login แล้ว
+  async function checkAuth() {
+    try {
+      await axios.get("/auth/me"); // ✅ will include cookie automatically
+      router.push("/homepage"); // logged in
+    } catch {
+      // not logged in or cookie expired
+    }
   }
-  }, []);
+  checkAuth();
+}, []);
+
 
   return (
     <BackgroundLayout>

@@ -1,7 +1,6 @@
 'use client';
-import { useState } from 'react';
-
-// NOTE: The BookingModal component has been moved inside this file to resolve the import error.
+import { use, useState } from 'react';
+import axios from "@/lib/axios";
 
 interface Court {
   name: string;
@@ -19,10 +18,10 @@ interface CourtCardProps {
 }
 
 interface BookingResponse {
-    reservation_id: string;
-    room_name: string;
-    total_price: number;
-    status: "PENDING" | "CONFIRMED" | "CANCELLED";
+  reservation_id: string;
+  room_name: string;
+  total_price: number;
+  status: "PENDING" | "CONFIRMED" | "CANCELLED";
 }
 
 const getStatusClasses = (status: string) => {
@@ -43,8 +42,11 @@ const today = new Date().toISOString().split('T')[0];
 export default function CourtCard({ court, selectedDate = today }: CourtCardProps) {
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [bookingResult, setBookingResult] = useState<{type: 'success' | 'error', message: string} | null>(null);
+  const [bookingResult, setBookingResult] = useState<{ type: 'success' | 'error', message: string } | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [hoveredSlot, setHoveredSlot] = useState<string | null>(null);
+  const [starredSlots, setStarredSlots] = useState<string[]>([]);
+  const [favoriteMap, setFavoriteMap] = useState<Record<string, string>>({}); // time -> favoriteId
 
   const timeSlots = Object.entries(court.slot_time);
 
@@ -64,40 +66,78 @@ export default function CourtCard({ court, selectedDate = today }: CourtCardProp
     const endTime = new Date(startTime.getTime() + 60 * 60 * 1000);
 
     const payload = {
-        user_id: "6709616376",
-        room_id: court.room_id,
-        start_time: startTime.toISOString(),
-        end_time: endTime.toISOString(),
-        num_guests: court.capacity,
-        total_price: court.price,
+      user_id: "6709616376",
+      room_id: court.room_id,
+      start_time: startTime.toISOString(),
+      end_time: endTime.toISOString(),
+      num_guests: court.capacity,
+      total_price: court.price,
     };
 
     try {
-        const response = await fetch('/api/reservation', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
+      const response = await fetch('/api/reservation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || 'Booking failed. Please try again.');
-        }
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Booking failed. Please try again.');
+      }
 
-        const result: BookingResponse = await response.json();
-        setBookingResult({ type: 'success', message: `Successfully booked! ID: ${result.reservation_id}` });
+      const result: BookingResponse = await response.json();
+      setBookingResult({ type: 'success', message: `Successfully booked! ID: ${result.reservation_id}` });
 
     } catch (error: any) {
-        setBookingResult({ type: 'error', message: error.message });
+      setBookingResult({ type: 'error', message: error.message });
     } finally {
-        setIsLoading(false);
-        setIsModalOpen(false);
+      setIsLoading(false);
+      setIsModalOpen(false);
+    }
+  };
+
+  const handleStarClick = async (time: string, room_id: string) => {
+    const slotKey = `${room_id}-${time}`;
+    const isStarred = starredSlots.includes(slotKey);
+
+    if (!isStarred) {
+      // Add favorite
+      try {
+        const response = await axios.post("/favorite/create", {
+          //mock รอ backend
+          userId: "6709616376",
+          roomId: room_id,
+          slotTime: time,
+        });
+        const favoriteId = response.data.favoriteId;
+        setStarredSlots((prev) => [...prev, time]);
+        setFavoriteMap((prev) => ({ ...prev, [time]: favoriteId }));
+        console.log("⭐ Added:", response.data);
+      } catch (err: any) {
+        console.error("Error adding favorite:", err.response?.data || err.message);
+      }
+    } else {
+      // Remove favorite
+      const favoriteId = favoriteMap[time];
+      try {
+        await axios.post(`/delete/${favoriteId}`, { time });
+        setStarredSlots((prev) => prev.filter((t) => t !== time));
+        setFavoriteMap((prev) => {
+          const updated = { ...prev };
+          delete updated[time];
+          return updated;
+        });
+        console.log("☆ Removed:", time);
+      } catch (err) {
+        console.error("Error removing favorite:", err);
+      }
     }
   };
 
   return (
     <>
-      {/* Modal JSX is now included directly here */}
+      {/* Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm text-center">
@@ -126,6 +166,7 @@ export default function CourtCard({ court, selectedDate = today }: CourtCardProp
         </div>
       )}
 
+      {/* Card */}
       <div className="m-4 rounded-xl bg-white p-4 shadow-lg border-l-4 border-tu-navy transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
         <div className="flex justify-between items-start mb-4">
           <div>
@@ -139,16 +180,34 @@ export default function CourtCard({ court, selectedDate = today }: CourtCardProp
           <p className="text-sm font-semibold mb-3 text-gray-700">Available Times:</p>
           {timeSlots.length > 0 ? (
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-              {timeSlots.map(([time, status]) => (
-                <button
-                  key={time}
-                  disabled={status !== 'AVAILABLE'}
-                  onClick={() => handleSlotClick(time)}
-                  className={`rounded-lg p-2 text-sm font-mono font-semibold transition-all duration-200 ${getStatusClasses(status)}`}
-                >
-                  {time.substring(0, 5)}
-                </button>
-              ))}
+              {timeSlots.map(([time, status]) => {
+                const isStarred = starredSlots.includes(time);
+                const isHovered = hoveredSlot === time;
+
+                return (
+                  <button
+                    key={time}
+                    disabled={status !== 'AVAILABLE'}
+                    onClick={() => handleSlotClick(time)}
+                    onMouseEnter={() => setHoveredSlot(time)}
+                    onMouseLeave={() => setHoveredSlot(null)}
+                    className={`relative rounded-lg p-2 text-sm font-mono font-semibold transition-all duration-200 ${getStatusClasses(status)}`}
+                  >
+                    {time.substring(0, 5)}
+                    <img
+                      src={isStarred ? "/images/star-open.png" : "/images/star-close.png"}
+                      alt="star"
+                      onClick={(e) => {
+                      e.stopPropagation();
+                      handleStarClick(time, court.room_id);
+                    }}
+                      className={`absolute top-1 right-1 w-4 h-4 cursor-pointer transition-transform duration-200 ${
+                        isHovered ? "scale-110" : "scale-100"
+                      }`}
+                    />
+                  </button>
+                );
+              })}
             </div>
           ) : (
             <p className="text-sm text-gray-500 text-center py-4">No time slots available for this day.</p>
@@ -156,7 +215,13 @@ export default function CourtCard({ court, selectedDate = today }: CourtCardProp
         </div>
 
         {bookingResult && (
-          <div className={`mt-4 p-2 rounded-lg text-center text-sm font-semibold ${bookingResult.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+          <div
+            className={`mt-4 p-2 rounded-lg text-center text-sm font-semibold ${
+              bookingResult.type === 'success'
+                ? 'bg-green-100 text-green-800'
+                : 'bg-red-100 text-red-800'
+            }`}
+          >
             {bookingResult.message}
           </div>
         )}
@@ -164,4 +229,3 @@ export default function CourtCard({ court, selectedDate = today }: CourtCardProp
     </>
   );
 }
-

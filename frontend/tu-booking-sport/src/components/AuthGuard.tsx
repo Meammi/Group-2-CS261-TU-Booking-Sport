@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import axios from "axios";
+import axios from "@/lib/axios";
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -11,7 +11,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     axios
-      .get("http://localhost:8081/auth/me", {
+      .get("/auth/me", {
         withCredentials: true, // ✅ ส่ง cookie ไปด้วย
       })
       .then((res) => {
