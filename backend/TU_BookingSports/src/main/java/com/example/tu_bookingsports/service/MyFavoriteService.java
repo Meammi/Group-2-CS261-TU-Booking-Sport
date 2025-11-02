@@ -79,6 +79,7 @@ public class MyFavoriteService {
                 .orElseThrow(() -> new IllegalArgumentException("Slot not found"));
 
         // ดึงข้อมูลจาก Room และ Slot
+        String type = room.getType();
         String name = room.getName();
         String locationName = room.getLoc_name();
         LocalTime startTime =slot.getSlotTime();
@@ -88,6 +89,7 @@ public class MyFavoriteService {
                 fav.getFavoriteId(),
                 fav.getRoomId(),
                 fav.getSlotId(),
+                type,
                 name,
                 locationName,
                 startTime,
