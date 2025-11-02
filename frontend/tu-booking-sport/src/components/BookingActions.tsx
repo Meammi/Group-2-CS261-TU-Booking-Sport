@@ -44,6 +44,8 @@ interface BookingActionsProps {
   locationName: string;
 }
 
+
+
 export default function BookingActions({ bookingId, status, isCurrent, locationName }: BookingActionsProps) {
   const [modalState, setModalState] = useState<'closed' | 'confirm' | 'success' | 'error'>('closed');
   const [errorMessage, setErrorMessage] = useState('');
