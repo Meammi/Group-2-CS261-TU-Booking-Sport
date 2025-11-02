@@ -4,10 +4,10 @@ import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-import { MapPinIcon, PaperAirplaneIcon, CursorArrowRaysIcon } from '@heroicons/react/24/solid';
+import { MapPinIcon, ArrowRightIcon, TagIcon } from '@heroicons/react/24/solid';
 import { renderToString } from 'react-dom/server';
 
-// ✅ Default marker icon
+// ✅ แก้ปัญหา icon marker ของ Leaflet
 const defaultIcon = L.icon({
   iconUrl: '/marker-icon.png',
   shadowUrl: '/marker-shadow.png',
@@ -23,7 +23,14 @@ const heroIcon = L.divIcon({
   iconAnchor: [20, 40],
 });
 
-// ✅ dynamic import for client only
+const userIcon = L.divIcon({
+  html: renderToString(<TagIcon className="h-8 w-8 text-blue-600" />),
+  className: '',
+  iconSize: [32, 32],
+  iconAnchor: [16, 32],
+});
+
+// ✅ Dynamic import (ใช้เฉพาะ client)
 const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false });
 const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLayer), { ssr: false });
 const Marker = dynamic(() => import('react-leaflet').then(mod => mod.Marker), { ssr: false });
@@ -38,56 +45,82 @@ interface BookingActionsProps {
 }
 
 export default function BookingActions({ bookingId, status, isCurrent, locationName }: BookingActionsProps) {
-  const [isMapOpen, setIsMapOpen] = useState(false);
-  const [coords, setCoords] = useState<{ latitude: number; longitude: number } | null>(null);
-  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
-  const [route, setRoute] = useState<[number, number][] | null>(null); // ✅ เส้นทางที่ได้จาก API
-  const [isLoading, setIsLoading] = useState(false);
+  const [modalState, setModalState] = useState<'closed' | 'confirm' | 'success' | 'error'>('closed');
   const [errorMessage, setErrorMessage] = useState('');
+  const [isMapOpen, setIsMapOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const OPENROUTE_API_KEY = 'YOUR_API_KEY_HERE'; // 👈 ใส่ key ที่สมัครมาจาก openrouteservice
+  // ✅ พิกัดปลายทาง (จาก backend)
+  const [coords, setCoords] = useState<{ latitude: number; longitude: number } | null>(null);
 
-  // ✅ ดึงพิกัดปลายทางจาก backend
+  // ✅ พิกัดผู้ใช้
+  const [userPos, setUserPos] = useState<{ latitude: number; longitude: number } | null>(null);
+
+  // ✅ เส้นทาง (polyline)
+  const [route, setRoute] = useState<[number, number][]>([]);
+
+  // ✅ ดึงพิกัดสถานที่จาก API เมื่อเปิดแผนที่
   useEffect(() => {
     if (!isMapOpen) return;
+
     const fetchLocation = async () => {
       try {
         setIsLoading(true);
         const res = await fetch(`http://localhost:8081/location/${locationName}`);
         if (!res.ok) throw new Error('ไม่สามารถดึงข้อมูลตำแหน่งได้');
+
         const data = await res.json();
         setCoords({ latitude: data.latitude, longitude: data.longitude });
       } catch (err: any) {
+        console.error(err);
         setErrorMessage('เกิดข้อผิดพลาดในการดึงข้อมูลพิกัด');
       } finally {
         setIsLoading(false);
       }
     };
+
     fetchLocation();
   }, [isMapOpen, locationName]);
 
-  // ✅ Get User Location
-  const handleGetMyLocation = () => {
+  // ✅ Get user location
+  const handleGetLocation = () => {
     if (!navigator.geolocation) {
       alert('เบราว์เซอร์นี้ไม่รองรับการระบุตำแหน่ง');
       return;
     }
+
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        const { latitude, longitude } = pos.coords;
-        setUserLocation({ latitude, longitude });
+        setUserPos({
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude,
+        });
       },
-      () => alert('ไม่สามารถระบุตำแหน่งของคุณได้')
+      (err) => {
+        console.error(err);
+        alert('ไม่สามารถเข้าถึงตำแหน่งได้ กรุณาอนุญาต Location');
+      }
     );
   };
 
- 
+  // ✅ วาดเส้นทาง (line จาก user → destination)
+  const handleNavigate = () => {
+    if (!userPos || !coords) {
+      alert('กรุณากด "Get Location" ก่อน');
+      return;
+    }
+    setRoute([
+      [userPos.latitude, userPos.longitude],
+      [coords.latitude, coords.longitude],
+    ]);
+  };
 
   return (
     <>
       {/* ปุ่ม Cancel + MAP */}
       <div className="mt-6 grid grid-cols-2 gap-4">
         <button
+          onClick={() => setModalState('confirm')}
           className="rounded-md bg-red-600 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:bg-red-300 disabled:cursor-not-allowed"
           disabled={!isCurrent}
         >
@@ -106,7 +139,7 @@ export default function BookingActions({ bookingId, status, isCurrent, locationN
       {/* ✅ Modal Map */}
       {isMapOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="relative w-[90%] max-w-md h-[80vh] bg-white rounded-2xl overflow-hidden shadow-lg">
+          <div className="relative w-[95%] max-w-lg h-[85vh] bg-white rounded-2xl overflow-hidden shadow-lg">
             <button
               onClick={() => setIsMapOpen(false)}
               className="absolute top-3 right-3 z-[1000] bg-gray-800 text-white rounded-full p-2 hover:bg-gray-700 transition"
@@ -118,54 +151,45 @@ export default function BookingActions({ bookingId, status, isCurrent, locationN
               <div className="flex items-center justify-center h-full text-gray-600">กำลังโหลดแผนที่...</div>
             ) : coords ? (
               <div className="relative h-full w-full">
-                <MapContainer
-                  center={
-                    userLocation
-                      ? [userLocation.latitude, userLocation.longitude]
-                      : [coords.latitude, coords.longitude]
-                  }
-                  zoom={15}
-                  className="h-full w-full"
-                >
+                <MapContainer center={[coords.latitude, coords.longitude]} zoom={16} className="h-full w-full z-0">
                   <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   />
 
-                  {/* Marker ปลายทาง */}
+                  {/* จุดหมาย */}
                   <Marker position={[coords.latitude, coords.longitude]} icon={heroIcon}>
                     <Popup>{locationName}</Popup>
                   </Marker>
 
-                  {/* Marker ตำแหน่งผู้ใช้ */}
-                  {userLocation && (
-                    <Marker
-                      position={[userLocation.latitude, userLocation.longitude]}
-                      icon={L.divIcon({
-                        html: renderToString(<MapPinIcon className="h-8 w-8 text-blue-600" />),
-                        className: '',
-                        iconSize: [32, 32],
-                        iconAnchor: [16, 32],
-                      })}
-                    >
-                      <Popup>ตำแหน่งของฉัน</Popup>
+                  {/* จุดผู้ใช้ */}
+                  {userPos && (
+                    <Marker position={[userPos.latitude, userPos.longitude]} icon={userIcon}>
+                      <Popup>คุณอยู่ที่นี่</Popup>
                     </Marker>
                   )}
 
-                  {/* เส้นนำทาง */}
-                  {route && <Polyline positions={route} color="blue" weight={4} opacity={0.7} />}
+                  {/* เส้นทาง */}
+                  {route.length > 0 && <Polyline positions={route} color="blue" />}
                 </MapContainer>
 
-                {/* ปุ่มควบคุม */}
-                <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-3 z-[1000]">
+                {/* ปุ่มควบคุมด้านบน */}
+                <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-3 z-[999]">
                   <button
-                    onClick={handleGetMyLocation}
-                    className="flex items-center gap-1 bg-blue-600 text-white px-3 py-2 rounded-lg shadow hover:bg-blue-700"
+                    onClick={handleGetLocation}
+                    className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition"
                   >
-                    <CursorArrowRaysIcon className="h-4 w-4" />
-                    <span>Get Location</span>
+                    <TagIcon className="w-4 h-4" />
+                    Get Location
                   </button>
 
+                  <button
+                    onClick={handleNavigate}
+                    className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg shadow hover:bg-green-700 transition"
+                  >
+                    <ArrowRightIcon className="w-4 h-4" />
+                    Navigate
+                  </button>
                 </div>
               </div>
             ) : (
