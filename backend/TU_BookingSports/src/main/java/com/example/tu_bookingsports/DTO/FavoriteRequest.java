@@ -7,7 +7,7 @@ import java.util.UUID;
 
 @Data
 public class FavoriteRequest {
-    private UUID userId;
+    // private UUID userId;
     private UUID roomId;
     private UUID slotId;
 }
