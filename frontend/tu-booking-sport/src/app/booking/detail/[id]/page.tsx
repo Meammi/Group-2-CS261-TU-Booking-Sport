@@ -27,16 +27,9 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
   useEffect(() => {
     const fetchAndFindBooking = async () => {
       try {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
-        if (!token) {
-          throw new Error('Please login to view your bookings.');
-        }
 
         // 1) Get current user info to resolve userId
         const meRes = await fetch('http://localhost:8081/auth/me', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
           credentials: 'include',
         });
         if (!meRes.ok) {
@@ -47,9 +40,6 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
 
         // 2) Fetch bookings for this user
         const response = await fetch(`http://localhost:8081/MyBookings/${userId}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
           credentials: 'include',
         });
 
