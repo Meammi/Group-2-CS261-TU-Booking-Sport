@@ -24,13 +24,12 @@ interface Sport {
 }
 
 interface Favorite {
-  id: number;
+  roomId: string;
+  slotId: string;
+  type: string;
   name: string;
-  imageUrl: string;
-  title: string;
-  location: string;
-  date: string;
-  time: string;
+  locationName: string;
+  startTime: string;
 }
 
 const getImageForSport = (type: string, locationName: string): string => {
@@ -61,79 +60,58 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // ✅ ฟังก์ชันโหลดข้อมูล Favorites
   async function fetchFavorites() {
     try {
-      let favData: any[] = [];
+      const favResp = await axios.get("/favorite/me", { withCredentials: true });
+      const favData = favResp.data;
 
-      // ดึงข้อมูล favorites ของ user จาก backend
-      try {
-        const favResp = await axios.get("/favorite/me", {
-          withCredentials: true, // ต้องมี cookie ถึงจะเข้าถึง user ได้
-        });
-        favData = favResp.data;
-      } catch (err: any) {
-        console.error('Error fetching /favorite/me:', err.response?.data || err.message);
-      }
-
-      // ✅ ตรวจสอบ slot แต่ละ favorite (ย้ายเข้ามาในนี้)
       const validatedFavorites: Favorite[] = [];
 
       await Promise.all(
         favData.map(async (fav: any) => {
           try {
             const roomId = fav.roomId || fav.room_id;
-            const slotIdFromFav = fav.slotId || fav.slot_id;
-            const startTime = fav.startTime || fav.start_time || fav.time || '';
-            const normalizedTime = startTime.length >= 5 ? startTime.substring(0, 5) : startTime;
+            const slotId = fav.slotId || fav.slot_id;
+            const type = fav.type;
+            const name = fav.name;
+            const locationName = fav.locationName || fav.loc_name;
+            const startTime = fav.startTime || fav.start_time || '';
 
-            if (!roomId || !normalizedTime) return;
-
-            const lookupResp = await axios.get(`http://localhost:8081/api/slot/lookup`, {
-              params: { roomId, time: normalizedTime },
-              withCredentials: true,
-            });
-
-            const slotIdFromLookup = lookupResp.data.slotId || lookupResp.data.slot_id;
-
-            if (slotIdFromLookup === slotIdFromFav) {
+            if (roomId && slotId) {
               validatedFavorites.push({
-                id: fav.favoriteId || fav.favorite_id,
-                name: fav.type || fav.sport_type || fav.name || 'Sport',
-                imageUrl: fav.image_url || '/images/placeholder.jpg',
-                title: fav.room_name || fav.roomName || 'Room',
-                location: fav.locationName || fav.location || 'Location',
-                date: startTime.includes('T') ? startTime.split('T')[0] : (fav.date || ''),
-                time: normalizedTime,
+                roomId,
+                slotId,
+                type,
+                name,
+                locationName,
+                startTime,
               });
             }
           } catch (err) {
-            console.error('Error validating favorite:', err, fav);
+            console.error("Error validating favorite:", err);
           }
         })
       );
 
-      return validatedFavorites; // ✅ คืนค่า favorites ที่ตรวจสอบแล้ว
-    } catch (err) {
-      console.error('Unexpected error in fetchFavorites:', err);
-      return [];
+      setFavorites(validatedFavorites);
+    } catch (err: any) {
+      console.error("Error fetching favorites:", err.response?.data || err.message);
+      setFavorites([]);
     }
   }
 
-  // ✅ โหลดข้อมูลทั้งหมด
   useEffect(() => {
     const fetchAll = async () => {
       setIsLoading(true);
       setError(null);
       try {
-        // โหลด sports
-        const sportsResp = await fetch('http://localhost:8081/homepage');
-        if (!sportsResp.ok) throw new Error('Failed to fetch sports data');
+        const sportsResp = await fetch("http://localhost:8081/homepage");
+        if (!sportsResp.ok) throw new Error("Failed to fetch sports data");
         const backendData: BackendSport[] = await sportsResp.json();
 
         const sortedData = backendData.sort((a, b) => {
-          const aBad = a.type.toLowerCase().includes('badminton');
-          const bBad = b.type.toLowerCase().includes('badminton');
+          const aBad = a.type.toLowerCase().includes("badminton");
+          const bBad = b.type.toLowerCase().includes("badminton");
           if (aBad && !bBad) return -1;
           if (!aBad && bBad) return 1;
           return 0;
@@ -146,12 +124,12 @@ export default function HomePage() {
           imageUrl: getImageForSport(item.type, item.locationName),
           href: `/reservations/${encodeURIComponent(item.type)}/${encodeURIComponent(item.locationName)}`,
         }));
+
         setSports(transformedData);
 
-        // โหลด favorites
         await fetchFavorites();
       } catch (err: any) {
-        setError(err.message || 'Unexpected error');
+        setError(err.message || "Unexpected error");
       } finally {
         setIsLoading(false);
       }
@@ -160,7 +138,6 @@ export default function HomePage() {
     fetchAll();
   }, []);
 
-  // ✅ Loading / Error state
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
@@ -178,7 +155,6 @@ export default function HomePage() {
     );
   }
 
-  // ✅ UI หลัก
   return (
     <AuthGuard>
       <div className="max-w-md mx-auto bg-gray-100 min-h-screen font-nunito">
@@ -201,13 +177,10 @@ export default function HomePage() {
               <AnnouncementCard type="success" title="ยินดีต้อนรับ #TU91">
                 <p>
                   นักศึกษารหัส 68 สามารถใช้งานระบบ โดยใช้ User: รหัสประจำตัวนักศึกษา 10 หลัก และ Password: เบอร์โทรศัพท์ 10 หลัก
-                  (เบอร์โทรศัพท์ที่นักศึกษาให้ข้อมูลไว้กับสำนักงานทะเบียนนักศึกษา)
                 </p>
               </AnnouncementCard>
               <AnnouncementCard type="alert" title="ปิดใช้บริการสนาม">
-                <p>
-                  สนามสควอช และสนามแบดมินตัน อินเตอร์โซน จะปิดให้บริการ ทุกวันเสาร์ ของเดือน
-                </p>
+                <p>สนามสควอช และสนามแบดมินตัน อินเตอร์โซน จะปิดให้บริการทุกวันเสาร์</p>
               </AnnouncementCard>
             </div>
           </section>
@@ -233,14 +206,13 @@ export default function HomePage() {
               <div className="space-y-4">
                 {favorites.map((fav) => (
                   <FavoriteCard
-                    key={fav.id}
+                    key={fav.slotId}
+                    roomId={fav.roomId}
+                    slotId={fav.slotId}
+                    type={fav.type}
                     name={fav.name}
-                    id={fav.id}
-                    imageUrl={fav.imageUrl}
-                    title={fav.title}
-                    location={fav.location}
-                    date={fav.date}
-                    time={fav.time}
+                    locationName={fav.locationName}
+                    startTime={fav.startTime}
                   />
                 ))}
               </div>
