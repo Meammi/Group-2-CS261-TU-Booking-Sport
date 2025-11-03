@@ -1,5 +1,5 @@
 'use client';
-import { use, useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from "@/lib/axios";
 
 interface Court {
@@ -40,6 +40,8 @@ const getStatusClasses = (status: string) => {
 const today = new Date().toISOString().split('T')[0];
 
 export default function CourtCard({ court, selectedDate = today }: CourtCardProps) {
+  // const [userId, setUserId] = useState<string | null>(null);
+  const [slotMap, setSlotMap] = useState<Record<string, string>>({}); // timeKey -> slotId
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [bookingResult, setBookingResult] = useState<{ type: 'success' | 'error', message: string } | null>(null);
@@ -49,6 +51,60 @@ export default function CourtCard({ court, selectedDate = today }: CourtCardProp
   const [favoriteMap, setFavoriteMap] = useState<Record<string, string>>({}); // time -> favoriteId
 
   const timeSlots = Object.entries(court.slot_time);
+
+  // useEffect(() => {
+  //   const fetchUserId = async () => {
+  //     try {
+  //       const res = await axios.get("/auth/me");
+  //       setUserId(res.data.id);
+  //     } catch (err) {
+  //       console.error("Error fetching user ID:", err);
+  //     }
+  //   };
+  //   fetchUserId();
+  // }, []);
+
+  useEffect(() => {
+    const fetchSlotMap = async () => {
+      try {
+        console.log('Fetching slots for:', { room_id: court.room_id, date: selectedDate });
+        const res = await axios.get(`/slot?room_id=${court.room_id}&date=${selectedDate}`);
+        const map: Record<string, string> = {};
+
+        console.log('Raw API Response:', res.data);
+
+        res.data.forEach((slot: { slotId: string; slotTime: string }) => {
+          // Ensure time is in HH:mm format
+          let normalizedTime = slot.slotTime;
+          if (normalizedTime.length > 5) {
+            normalizedTime = normalizedTime.substring(0, 5);
+          } else if (normalizedTime.length === 4) {
+            // If format is H:mm, add leading zero
+            normalizedTime = `0${normalizedTime}`;
+          }
+          
+          const key = `${court.room_id}-${normalizedTime}`.toUpperCase();
+          map[key] = slot.slotId;
+          console.log('Processing slot:', { 
+            original: slot.slotTime,
+            normalized: normalizedTime,
+            key,
+            slotId: slot.slotId
+          });
+          console.log("Created mapping:", { key, slotId: slot.slotId });
+        });
+
+        setSlotMap(map);
+        // เพิ่ม logging
+        console.log("Final slotMap:", map);
+      } catch (err) {
+        console.error("Error fetching slot map:", err);
+      }
+    };
+
+    fetchSlotMap();
+  }, [court.room_id, selectedDate]);
+
 
   const handleSlotClick = (time: string) => {
     setBookingResult(null);
@@ -64,10 +120,11 @@ export default function CourtCard({ court, selectedDate = today }: CourtCardProp
 
     const startTime = new Date(`${selectedDate}T${selectedSlot}:00`);
     const endTime = new Date(startTime.getTime() + 60 * 60 * 1000);
+    const slotId = slotMap[`${court.room_id}-${timeSlots}`];
 
     const payload = {
       user_id: "6709616376",
-      room_id: court.room_id,
+      room_id: court.room_id.toUpperCase(),
       start_time: startTime.toISOString(),
       end_time: endTime.toISOString(),
       num_guests: court.capacity,
@@ -82,9 +139,16 @@ export default function CourtCard({ court, selectedDate = today }: CourtCardProp
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Booking failed. Please try again.');
+        let errorMessage = 'Booking failed. Please try again.';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorData.error || errorMessage;
+        } catch (jsonErr) {
+          console.warn("Failed to parse error response as JSON:", jsonErr);
+        }
+        throw new Error(errorMessage);
       }
+
 
       const result: BookingResponse = await response.json();
       setBookingResult({ type: 'success', message: `Successfully booked! ID: ${result.reservation_id}` });
@@ -98,34 +162,142 @@ export default function CourtCard({ court, selectedDate = today }: CourtCardProp
   };
 
   const handleStarClick = async (time: string, room_id: string) => {
-    const slotKey = `${room_id}-${time}`;
+    // Ensure time is in HH:mm format
+    let normalizedTime = time;
+    if (time.length > 5) {
+      normalizedTime = time.substring(0, 5);
+    } else if (time.length === 4) {
+      // If format is H:mm, add leading zero
+      normalizedTime = `0${time}`;
+    }
+    
+    const slotKey = `${room_id}-${normalizedTime}`.toUpperCase();
+    
+    // Debug logging
+    console.log("Original time:", time);
+    console.log("Normalized time:", normalizedTime);
+    console.log("SlotKey:", slotKey);
+    console.log("SlotMap keys:", Object.keys(slotMap));
+    
     const isStarred = starredSlots.includes(slotKey);
+    let slotId = slotMap[slotKey];
+
+    // Fallback: ถ้าไม่เจอ slotId ใน slotMap ให้เรียก backend lookup
+    if (!slotId) {
+      try {
+        const resp = await axios.get(`/api/slot/lookup`, {
+          params: {
+            roomId: room_id,
+            time: normalizedTime
+          }
+        });
+        if (resp.data && resp.data.slotId) {
+          slotId = resp.data.slotId;
+          console.log("[FALLBACK] slotId from backend lookup:", slotId);
+        } else {
+          console.error("Missing slotId for", slotKey);
+          console.log("Available slots:", Object.entries(slotMap).map(([key, value]) => ({
+            key,
+            slotId: value,
+            matches: key === slotKey
+          })));
+          return;
+        }
+      } catch (err) {
+        console.error("Slot lookup error", err);
+        return;
+      }
+    }
+
+    // ตัด -เวลา (เช่น -21:00, -18:00) ออกจาก slotId ทุกครั้ง
+    let slotIdToSend = slotId;
+    if (typeof slotIdToSend === "string") {
+      slotIdToSend = slotIdToSend.replace(/-\d{2}:\d{2}$/, "");
+    }
 
     if (!isStarred) {
       // Add favorite
       try {
+        // Log ข้อมูลก่อนสร้าง favorite
+        console.log("Try to create favorite", { roomId: room_id, slotId: slotIdToSend });
         const response = await axios.post("/favorite/create", {
-          //mock รอ backend
-          userId: "6709616376",
           roomId: room_id,
-          slotTime: time,
+          slotId: slotIdToSend
+        }, {
+          withCredentials: true
         });
-        const favoriteId = response.data.favoriteId;
-        setStarredSlots((prev) => [...prev, time]);
-        setFavoriteMap((prev) => ({ ...prev, [time]: favoriteId }));
-        console.log("⭐ Added:", response.data);
+
+        console.log("Create response:", response.data);
+        // support multiple possible field names returned by backend
+        let favoriteId: string | null = (response.data && (response.data.favorite_id || response.data.favoriteId || response.data.id)) || null;
+        if (!favoriteId && response.data && typeof response.data === 'object') {
+          // try nested data
+          // @ts-ignore
+          favoriteId = response.data.data?.favorite_id || response.data.data?.id || favoriteId;
+        }
+
+        // If still not found, try lookup endpoint as a fallback
+        if (!favoriteId) {
+          try {
+            const lookup = await axios.get('/favorite/lookup', { params: { roomId: room_id, slotId: slotIdToSend } });
+            console.log('[FALLBACK] favorite lookup response:', lookup.data);
+            // @ts-ignore
+            favoriteId = lookup.data?.favorite_id || lookup.data?.favoriteId || lookup.data?.id || favoriteId;
+          } catch (lookupErr) {
+            console.warn('Favorite lookup failed', lookupErr);
+          }
+        }
+
+        if (favoriteId) {
+          setStarredSlots((prev) => [...prev, slotKey]);
+          setFavoriteMap((prev) => ({ ...prev, [slotKey]: favoriteId }));
+          console.log("★ Added:", time, { favoriteId });
+        } else {
+          console.error('Failed to determine favoriteId after create', response.data);
+        }
       } catch (err: any) {
         console.error("Error adding favorite:", err.response?.data || err.message);
       }
     } else {
       // Remove favorite
-      const favoriteId = favoriteMap[time];
-      try {
-        await axios.post(`/delete/${favoriteId}`, { time });
-        setStarredSlots((prev) => prev.filter((t) => t !== time));
+      let favoriteId = favoriteMap[slotKey];
+      // If favoriteId missing in map, try lookup by room+slot
+      if (!favoriteId) {
+        console.log('favoriteId missing locally, attempting lookup before remove', { slotKey, slotIdToSend });
+        try {
+          const lookup = await axios.get('/favorite/lookup', { params: { roomId: room_id, slotId: slotIdToSend } });
+          console.log('[FALLBACK] favorite lookup response for remove:', lookup.data);
+          // @ts-ignore
+          favoriteId = lookup.data?.favorite_id || lookup.data?.favoriteId || lookup.data?.id || favoriteId;
+          if (favoriteId) {
+            // cache it for future
+            setFavoriteMap((prev) => ({ ...prev, [slotKey]: favoriteId }));
+          }
+        } catch (lookupErr) {
+          console.warn('Favorite lookup failed for remove', lookupErr);
+        }
+      }
+
+      if (!favoriteId) {
+        console.error("Cannot remove favorite: favoriteId is invalid", { slotKey, favoriteId, favoriteMap });
+        // To avoid stuck UI, remove starred mark locally
+        setStarredSlots((prev) => prev.filter((t) => t !== slotKey));
         setFavoriteMap((prev) => {
           const updated = { ...prev };
-          delete updated[time];
+          delete updated[slotKey];
+          return updated;
+        });
+        return;
+      }
+
+      // เพิ่ม log ตรวจสอบก่อนลบ
+      console.log("Try to remove favorite", { slotKey, favoriteId, starredSlots, favoriteMap });
+      try {
+        await axios.delete(`/favorite/delete/${favoriteId}`, { withCredentials: true });
+        setStarredSlots((prev) => prev.filter((t) => t !== slotKey));
+        setFavoriteMap((prev) => {
+          const updated = { ...prev };
+          delete updated[slotKey];
           return updated;
         });
         console.log("☆ Removed:", time);
@@ -134,6 +306,8 @@ export default function CourtCard({ court, selectedDate = today }: CourtCardProp
       }
     }
   };
+
+
 
   return (
     <>
@@ -181,8 +355,17 @@ export default function CourtCard({ court, selectedDate = today }: CourtCardProp
           {timeSlots.length > 0 ? (
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
               {timeSlots.map(([time, status]) => {
-                const isStarred = starredSlots.includes(time);
+                // Normalize time ให้เหมือนใน handleStarClick
+                let normalizedTime = time;
+                if (time.length > 5) {
+                  normalizedTime = time.substring(0, 5);
+                } else if (time.length === 4) {
+                  normalizedTime = `0${time}`;
+                }
+                const slotKey = `${court.room_id}-${normalizedTime}`.toUpperCase();
+                const isStarred = starredSlots.includes(slotKey);
                 const isHovered = hoveredSlot === time;
+
 
                 return (
                   <button
@@ -195,11 +378,15 @@ export default function CourtCard({ court, selectedDate = today }: CourtCardProp
                   >
                     {time.substring(0, 5)}
                     <img
-                      src={isStarred ? "/images/star-open.png" : "/images/star-close.png"}
+                      src={
+                        isStarred
+                          ? "/images/star-open.png"
+                          : "/images/star-close.png"}
                       alt="star"
                       onClick={(e) => {
                       e.stopPropagation();
                       handleStarClick(time, court.room_id);
+                      console.log("slots:", slotMap);
                     }}
                       className={`absolute top-1 right-1 w-4 h-4 cursor-pointer transition-transform duration-200 ${
                         isHovered ? "scale-110" : "scale-100"
