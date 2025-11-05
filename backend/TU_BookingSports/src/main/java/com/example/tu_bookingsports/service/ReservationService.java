@@ -79,7 +79,7 @@ public class ReservationService {
         System.out.println("found SlotId from slotRepo         "+slot.getSlotId());
         System.out.println("found RoomId from roomRepo         "+room.getRoom_id());
 
-        if (slot.getStatus() == Slot.SlotStatus.BOOKED) {
+        if (slot.getStatus() == Slot.SlotStatus.BOOKED || slot.getStatus() == Slot.SlotStatus.MAINTENANCE ) {
             throw new RuntimeException("Error, This court was reserve!, Slot Status: "+slot.getStatus()+", SlotId: "+slot.getSlotId());
         }
 
