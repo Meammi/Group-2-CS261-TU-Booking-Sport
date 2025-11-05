@@ -10,8 +10,6 @@ interface cardProps {
     startTime: string;
 }
 
-
-
 export default function FavoriteCard({ name, slotId, type, locationName, startTime }: cardProps) {
   const imageUrl:string = '/images/gym4.jpg';
   return (

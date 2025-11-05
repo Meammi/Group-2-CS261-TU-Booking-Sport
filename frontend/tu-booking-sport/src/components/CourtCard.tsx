@@ -37,73 +37,79 @@ const getStatusClasses = (status: string) => {
   }
 };
 
-const today = new Date().toISOString().split('T')[0];
+const normalizeTime = (time: string): string => {
+  if (time.length > 5) return time.substring(0, 5);
+  if (time.length === 4) return `0${time}`;
+  return time;
+};
 
-export default function CourtCard({ court, selectedDate = today }: CourtCardProps) {
-  // const [userId, setUserId] = useState<string | null>(null);
-  const [slotMap, setSlotMap] = useState<Record<string, string>>({}); // timeKey -> slotId
+const getSlotKey = (roomId: string, time: string) =>
+  `${roomId}-${normalizeTime(time)}`.toUpperCase();
+
+export default function CourtCard({ court, selectedDate = new Date().toISOString().split('T')[0] }: CourtCardProps) {
+  const [slotMap, setSlotMap] = useState<Record<string, string>>({});
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [bookingResult, setBookingResult] = useState<{ type: 'success' | 'error', message: string } | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [hoveredSlot, setHoveredSlot] = useState<string | null>(null);
   const [starredSlots, setStarredSlots] = useState<string[]>([]);
-  const [favoriteMap, setFavoriteMap] = useState<Record<string, string>>({}); // time -> favoriteId
+  const [favoriteMap, setFavoriteMap] = useState<Record<string, string>>({});
+  const [starredIds, setStarredIds] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const timeSlots = Object.entries(court.slot_time);
 
-  // useEffect(() => {
-  //   const fetchUserId = async () => {
-  //     try {
-  //       const res = await axios.get("/auth/me");
-  //       setUserId(res.data.id);
-  //     } catch (err) {
-  //       console.error("Error fetching user ID:", err);
-  //     }
-  //   };
-  //   fetchUserId();
-  // }, []);
+  function extractTimeFromSlotId(slotId: string): string {
+    const match = slotId.match(/(\d{2}:\d{2})$/);
+    return match ? match[1] : "00:00"; // fallback
+  }
+
 
   useEffect(() => {
     const fetchSlotMap = async () => {
       try {
-        console.log('Fetching slots for:', { room_id: court.room_id, date: selectedDate });
         const res = await axios.get(`/slot?room_id=${court.room_id}&date=${selectedDate}`);
         const map: Record<string, string> = {};
-
-        console.log('Raw API Response:', res.data);
-
         res.data.forEach((slot: { slotId: string; slotTime: string }) => {
-          // Ensure time is in HH:mm format
-          let normalizedTime = slot.slotTime;
-          if (normalizedTime.length > 5) {
-            normalizedTime = normalizedTime.substring(0, 5);
-          } else if (normalizedTime.length === 4) {
-            // If format is H:mm, add leading zero
-            normalizedTime = `0${normalizedTime}`;
-          }
-          
-          const key = `${court.room_id}-${normalizedTime}`.toUpperCase();
+          const key = getSlotKey(court.room_id, slot.slotTime);
           map[key] = slot.slotId;
-          console.log('Processing slot:', { 
-            original: slot.slotTime,
-            normalized: normalizedTime,
-            key,
-            slotId: slot.slotId
-          });
-          console.log("Created mapping:", { key, slotId: slot.slotId });
         });
-
         setSlotMap(map);
-        // เพิ่ม logging
-        console.log("Final slotMap:", map);
       } catch (err) {
         console.error("Error fetching slot map:", err);
       }
     };
-
     fetchSlotMap();
   }, [court.room_id, selectedDate]);
+
+useEffect(() => {
+  async function fetchFavoriteSlots() {
+    try {
+      const res = await axios.get("/favorite/me"); // returns array of favorites
+      const slots: string[] = [];
+      const map: Record<string, string> = {};
+
+      res.data.forEach((fav: {
+        favoriteId: string;
+        roomId: string;
+        startTime: string;
+      }) => {
+        const time = fav.startTime.substring(0, 5); // "16:00:00" → "16:00"
+        const slotKey = `${fav.roomId}-${time}`.toUpperCase();
+        slots.push(slotKey);
+        map[slotKey] = fav.favoriteId;
+      });
+
+      setStarredSlots(slots);
+      setFavoriteMap(map);
+    } catch (error) {
+      console.error("Error fetching favorite slots:", error);
+    }
+  }
+
+  fetchFavoriteSlots();
+}, []);
 
 
   const handleSlotClick = (time: string) => {
@@ -114,13 +120,13 @@ export default function CourtCard({ court, selectedDate = today }: CourtCardProp
 
   const handleConfirmBooking = async () => {
     if (!selectedSlot) return;
-
     setIsLoading(true);
     setBookingResult(null);
 
     const startTime = new Date(`${selectedDate}T${selectedSlot}:00`);
     const endTime = new Date(startTime.getTime() + 60 * 60 * 1000);
-    const slotId = slotMap[`${court.room_id}-${timeSlots}`];
+    const slotKey = getSlotKey(court.room_id, selectedSlot);
+    const slotId = slotMap[slotKey];
 
     const payload = {
       user_id: "6709616376",
@@ -139,20 +145,12 @@ export default function CourtCard({ court, selectedDate = today }: CourtCardProp
       });
 
       if (!response.ok) {
-        let errorMessage = 'Booking failed. Please try again.';
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.message || errorData.error || errorMessage;
-        } catch (jsonErr) {
-          console.warn("Failed to parse error response as JSON:", jsonErr);
-        }
-        throw new Error(errorMessage);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || errorData.error || 'Booking failed. Please try again.');
       }
-
 
       const result: BookingResponse = await response.json();
       setBookingResult({ type: 'success', message: `Successfully booked! ID: ${result.reservation_id}` });
-
     } catch (error: any) {
       setBookingResult({ type: 'error', message: error.message });
     } finally {
@@ -162,125 +160,53 @@ export default function CourtCard({ court, selectedDate = today }: CourtCardProp
   };
 
   const handleStarClick = async (time: string, room_id: string) => {
-    // Ensure time is in HH:mm format
-    let normalizedTime = time;
-    if (time.length > 5) {
-      normalizedTime = time.substring(0, 5);
-    } else if (time.length === 4) {
-      // If format is H:mm, add leading zero
-      normalizedTime = `0${time}`;
-    }
-    
-    const slotKey = `${room_id}-${normalizedTime}`.toUpperCase();
-    
-    // Debug logging
-    console.log("Original time:", time);
-    console.log("Normalized time:", normalizedTime);
-    console.log("SlotKey:", slotKey);
-    console.log("SlotMap keys:", Object.keys(slotMap));
-    
-    const isStarred = starredSlots.includes(slotKey);
+    const slotKey = getSlotKey(room_id, time);
     let slotId = slotMap[slotKey];
+    const starred = starredSlots.includes(slotKey) || !!favoriteMap[slotKey];
 
-    // Fallback: ถ้าไม่เจอ slotId ใน slotMap ให้เรียก backend lookup
     if (!slotId) {
       try {
-        const resp = await axios.get(`/api/slot/lookup`, {
-          params: {
-            roomId: room_id,
-            time: normalizedTime
-          }
-        });
-        if (resp.data && resp.data.slotId) {
-          slotId = resp.data.slotId;
-          console.log("[FALLBACK] slotId from backend lookup:", slotId);
-        } else {
-          console.error("Missing slotId for", slotKey);
-          console.log("Available slots:", Object.entries(slotMap).map(([key, value]) => ({
-            key,
-            slotId: value,
-            matches: key === slotKey
-          })));
-          return;
-        }
+        const resp = await axios.get(`/api/slot/lookup`, { params: { roomId: room_id, time: normalizeTime(time) } });
+        slotId = resp.data?.slotId;
+        if (!slotId) return;
       } catch (err) {
         console.error("Slot lookup error", err);
         return;
       }
     }
 
-    // ตัด -เวลา (เช่น -21:00, -18:00) ออกจาก slotId ทุกครั้ง
-    let slotIdToSend = slotId;
-    if (typeof slotIdToSend === "string") {
-      slotIdToSend = slotIdToSend.replace(/-\d{2}:\d{2}$/, "");
-    }
+    const slotIdToSend = slotId.replace(/-\d{2}:\d{2}$/, "");
 
-    if (!isStarred) {
-      // Add favorite
+    if (!starred) {
       try {
-        // Log ข้อมูลก่อนสร้าง favorite
-        console.log("Try to create favorite", { roomId: room_id, slotId: slotIdToSend });
-        const response = await axios.post("/favorite/create", {
-          roomId: room_id,
-          slotId: slotIdToSend
-        }, {
-          withCredentials: true
-        });
-
-        console.log("Create response:", response.data);
-        // support multiple possible field names returned by backend
-        let favoriteId: string | null = (response.data && (response.data.favorite_id || response.data.favoriteId || response.data.id)) || null;
-        if (!favoriteId && response.data && typeof response.data === 'object') {
-          // try nested data
-          // @ts-ignore
-          favoriteId = response.data.data?.favorite_id || response.data.data?.id || favoriteId;
-        }
-
-        // If still not found, try lookup endpoint as a fallback
+        const response = await axios.post("/favorite/create", { roomId: room_id, slotId: slotIdToSend }, { withCredentials: true });
+        let favoriteId = response.data?.favorite_id || response.data?.favoriteId || response.data?.id;
         if (!favoriteId) {
-          try {
-            const lookup = await axios.get('/favorite/lookup', { params: { roomId: room_id, slotId: slotIdToSend } });
-            console.log('[FALLBACK] favorite lookup response:', lookup.data);
-            // @ts-ignore
-            favoriteId = lookup.data?.favorite_id || lookup.data?.favoriteId || lookup.data?.id || favoriteId;
-          } catch (lookupErr) {
-            console.warn('Favorite lookup failed', lookupErr);
-          }
+          const lookup = await axios.get('/favorite/lookup', { params: { roomId: room_id, slotId: slotIdToSend } });
+          favoriteId = lookup.data?.favorite_id || lookup.data?.favoriteId || lookup.data?.id;
         }
-
         if (favoriteId) {
           setStarredSlots((prev) => [...prev, slotKey]);
           setFavoriteMap((prev) => ({ ...prev, [slotKey]: favoriteId }));
-          console.log("★ Added:", time, { favoriteId });
-        } else {
-          console.error('Failed to determine favoriteId after create', response.data);
         }
       } catch (err: any) {
         console.error("Error adding favorite:", err.response?.data || err.message);
       }
     } else {
-      // Remove favorite
       let favoriteId = favoriteMap[slotKey];
-      // If favoriteId missing in map, try lookup by room+slot
       if (!favoriteId) {
-        console.log('favoriteId missing locally, attempting lookup before remove', { slotKey, slotIdToSend });
         try {
           const lookup = await axios.get('/favorite/lookup', { params: { roomId: room_id, slotId: slotIdToSend } });
-          console.log('[FALLBACK] favorite lookup response for remove:', lookup.data);
-          // @ts-ignore
-          favoriteId = lookup.data?.favorite_id || lookup.data?.favoriteId || lookup.data?.id || favoriteId;
+          favoriteId = lookup.data?.favorite_id || lookup.data?.favoriteId || lookup.data?.id;
           if (favoriteId) {
-            // cache it for future
             setFavoriteMap((prev) => ({ ...prev, [slotKey]: favoriteId }));
           }
-        } catch (lookupErr) {
-          console.warn('Favorite lookup failed for remove', lookupErr);
+        } catch (err) {
+          console.warn('Favorite lookup failed for remove', err);
         }
       }
 
       if (!favoriteId) {
-        console.error("Cannot remove favorite: favoriteId is invalid", { slotKey, favoriteId, favoriteMap });
-        // To avoid stuck UI, remove starred mark locally
         setStarredSlots((prev) => prev.filter((t) => t !== slotKey));
         setFavoriteMap((prev) => {
           const updated = { ...prev };
@@ -290,8 +216,6 @@ export default function CourtCard({ court, selectedDate = today }: CourtCardProp
         return;
       }
 
-      // เพิ่ม log ตรวจสอบก่อนลบ
-      console.log("Try to remove favorite", { slotKey, favoriteId, starredSlots, favoriteMap });
       try {
         await axios.delete(`/favorite/delete/${favoriteId}`, { withCredentials: true });
         setStarredSlots((prev) => prev.filter((t) => t !== slotKey));
@@ -300,18 +224,14 @@ export default function CourtCard({ court, selectedDate = today }: CourtCardProp
           delete updated[slotKey];
           return updated;
         });
-        console.log("☆ Removed:", time);
       } catch (err) {
         console.error("Error removing favorite:", err);
       }
     }
   };
 
-
-
   return (
     <>
-      {/* Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm text-center">
@@ -347,7 +267,9 @@ export default function CourtCard({ court, selectedDate = today }: CourtCardProp
             <h3 className="text-xl font-bold text-tu-navy">{court.name}</h3>
             <p className="text-sm text-gray-500">Capacity: {court.capacity} people</p>
           </div>
-          <span className="text-lg font-semibold text-gray-800">{court.price > 0 ? `${court.price}฿` : 'Free'}</span>
+          <span className="text-lg font-semibold text-gray-800">
+            {court.price > 0 ? `${court.price}฿` : 'Free'}
+          </span>
         </div>
 
         <div className="border-t pt-4">
@@ -355,17 +277,9 @@ export default function CourtCard({ court, selectedDate = today }: CourtCardProp
           {timeSlots.length > 0 ? (
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
               {timeSlots.map(([time, status]) => {
-                // Normalize time ให้เหมือนใน handleStarClick
-                let normalizedTime = time;
-                if (time.length > 5) {
-                  normalizedTime = time.substring(0, 5);
-                } else if (time.length === 4) {
-                  normalizedTime = `0${time}`;
-                }
-                const slotKey = `${court.room_id}-${normalizedTime}`.toUpperCase();
-                const isStarred = starredSlots.includes(slotKey);
+                const slotKey = getSlotKey(court.room_id, time);
+                const isStarred = starredSlots.includes(slotKey) || (favoriteMap[slotKey] && typeof favoriteMap[slotKey] === 'string');
                 const isHovered = hoveredSlot === time;
-
 
                 return (
                   <button
@@ -378,16 +292,12 @@ export default function CourtCard({ court, selectedDate = today }: CourtCardProp
                   >
                     {time.substring(0, 5)}
                     <img
-                      src={
-                        isStarred
-                          ? "/images/star-open.png"
-                          : "/images/star-close.png"}
+                      src={isStarred ? "/images/star-open.png" : "/images/star-close.png"}
                       alt="star"
                       onClick={(e) => {
-                      e.stopPropagation();
-                      handleStarClick(time, court.room_id);
-                      console.log("slots:", slotMap);
-                    }}
+                        e.stopPropagation();
+                        handleStarClick(time, court.room_id);
+                      }}
                       className={`absolute top-1 right-1 w-4 h-4 cursor-pointer transition-transform duration-200 ${
                         isHovered ? "scale-110" : "scale-100"
                       }`}
@@ -397,7 +307,9 @@ export default function CourtCard({ court, selectedDate = today }: CourtCardProp
               })}
             </div>
           ) : (
-            <p className="text-sm text-gray-500 text-center py-4">No time slots available for this day.</p>
+            <p className="text-sm text-gray-500 text-center py-4">
+              No time slots available for this day.
+            </p>
           )}
         </div>
 
