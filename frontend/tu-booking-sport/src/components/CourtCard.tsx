@@ -55,8 +55,6 @@ export default function CourtCard({ court, selectedDate = new Date().toISOString
   const [hoveredSlot, setHoveredSlot] = useState<string | null>(null);
   const [starredSlots, setStarredSlots] = useState<string[]>([]);
   const [favoriteMap, setFavoriteMap] = useState<Record<string, string>>({});
-  const [starredIds, setStarredIds] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
 
   const timeSlots = Object.entries(court.slot_time);
 
