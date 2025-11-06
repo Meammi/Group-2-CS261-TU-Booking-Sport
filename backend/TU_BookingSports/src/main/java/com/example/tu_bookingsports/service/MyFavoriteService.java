@@ -10,6 +10,8 @@ import com.example.tu_bookingsports.repository.RoomRepository;
 import com.example.tu_bookingsports.repository.SlotRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalTime;
 import java.util.*;
@@ -32,6 +34,14 @@ public class MyFavoriteService {
     public MyFavoriteResponse createFavorite(FavoriteRequest req,UUID loggedInUserId) {
         UUID roomId = req.getRoomId();
         UUID slotId = req.getSlotId();
+
+        if (!roomRepository.existsById(roomId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Room not found with id: " + roomId);
+        }
+
+        if (!slotRepository.existsById(slotId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Slot not found with id: " + slotId);
+        }
 
         // ตรวจสอบว่ามีการบันทึกที่ชอบนี้อยู่แล้วหรือไม่
         Optional<Favorite> existing = favRepository.findByUserIdAndSlotIdAndRoomId(loggedInUserId, slotId, roomId);
@@ -72,11 +82,11 @@ public class MyFavoriteService {
     }
 
     private MyFavoriteResponse convertToResponse(Favorite fav) {
-        // ดึงข้อมูล Room และ Slot
-        Rooms room = roomRepository.findById(fav.getRoomId())
-                .orElseThrow(() -> new IllegalArgumentException("Room not found"));
-        Slot slot = slotRepository.findById(fav.getSlotId())
-                .orElseThrow(() -> new IllegalArgumentException("Slot not found"));
+        Optional<Rooms> roomOpt = roomRepository.findById(fav.getRoomId());
+        Optional<Slot> slotOpt = slotRepository.findById(fav.getSlotId());
+
+        Rooms room = roomOpt.get();
+        Slot slot = slotOpt.get();
 
         // ดึงข้อมูลจาก Room และ Slot
         String type = room.getType();
