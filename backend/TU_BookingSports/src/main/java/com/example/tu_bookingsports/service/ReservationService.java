@@ -104,7 +104,7 @@ public class ReservationService {
                     return b.getEndTime().isAfter(LocalDateTime.now());
                 })
                 .count();
-        if (tomorrowReservationsCount>=10) {
+        if (tomorrowReservationsCount >= MAX_RESERVATION) {
             throw new RuntimeException("Error: Reached current maximum number of reservations: "+tomorrowReservationsCount+"/"+MAX_RESERVATION);
         }
 

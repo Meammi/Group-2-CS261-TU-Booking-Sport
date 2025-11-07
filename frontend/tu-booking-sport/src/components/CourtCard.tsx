@@ -112,7 +112,7 @@ export default function CourtCard({ court, selectedDate = today }: CourtCardProp
             <h3 className="text-xl font-bold text-tu-navy">{court.name}</h3>
             <p className="text-sm text-gray-500">Capacity: {court.capacity} people</p>
           </div>
-          <span className="text-lg font-semibold text-gray-800">{court.price > 0 ? `${court.price}à¸¿` : 'Free'}</span>
+          <span className="text-lg font-semibold text-gray-800">{court.price > 0 ? `${court.price}฿` : 'Free'}</span>
         </div>
 
         <div className="border-t pt-4">

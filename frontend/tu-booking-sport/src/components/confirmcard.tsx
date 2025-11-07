@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, {useEffect, useState} from "react";
 
 type Props = {
   open: boolean;
@@ -20,6 +20,13 @@ export default function ConfirmModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (open) {
+            setErrorMsg(null);
+            setSuccessMsg(null);
+        }
+    }, [open]);
 
   const handleConfirm = async () => {
     // กำหนดค่า userId และ slotId จากแหล่งข้อมูลที่มี
@@ -157,7 +164,7 @@ export default function ConfirmModal({
     }
   };
   if (!open) return null;
-
+    //console.log(successMsg,errorMsg);
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* backdrop */}
@@ -193,6 +200,10 @@ export default function ConfirmModal({
             )}
           </div>
         )}
+          {(!errorMsg && !successMsg) && (
+              <div className="mt-4 text-center text-sm">
+              </div>
+          )}
       </div>
     </div>
   );
