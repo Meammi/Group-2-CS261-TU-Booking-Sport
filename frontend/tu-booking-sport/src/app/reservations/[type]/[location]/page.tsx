@@ -39,48 +39,50 @@ export default function ReservationDetailPage({ params }: { params: { type: stri
     const [selectedDate, setSelectedDate] = useState<string>(() => new Date().toISOString().split('T')[0])
 
     // 5. ใช้ useEffect เพื่อดึงและคัดกรองข้อมูลที่ฝั่ง Client
-    useEffect(() => {
-        const fetchAndFilterCourts = async () => {
-            const controller = new AbortController()
-            const timeoutId = setTimeout(() => controller.abort(), 10000)
-            try {
-                const response = await fetch('http://localhost:8081/rooms', { signal: controller.signal })
-                if (!response.ok) {
-                    throw new Error(`HTTP_${response.status}`)
-                }
-                const allCourts: Court[] = await response.json()
-
-                // คัดกรองข้อมูลที่นี่
-                const filtered = allCourts.filter(
-                    court => court.type === type && court.loc_name === location
-                )
-
-                setCourts(filtered) // อัปเดต State ด้วยข้อมูลที่คัดกรองแล้ว
-            } catch (err: any) {
-                if (err?.name === 'AbortError') {
-                    setError('Request timed out, please try again')
-                } else if (typeof err?.message === 'string' && err.message.startsWith('HTTP_')) {
-                    const status = Number(err.message.replace('HTTP_', ''))
-                    setErrorCode(status)
-                    if (status === 404) setError('Data not found (404)')
-                    else if (status >= 500) setError('Server error, please try later')
-                    else setError(`Request failed (${status})`)
-                } else {
-                    setError('Network or unknown error')
-                }
-            } finally {
-                clearTimeout(timeoutId)
-                setIsLoading(false)
+    const fetchAndFilterCourts = async () => {
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 10000)
+        try {
+            const response = await fetch('http://localhost:8081/rooms', { signal: controller.signal })
+            if (!response.ok) {
+                throw new Error(`HTTP_${response.status}`)
             }
+            const allCourts: Court[] = await response.json()
+
+            // คัดกรองข้อมูลที่นี่
+            const filtered = allCourts.filter(
+                court => court.type === type && court.loc_name === location
+            )
+
+            setCourts(filtered) // อัปเดต State ด้วยข้อมูลที่คัดกรองแล้ว
+        } catch (err: any) {
+            if (err?.name === 'AbortError') {
+                setError('Request timed out, please try again')
+            } else if (typeof err?.message === 'string' && err.message.startsWith('HTTP_')) {
+                const status = Number(err.message.replace('HTTP_', ''))
+                setErrorCode(status)
+                if (status === 404) setError('Data not found (404)')
+                else if (status >= 500) setError('Server error, please try later')
+                else setError(`Request failed (${status})`)
+            } else {
+                setError('Network or unknown error')
+            }
+        } finally {
+            clearTimeout(timeoutId)
+            setIsLoading(false)
         }
+    }
+    useEffect(() => {
+
 
         fetchAndFilterCourts()
     }, [type, location]) // ให้ Effect นี้ทำงานใหม่เมื่อ type หรือ location เปลี่ยนไป
 
     const handleSlotSelected = (court: Court, time: string) => {
-        setSelectedCourt(court)
-        setSelectedTime(time)
-        setConfirmOpen(true)
+        //setSelectedCourt(court)
+        //setSelectedTime(time)
+        //setConfirmOpen(true)
+        fetchAndFilterCourts();
     }
 
     const formatDateDMY = (isoDate: string) => {

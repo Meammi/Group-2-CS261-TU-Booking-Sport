@@ -105,7 +105,7 @@ public class ReservationService {
                 })
                 .count();
         if (tomorrowReservationsCount >= MAX_RESERVATION) {
-            throw new RuntimeException("Error: Reached current maximum number of reservations: "+tomorrowReservationsCount+"/"+MAX_RESERVATION);
+            throw new RuntimeException("Error: Reached current maximum number of Reservations: "+tomorrowReservationsCount+"/"+MAX_RESERVATION);
         }
 
 

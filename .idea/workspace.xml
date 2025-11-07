@@ -7,8 +7,8 @@
     <list default="true" id="a24da115-901c-4c46-ade9-b5422aac0952" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/TU_BookingSports/src/main/java/com/example/tu_bookingsports/service/ReservationService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/TU_BookingSports/src/main/java/com/example/tu_bookingsports/service/ReservationService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/tu-booking-sport/src/app/reservations/[type]/[location]/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/tu-booking-sport/src/app/reservations/[type]/[location]/page.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/tu-booking-sport/src/components/CourtCard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/tu-booking-sport/src/components/CourtCard.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/tu-booking-sport/src/components/confirmcard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/tu-booking-sport/src/components/confirmcard.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -71,7 +71,7 @@
       <workItem from="1762085581204" duration="198000" />
       <workItem from="1762436865425" duration="20775000" />
       <workItem from="1762484785171" duration="3607000" />
-      <workItem from="1762493270375" duration="19083000" />
+      <workItem from="1762493270375" duration="26957000" />
     </task>
     <servers />
   </component>

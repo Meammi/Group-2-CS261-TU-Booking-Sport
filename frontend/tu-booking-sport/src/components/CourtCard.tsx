@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import {useEffect, useState} from 'react';
 import ConfirmModal from '@/components/confirmcard';
 
 interface Court {
@@ -15,6 +15,7 @@ interface Court {
 interface CourtCardProps {
   court: Court;
   selectedDate?: string;
+  onSlotSelected: (court: Court, time: string) => void;
 }
 
 interface BookingResponse {
@@ -39,7 +40,7 @@ const getStatusClasses = (status: string) => {
 
 const today = new Date().toISOString().split('T')[0];
 
-export default function CourtCard({ court, selectedDate = today }: CourtCardProps) {
+export default function CourtCard({ court, selectedDate = today, onSlotSelected}: CourtCardProps) {
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [bookingResult, setBookingResult] = useState<{type: 'success' | 'error', message: string} | null>(null);
@@ -52,6 +53,10 @@ export default function CourtCard({ court, selectedDate = today }: CourtCardProp
     setSelectedSlot(time);
     setIsModalOpen(true);
   };
+
+    useEffect(() => {
+        onSlotSelected(court, "TiMe");
+    }, [isModalOpen]);
 
   const handleConfirmBooking = async () => {
     if (!selectedSlot) return;
