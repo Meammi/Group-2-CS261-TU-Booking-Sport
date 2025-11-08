@@ -1,6 +1,6 @@
 'use client';
 import {useEffect, useState} from 'react';
-import ConfirmModal from '@/components/confirmcard';
+import ConfirmModal from '@/components/ConfirmCard';
 
 interface Court {
   name: string;
