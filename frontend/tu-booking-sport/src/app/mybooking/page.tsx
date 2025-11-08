@@ -1,4 +1,5 @@
 'use client';
+import { API_BASE } from '@/lib/config'
 
 import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
@@ -48,7 +49,7 @@ export default function MyBookingPage() {
         }
 
         // Resolve userId from /auth/me
-        const meRes = await fetch('http://localhost:8081/auth/me', {
+        const meRes = await fetch(API_BASE + '/auth/me', {
           headers: { 'Authorization': `Bearer ${token}` },
           credentials: 'include',
         });
@@ -59,7 +60,7 @@ export default function MyBookingPage() {
         const userId = me.id;
 
         // Fetch bookings for this user
-        const response = await fetch(`http://localhost:8081/MyBookings/${userId}`, {
+        const response = await fetch(`${API_BASE}/MyBookings/${userId}`, {
           headers: { 'Authorization': `Bearer ${token}` },
           credentials: 'include',
         });
@@ -181,3 +182,11 @@ export default function MyBookingPage() {
     </div>
   )
 }
+
+
+
+
+
+
+
+

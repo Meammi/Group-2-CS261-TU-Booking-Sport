@@ -1,4 +1,5 @@
-'use client'; 
+"use client";
+import { API_BASE } from '@/lib/config'
 
 import { useState, useEffect } from 'react';
 import SportCard from "@/components/SportCard"; 
@@ -52,7 +53,7 @@ export default function HomePage() {
   useEffect(() => {
     const fetchSportsData = async () => {
       try {
-        const response = await fetch('http://localhost:8081/homepage'); 
+        const response = await fetch(API_BASE + '/homepage'); 
 
         if (!response.ok) {
           throw new Error('Failed to fetch sports data');
@@ -154,4 +155,8 @@ export default function HomePage() {
     </div>
   );
 }
+
+
+
+
 

@@ -1,3 +1,4 @@
+import { API_BASE } from '@/lib/config'
 'use client'; 
 
 import { useState } from 'react';
@@ -32,7 +33,7 @@ export default function BookingActions({ bookingId, status, isCurrent }: Booking
       }
 
       // 1) Resolve userId from /auth/me
-      const meRes = await fetch('http://localhost:8081/auth/me', {
+      const meRes = await fetch(API_BASE + '/auth/me', {
         headers: { 'Authorization': `Bearer ${token}` },
         credentials: 'include',
       });
@@ -42,7 +43,7 @@ export default function BookingActions({ bookingId, status, isCurrent }: Booking
       const me: { id: string } = await meRes.json();
 
       // 2) Get user's current bookings to find the matching reservationId by index (bookingId)
-      const bookingsRes = await fetch(`http://localhost:8081/MyBookings/${me.id}`, {
+      const bookingsRes = await fetch(`${API_BASE}/MyBookings/${me.id}`, {
         headers: { 'Authorization': `Bearer ${token}` },
         credentials: 'include',
       });
@@ -58,7 +59,7 @@ export default function BookingActions({ bookingId, status, isCurrent }: Booking
       }
       const reservationIdToCancel = target.reservationId;
       
-      const response = await fetch(`http://localhost:8081/MyBookings/cancel/${reservationIdToCancel}`, {
+      const response = await fetch(`${API_BASE}/MyBookings/cancel/${reservationIdToCancel}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` },
         credentials: 'include',
@@ -155,3 +156,4 @@ export default function BookingActions({ bookingId, status, isCurrent }: Booking
     </>
   );
 }
+

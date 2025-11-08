@@ -1,4 +1,5 @@
-'use client'; 
+'use client';
+import { API_BASE } from '@/lib/config'
 
 import { useState, useEffect } from 'react';
 import Header from "@/components/Header";
@@ -43,7 +44,7 @@ export default function ReservationPage() {
   useEffect(() => {
     const fetchAndProcessRooms = async () => {
       try {
-        const response = await fetch('http://localhost:8081/rooms');
+        const response = await fetch(API_BASE + '/rooms');
         if (!response.ok) {
           throw new Error('Failed to fetch room data');
         }
@@ -119,4 +120,9 @@ export default function ReservationPage() {
     </div>
   );
 }
+
+
+
+
+
 

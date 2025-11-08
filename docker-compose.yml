@@ -1,59 +1,43 @@
-version: "3.9"
-
 services:
-  db:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: tu-booking-db
-    environment:
-      - ACCEPT_EULA=Y
-      - SA_PASSWORD=${SA_PASSWORD:-YourStrong@Passw0rd}
-      - MSSQL_PID=Developer
-    ports:
-      - "1433:1433"
-    volumes:
-      - mssql-data:/var/opt/mssql
-    healthcheck:
-      # Simple TCP check on 1433; avoids needing sqlcmd inside the image
-      test: ["CMD-SHELL", "bash -c '</dev/tcp/localhost/1433' || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 30s
-
-  app:
+  backend:
     build:
-      context: .
-      dockerfile: dockerfile
-    container_name: tu-booking-app
-    depends_on:
-      db:
-        condition: service_healthy
-    ports:
-      - "8081:8081"   # Spring Boot backend
-      - "3000:3000"   # Next.js frontend
+      context: ./backend/TU_BookingSports
+      dockerfile: Dockerfile
+    container_name: tu-booking-backend
     env_file:
       - .env
     environment:
-      # Database connection for Spring Boot
-      - DB_URL=${DB_URL:-jdbc:sqlserver://db:1433;databaseName=BookingSports;encrypt=false;trustServerCertificate=true}
+      - DB_URL=${DB_URL}
       - DB_USERNAME=${DB_USERNAME:-sa}
-      - DB_PASSWORD=${DB_PASSWORD:-${SA_PASSWORD:-YourStrong@Passw0rd}}
-
-      # JWT configuration
+      - DB_PASSWORD=${DB_PASSWORD:-YourStrong@Passw0rd}
       - JWT_SECRET=${JWT_SECRET:-change-me}
       - JWT_EXPIRATION=${JWT_EXPIRATION:-3600000}
-
-      # Email (Spring Mail)
       - USERNAME=${USERNAME:-}
       - PASSWORD=${PASSWORD:-}
-
-      # TU API
       - TUAPI_APPLICATION_KEY=${TUAPI_APPLICATION_KEY:-}
-
-      # SlipOK API (payment slip validation)
       - BRANCH_ID=${BRANCH_ID:-}
       - API_KEY=${API_KEY:-}
+      - JAVA_TOOL_OPTIONS=-Duser.timezone=Asia/Bangkok
+      - TZ=Asia/Bangkok
+      - DEV_TOOLS_ENABLED=true
+    ports:
+      - "8081:8081"
+    networks:
+      - mynetwork
 
-volumes:
-  mssql-data:
-
+  frontend:
+    build:
+      context: ./frontend/tu-booking-sport
+      dockerfile: Dockerfile
+    container_name: tu-booking-frontend
+    depends_on:
+      - backend
+    environment:
+      - NEXT_PUBLIC_API_BASE=${NEXT_PUBLIC_API_BASE:-http://localhost:8081}
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+    ports:
+      - "3000:3000"
+networks:
+  mynetwork:
+    external: true
