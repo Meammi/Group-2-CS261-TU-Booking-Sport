@@ -8,7 +8,7 @@ import { ArrowLeftIcon, ArrowPathIcon } from '@heroicons/react/24/solid'
 import Header from '@/components/Header'
 import ReservationHeader from '@/components/ReservationHeader'
 import CourtCard from '@/components/CourtCard'
-import ConfirmModal from '@/components/ConfirmCard'
+import ConfirmModal from '../../../../components/ConfirmCard'
 import { API_BASE } from '@/lib/config'
 
 interface Court {
