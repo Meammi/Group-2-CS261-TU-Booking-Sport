@@ -236,3 +236,44 @@ return (
           </div>
         </div>
       )}
+       {/* Slot Manager */}
+      {isSlotManagerOpen && selectedRoomForSlots && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-40 p-4">
+          <div className="bg-white rounded-md p-5 w-full max-w-lg">
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="text-xl font-bold">
+                Manage Slots for {selectedRoomForSlots.name}
+              </h3>
+              <button
+                onClick={() => setIsSlotManagerOpen(false)}
+                className="text-gray-600 text-2xl"
+              >
+                &times;
+              </button>
+            </div>
+
+            <button
+              onClick={() => handleOpenModal('createSlot')}
+              className="mb-4 w-full px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            >
+              Add New Slot
+            </button>
+
+            <div className="text-center text-gray-500">No slots yet (mock data)</div>
+
+            <div className="mt-4 text-right">
+              <button
+                onClick={() => setIsSlotManagerOpen(false)}
+                className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
+
+export default AdminPage;
