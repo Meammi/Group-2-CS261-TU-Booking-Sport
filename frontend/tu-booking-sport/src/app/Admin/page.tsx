@@ -119,3 +119,120 @@ return (
           </div>
         </main>
       </div>
+      {/* Modal (Create/Edit) */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-md shadow-lg p-5 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4 capitalize">
+              {modalMode?.replace(/([A-Z])/g, ' $1')}
+            </h3>
+
+            <form>
+              <div className="space-y-3">
+                {(modalMode === 'createRoom' || modalMode === 'editRoom') && (
+                  <>
+                    <input
+                      name="name"
+                      value={formData.name || ''}
+                      onChange={handleFormChange}
+                      placeholder="Room Name"
+                      className="w-full p-2 border rounded"
+                    />
+
+                    <select
+                      name="type"
+                      value={formData.type || ''}
+                      onChange={handleFormChange}
+                      className="w-full p-2 border rounded"
+                    >
+                      <option value="">Select Type</option>
+                      <option value="Badminton">Badminton</option>
+                      <option value="Karaoke">Karaoke</option>
+                    </select>
+
+                    <input
+                      name="price"
+                      type="number"
+                      min="0"
+                      value={formData.price || ''}
+                      onChange={handleFormChange}
+                      placeholder="Price"
+                      className="w-full p-2 border rounded"
+                    />
+
+                    <select
+                      name="loc_name"
+                      value={formData.loc_name || ''}
+                      onChange={handleFormChange}
+                      className="w-full p-2 border rounded"
+                    >
+                      <option value="">Select Location</option>
+                      <option value="Interzone">Interzone</option>
+                      <option value="Gym 4">Gym 4</option>
+                      <option value="Melodysphere">Melodysphere</option>
+                    </select>
+
+                    <input
+                      name="capacity"
+                      type="number"
+                      min="0"
+                      value={formData.capacity || ''}
+                      onChange={handleFormChange}
+                      placeholder="Capacity"
+                      className="w-full p-2 border rounded"
+                    />
+                  </>
+                )}
+
+                {(modalMode === 'createSlot' || modalMode === 'editSlot') && (
+                  <>
+                    <select
+                      name="slotTime"
+                      value={formData.slotTime || ''}
+                      onChange={handleFormChange}
+                      className="w-full p-2 border rounded"
+                    >
+                      <option value="">Select Time</option>
+                      {Array.from({ length: 24 }, (_, i) =>
+                        `${i.toString().padStart(2, '0')}:00:00`
+                      ).map((time) => (
+                        <option key={time} value={time}>
+                          {time}
+                        </option>
+                      ))}
+                    </select>
+
+                    <select
+                      name="status"
+                      value={formData.status || 'AVAILABLE'}
+                      onChange={handleFormChange}
+                      className="w-full p-2 border rounded"
+                    >
+                      <option value="AVAILABLE">AVAILABLE</option>
+                      <option value="BOOKED">BOOKED</option>
+                      <option value="UNAVAILABLE">UNAVAILABLE</option>
+                    </select>
+                  </>
+                )}
+              </div>
+
+              <div className="flex justify-end space-x-3 mt-5">
+                <button
+                  type="button"
+                  onClick={handleCloseModal}
+                  className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="button"
+                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                >
+                  Save (mock)
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
