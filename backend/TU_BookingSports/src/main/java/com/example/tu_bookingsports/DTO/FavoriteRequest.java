@@ -10,4 +10,20 @@ public class FavoriteRequest {
     // private UUID userId;
     private UUID roomId;
     private UUID slotId;
+
+    public UUID getRoomId() {
+        return roomId;
+    }
+
+    public void setRoomId(UUID roomId) {
+        this.roomId = roomId;
+    }
+
+    public UUID getSlotId() {
+        return slotId;
+    }
+
+    public void setSlotId(UUID slotId) {
+        this.slotId = slotId;
+    }
 }

@@ -50,4 +50,35 @@ public class Favorite {
         updatedAt = LocalDateTime.now();
     }
 
+    public UUID getFavoriteId() {
+        return favoriteId;
+    }
+
+    public UUID getUserId() {
+        return userId;
+    }
+
+    public UUID getRoomId() {
+        return roomId;
+    }
+
+    public UUID getSlotId() {
+        return slotId;
+    }
+
+    public void setFavoriteId(UUID favoriteId) {
+        this.favoriteId = favoriteId;
+    }
+
+    public void setUserId(UUID userId) {
+        this.userId = userId;
+    }
+
+    public void setRoomId(UUID roomId) {
+        this.roomId = roomId;
+    }
+
+    public void setSlotId(UUID slotId) {
+        this.slotId = slotId;
+    }
 }

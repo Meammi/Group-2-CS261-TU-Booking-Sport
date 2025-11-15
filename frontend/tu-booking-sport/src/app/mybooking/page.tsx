@@ -6,17 +6,16 @@ import BookingCard from '@/components/BookingCard';
 import AuthGuard from '@/components/AuthGuard';
 import { InboxIcon, ArrowPathIcon } from '@heroicons/react/24/solid';
 
-// Interface นี้ควรจะถูกย้ายไปที่ไฟล์กลางในอนาคต
 interface BookingItem {
-    id: number;
-    name: string;
-    locationName: string;
-    isCurrent: boolean;
-    status: string;
-    bookingDate: string;
-    startTime: string;
-    endTime: string;
-    imageUrl?: string;
+  id: number;
+  name: string;
+  locationName: string;
+  isCurrent: boolean;
+  status: string;
+  bookingDate: string;
+  startTime: string;
+  endTime: string;
+  imageUrl?: string;
 }
 
 const getImageForLocation = (locationName: string, roomName?: string): string => {
@@ -44,8 +43,6 @@ export default function MyBookingPage() {
   useEffect(() => {
     const fetchBookings = async () => {
       try {
-
-        // Resolve userId from /auth/me
         const meRes = await fetch('http://localhost:8081/auth/me', {
           credentials: 'include',
         });
@@ -55,7 +52,6 @@ export default function MyBookingPage() {
         const me: { id: string } = await meRes.json();
         const userId = me.id;
 
-        // Fetch bookings for this user
         const response = await fetch(`http://localhost:8081/MyBookings/${userId}`, {
           credentials: 'include',
         });
@@ -64,7 +60,7 @@ export default function MyBookingPage() {
           throw new Error(`Failed to fetch bookings: ${response.status}`);
         }
 
-        const data: { current: Omit<BookingItem, 'id'>[], history: Omit<BookingItem, 'id'>[] } = await response.json();
+        const data: { current: Omit<BookingItem, 'id'>[]; history: Omit<BookingItem, 'id'>[] } = await response.json();
 
         const processedCurrent = data.current.map((item, index) => ({
           ...item,
@@ -78,7 +74,6 @@ export default function MyBookingPage() {
 
         setCurrentBookings(processedCurrent);
         setHistoryBookings(processedHistory);
-
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -112,7 +107,6 @@ export default function MyBookingPage() {
         <div className="mx-auto max-w-md bg-gray-100 min-h-screen">
           <Header studentId="6709616376" />
           <main className="p-4 font-nunito">
-            
             <div className="flex flex-col items-center gap-2 mb-6">
               <h1 className="text-3xl font-bold text-gray-800">My Booking</h1>
             </div>
@@ -125,7 +119,7 @@ export default function MyBookingPage() {
               </div>
               <div className="space-y-4">
                 {currentBookings.length > 0 ? (
-                  currentBookings.map(item => (
+                  currentBookings.map((item) => (
                     <BookingCard
                       key={item.id}
                       id={item.id}
@@ -153,7 +147,7 @@ export default function MyBookingPage() {
               </div>
               <div className="space-y-4">
                 {historyBookings.length > 0 ? (
-                  historyBookings.map(item => (
+                  historyBookings.map((item) => (
                     <BookingCard
                       key={item.id}
                       id={item.id}
@@ -172,7 +166,6 @@ export default function MyBookingPage() {
                 )}
               </div>
             </section>
-
           </main>
         </div>
       </div>

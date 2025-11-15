@@ -48,7 +48,7 @@ const normalizeTime = (time: string): string => {
 const getSlotKey = (roomId: string, time: string) =>
   `${roomId}-${normalizeTime(time)}`.toUpperCase();
 
-const today = new Date().toISOString().split("T")[0];
+const today = new Date().toISOString().split('T')[0];
 
 export default function CourtCard({ court, selectedDate = today, onSlotSelected}: CourtCardProps) {
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);

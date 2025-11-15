@@ -27,16 +27,14 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
   useEffect(() => {
     const fetchAndFindBooking = async () => {
       try {
-        const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+        const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
         if (!token) {
-          throw new Error("Please login to view your bookings.");
+          throw new Error('Please login to view your bookings.');
         }
 
-        const meRes = await fetch("http://localhost:8081/auth/me", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          credentials: "include",
+        // 1) Get current user info to resolve userId
+        const meRes = await fetch('http://localhost:8081/auth/me', {
+          credentials: 'include',
         });
         if (!meRes.ok) {
           throw new Error(`Failed to fetch user info: ${meRes.status}`);
@@ -45,10 +43,7 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
         const userId = me.id;
 
         const response = await fetch(`http://localhost:8081/MyBookings/${userId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          credentials: "include",
+          credentials: 'include',
         });
 
         if (!response.ok) {
@@ -131,7 +126,12 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
                   </span>
                 </div>
               </div>
-              <BookingActions bookingId={booking.id!} status={booking.status} isCurrent={booking.isCurrent} locationName={booking.locationName} />
+              <BookingActions
+                bookingId={booking.id!}
+                status={booking.status}
+                isCurrent={booking.isCurrent}
+                locationName={booking.locationName}
+              />
             </div>
           </main>
         </div>

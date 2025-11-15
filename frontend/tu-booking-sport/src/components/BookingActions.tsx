@@ -87,7 +87,7 @@ export default function BookingActions({ bookingId, status, isCurrent, locationN
     try {
       const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
       if (!token) {
-        throw new Error("Please login again before cancelling this reservation.");
+        return;
       }
 
       const meRes = await fetch(`${API_BASE}/auth/me`, {

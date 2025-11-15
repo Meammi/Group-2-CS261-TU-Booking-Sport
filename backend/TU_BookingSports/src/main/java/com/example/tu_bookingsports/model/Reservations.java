@@ -112,6 +112,14 @@ public class Reservations {
         this.slot = slot;
     }
 
+    public UUID getSlot() {
+        return slot;
+    }
+
+    public void setSlot(UUID slot) {
+        this.slot = slot;
+    }
+
     public LocalDateTime getStartTime() {
         return startTime;
     }
