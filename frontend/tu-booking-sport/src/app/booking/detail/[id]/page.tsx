@@ -1,6 +1,6 @@
-'use client'; 
+"use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeftIcon, MapPinIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
 import BookingActions from "@/components/BookingActions";
@@ -26,17 +26,16 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
   useEffect(() => {
     const fetchAndFindBooking = async () => {
       try {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+        const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
         if (!token) {
-          throw new Error('Please login to view your bookings.');
+          throw new Error("Please login to view your bookings.");
         }
 
-        // 1) Get current user info to resolve userId
-        const meRes = await fetch('http://localhost:8081/auth/me', {
+        const meRes = await fetch("http://localhost:8081/auth/me", {
           headers: {
-            'Authorization': `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
-          credentials: 'include',
+          credentials: "include",
         });
         if (!meRes.ok) {
           throw new Error(`Failed to fetch user info: ${meRes.status}`);
@@ -44,19 +43,18 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
         const me: { id: string } = await meRes.json();
         const userId = me.id;
 
-        // 2) Fetch bookings for this user
         const response = await fetch(`http://localhost:8081/MyBookings/${userId}`, {
           headers: {
-            'Authorization': `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
-          credentials: 'include',
+          credentials: "include",
         });
 
         if (!response.ok) {
           throw new Error(`Failed to fetch user bookings: ${response.status}`);
         }
 
-        const data: { current: Omit<BookingItem, 'id'>[]; history: Omit<BookingItem, 'id'>[] } = await response.json();
+        const data: { current: Omit<BookingItem, "id">[]; history: Omit<BookingItem, "id">[] } = await response.json();
 
         const allBookings = [
           ...data.current.map((item, index) => ({ ...item, id: index })),
@@ -83,10 +81,10 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
 
   if (isLoading) {
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen">
-            <ArrowPathIcon className="h-12 w-12 animate-spin text-gray-500" />
-            <p className="mt-4 text-gray-600">Loading booking details...</p>
-        </div>
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <ArrowPathIcon className="h-12 w-12 animate-spin text-gray-500" />
+        <p className="mt-4 text-gray-600">Loading booking details...</p>
+      </div>
     );
   }
 
@@ -102,9 +100,7 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
     );
   }
 
-  const formattedTime = (booking.startTime && booking.endTime)
-    ? `${booking.startTime.substring(0, 5)} - ${booking.endTime.substring(0, 5)}`
-    : 'N/A';
+  const formattedTime = booking.startTime && booking.endTime ? `${booking.startTime.substring(0, 5)} - ${booking.endTime.substring(0, 5)}` : "N/A";
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -123,17 +119,27 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
             <p className="mt-2 font-mono text-lg tracking-widest">{booking.qrCodeId}</p>
             <div className="mt-6 text-left space-y-2 border-t pt-4">
               <h2 className="text-2xl font-bold text-tu-navy">{booking.name}</h2>
-              <p className="text-sm text-gray-600"><strong>Location:</strong> {booking.locationName}</p>
-              <p className="text-sm text-gray-600"><strong>Date:</strong> {booking.bookingDate}</p>
-              <p className="text-sm text-gray-600"><strong>Time:</strong> {formattedTime}</p>
+              <p className="text-sm text-gray-600">
+                <strong>Location:</strong> {booking.locationName}
+              </p>
+              <p className="text-sm text-gray-600">
+                <strong>Date:</strong> {booking.bookingDate}
+              </p>
+              <p className="text-sm text-gray-600">
+                <strong>Time:</strong> {formattedTime}
+              </p>
               <div className="flex items-center gap-2">
-                <p className="text-sm text-gray-600"><strong>Status:</strong></p>
-                <span className={`px-2 py-1 text-xs font-semibold rounded-full ${booking.isCurrent ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                <p className="text-sm text-gray-600">
+                  <strong>Status:</strong>
+                </p>
+                <span
+                  className={`px-2 py-1 text-xs font-semibold rounded-full ${booking.isCurrent ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}`}
+                >
                   {booking.status}
                 </span>
               </div>
             </div>
-            <BookingActions bookingId={booking.id!} status={booking.status} isCurrent={booking.isCurrent} locationName={booking.locationName}/>
+            <BookingActions bookingId={booking.id!} status={booking.status} isCurrent={booking.isCurrent} locationName={booking.locationName} />
           </div>
         </main>
       </div>

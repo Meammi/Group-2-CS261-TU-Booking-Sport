@@ -52,6 +52,8 @@ export default function CourtCard({ court, selectedDate = today, onSlotSelected}
     setBookingResult(null);
     setSelectedSlot(time);
     setIsModalOpen(true);
+    // Notify parent if provided
+    if (onSlotSelected) onSlotSelected(court, time);
   };
 
     useEffect(() => {

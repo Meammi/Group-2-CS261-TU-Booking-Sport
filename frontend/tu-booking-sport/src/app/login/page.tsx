@@ -1,5 +1,5 @@
-//frontend\tu-booking-sport\src\app\login\page.tsx
 "use client";
+import { API_BASE } from '@/lib/config'
 
 import { useRouter } from "next/navigation";
 import React, { useState, useRef } from "react";
@@ -26,7 +26,7 @@ export default function Home() {
 
     try {
       const response = await axios.post(
-        "http://localhost:8081/auth/login",
+        API_BASE + "/auth/login",
         {
           username: studentId,
           password: password,
@@ -184,3 +184,6 @@ export default function Home() {
     </BackgroundLayout>
   );
 }
+
+
+
