@@ -1,5 +1,7 @@
 "use client";
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { API_BASE } from "@/lib/config";
 
 type Props = {
   open: boolean;
@@ -17,6 +19,7 @@ type Props = {
 export default function ConfirmModal({
   open, spot, date, time, onClose, onConfirm, userId, slotId, roomId, idsUrl,
 }: Props) {
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -74,7 +77,7 @@ export default function ConfirmModal({
 
       // กรณี fallback ดึง userId จาก session cookie (/auth/me)
       if (!finalUserId) {
-        const meRes = await fetch('http://localhost:8081/auth/me', {
+        const meRes = await fetch(`${API_BASE}/auth/me`, {
           credentials: 'include',
         });
         if (!meRes.ok) {
@@ -91,7 +94,7 @@ export default function ConfirmModal({
       // กรณีต้องค้นหา slotId จากค่า roomId + time โดยให้ backend resolve ให้
       if (!finalSlotId) {
         if (!roomId || !time) throw new Error('Missing roomId or time to resolve slot.');
-        const lookupUrl = `http://localhost:8081/api/slot/lookup?roomId=${encodeURIComponent(roomId)}&time=${encodeURIComponent(time)}`;
+        const lookupUrl = `${API_BASE}/api/slot/lookup?roomId=${encodeURIComponent(roomId)}&time=${encodeURIComponent(time)}`;
         const lookupRes = await fetch(lookupUrl);
         if (!lookupRes.ok) {
           let m = `Slot lookup failed (${lookupRes.status})`;
@@ -116,7 +119,7 @@ export default function ConfirmModal({
 
     try {
       // ส่งคำขอสร้างการจองไปที่ backend
-      const res = await fetch("http://localhost:8081/reservation/create", {
+      const res = await fetch(`${API_BASE}/reservation/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -151,12 +154,53 @@ export default function ConfirmModal({
         throw new Error(message);
       }
       const data = await res.json();
+      const reservation = data?.reservation;
+      const reservationId =
+        reservation?.reservationID ||
+        reservation?.reservationId ||
+        data?.reservationId ||
+        null;
+      const priceRaw = reservation?.price ?? data?.price;
+      const price =
+        priceRaw === undefined || priceRaw === null
+          ? 0
+          : typeof priceRaw === "number"
+          ? priceRaw
+          : typeof priceRaw === "string"
+          ? parseFloat(priceRaw)
+          : Number(priceRaw) || 0;
+
       setSuccessMsg(
-        data?.reservationId
-          ? `Booked successfully! Reservation ID: ${data.reservationId}`
+        reservationId
+          ? `Booked successfully! Reservation ID: ${reservationId}`
           : "Booked successfully!"
       );
       if (onConfirm) onConfirm();
+
+      if (reservationId && price > 0) {
+        try {
+          const paymentRes = await fetch(`${API_BASE}/api/payments`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ reservationId }),
+          });
+          if (!paymentRes.ok) {
+            let msg = "Failed to prepare payment. Please try again.";
+            try {
+              const raw = await paymentRes.text();
+              if (raw) {
+                const parsed = JSON.parse(raw);
+                msg = parsed?.message || raw;
+              }
+            } catch {}
+            throw new Error(msg);
+          }
+          router.push(`/receipt?id=${reservationId}`);
+        } catch (paymentErr: any) {
+          setSuccessMsg(null);
+          setErrorMsg(paymentErr?.message || "Unable to prepare payment.");
+        }
+      }
     } catch (err: any) {
       setErrorMsg(err?.message || "Unknown error");
     } finally {

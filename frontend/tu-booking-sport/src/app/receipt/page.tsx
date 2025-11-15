@@ -47,22 +47,40 @@ function ReceiptContent() {
   const qrRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!id) return;
+    if (!id) {
+      setLoading(false);
+      setError("Missing reservation ID");
+      return;
+    }
 
     const fetchData = async () => {
+      setLoading(true);
+      setError(null);
       try {
-        const res = await fetch(`/api/payments/`);
-        if (!res.ok) throw new Error("Failed to fetch data");
+        const res = await fetch(`${API_BASE}/api/payments/${id}`);
+        if (!res.ok) {
+          let msg = "Failed to fetch payment details";
+          try {
+            const raw = await res.text();
+            if (raw) {
+              const parsed = JSON.parse(raw);
+              msg = parsed?.message || raw;
+            }
+          } catch {}
+          throw new Error(msg);
+        }
         const json = await res.json();
 
         setData({
-          orderNo: json.id ?? "—",
-          bookingId: json.bookingId ?? id,
-          shopName: "โอนแล้วบิด",
-          dateStr: new Date().toLocaleString(),
-          itemName: json.itemName ?? "Unknown Item",
-          price: json.price ?? 0,
-          tax: json.tax ?? 0,
+          orderNo: json.id ?? id,
+          bookingId: json.reservationId ?? id,
+          shopName: "TU Booking Sport",
+          dateStr: json.paymentDate
+            ? new Date(json.paymentDate).toLocaleString()
+            : new Date().toLocaleString(),
+          itemName: "Reservation Fee",
+          price: Number(json.price ?? 0),
+          tax: 0,
           token: json.token ?? "",
         });
       } catch (err: any) {
@@ -325,6 +343,7 @@ function Row({
     </div>
   );
 }
+
 
 
 
