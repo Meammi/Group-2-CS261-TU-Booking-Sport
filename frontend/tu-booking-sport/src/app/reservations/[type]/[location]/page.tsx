@@ -6,7 +6,8 @@ import CourtCard from "@/components/CourtCard";
 import ConfirmModal from "@/components/ConfirmCard";
 import Link from "next/link";
 import ReservationHeader from "@/components/ReservationHeader";
-import { useRouter } from "next/navigation";
+import AuthGuard from '@/components/AuthGuard';
+
 import { ArrowLeftIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
 
 interface Court {
@@ -132,10 +133,12 @@ export default function ReservationDetailPage({ params }: { params: { type: stri
         );
     }
 
-    return (
-        <div className="bg-gray-50 min-h-screen">
-            <div className="mx-auto max-w-md bg-gray-100 min-h-screen">
-                <Header studentId="6709616376" />
+  return (
+    <AuthGuard>
+    <div className="bg-gray-50 min-h-screen">
+      <div className="mx-auto max-w-md bg-gray-100 min-h-screen">
+        
+        <Header studentId="6709616376" />
 
                 <ReservationHeader />
 
@@ -151,43 +154,20 @@ export default function ReservationDetailPage({ params }: { params: { type: stri
                         </div>
                     </header>
 
-                    {courts.length > 0 ? (
-                        <div className="space-y-4">
-                            {courts.map((court) => (
-                                <CourtCard key={court.room_id} court={court} selectedDate={selectedDate} onSlotSelected={handleSlotSelected} />
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="text-center py-10">
-                            <p className="text-gray-500">No courts available for this selection.</p>
-                        </div>
-                    )}
-                </main>
-
-                <ConfirmModal
-                    open={confirmOpen}
-                    spot={selectedCourt?.name || ""}
-                    date={formatDateDMY(selectedDate)}
-                    time={selectedTime || ""}
-                    onClose={() => setConfirmOpen(false)}
-                    onConfirm={() => {
-                        if (!selectedCourt || !selectedTime) {
-                            setConfirmOpen(false);
-                            return;
-                        }
-                        const spot = encodeURIComponent(selectedCourt.name);
-                        const date = encodeURIComponent(formatDateDMY(selectedDate));
-                        const time = encodeURIComponent(selectedTime.substring(0, 5));
-
-                        if ((selectedCourt.price ?? 0) <= 0) {
-                            router.push(`/successful?spot=${spot}&date=${date}&time=${time}`);
-                        } else {
-                            const id = encodeURIComponent(selectedCourt.room_id);
-                            router.push(`/receipt?id=${id}`);
-                        }
-                    }}
-                />
+          {courts.length > 0 ? (
+            <div className="space-y-4">
+              {courts.map((court) => (
+                <CourtCard key={court.room_id} court={court} />
+              ))}
             </div>
-        </div>
-    );
+          ) : (
+            <div className="text-center py-10">
+              <p className="text-gray-500">No courts available for this selection.</p>
+            </div>
+          )}
+        </main>
+      </div>
+    </div>
+    </AuthGuard>
+  );
 }

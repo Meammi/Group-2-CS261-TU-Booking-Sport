@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import BookingCard from '@/components/BookingCard';
+import AuthGuard from '@/components/AuthGuard';
 import { InboxIcon, ArrowPathIcon } from '@heroicons/react/24/solid';
 
 // Interface นี้ควรจะถูกย้ายไปที่ไฟล์กลางในอนาคต
@@ -40,30 +41,24 @@ export default function MyBookingPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        const fetchBookings = async () => {
-            try {
-                const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
-                if (!token) {
-                    throw new Error('Please login to view your bookings.');
-                }
+  useEffect(() => {
+    const fetchBookings = async () => {
+      try {
 
-                // Resolve userId from /auth/me
-                const meRes = await fetch('http://localhost:8081/auth/me', {
-                    headers: { 'Authorization': `Bearer ${token}` },
-                    credentials: 'include',
-                });
-                if (!meRes.ok) {
-                    throw new Error(`Failed to fetch user info: ${meRes.status}`);
-                }
-                const me: { id: string } = await meRes.json();
-                const userId = me.id;
+        // Resolve userId from /auth/me
+        const meRes = await fetch('http://localhost:8081/auth/me', {
+          credentials: 'include',
+        });
+        if (!meRes.ok) {
+          throw new Error(`Failed to fetch user info: ${meRes.status}`);
+        }
+        const me: { id: string } = await meRes.json();
+        const userId = me.id;
 
-                // Fetch bookings for this user
-                const response = await fetch(`http://localhost:8081/MyBookings/${userId}`, {
-                    headers: { 'Authorization': `Bearer ${token}` },
-                    credentials: 'include',
-                });
+        // Fetch bookings for this user
+        const response = await fetch(`http://localhost:8081/MyBookings/${userId}`, {
+          credentials: 'include',
+        });
 
                 if (!response.ok) {
                     throw new Error(`Failed to fetch bookings: ${response.status}`);
@@ -111,15 +106,16 @@ export default function MyBookingPage() {
         );
     }
 
-    return (
-        <div className="bg-gray-50 min-h-screen">
-            <div className="mx-auto max-w-md bg-gray-100 min-h-screen">
-                <Header studentId="6709616376" />
-                <main className="p-4 font-nunito">
-
-                    <div className="flex flex-col items-center gap-2 mb-6">
-                        <h1 className="text-3xl font-bold text-gray-800">My Booking</h1>
-                    </div>
+  return (
+    <AuthGuard>
+    <div className="bg-gray-50 min-h-screen">
+      <div className="mx-auto max-w-md bg-gray-100 min-h-screen">
+        <Header studentId="6709616376" />
+        <main className="p-4 font-nunito">
+          
+          <div className="flex flex-col items-center gap-2 mb-6">
+            <h1 className="text-3xl font-bold text-gray-800">My Booking</h1>
+          </div>
 
                     <section>
                         <div className="flex items-center gap-3 mb-4">
@@ -177,8 +173,9 @@ export default function MyBookingPage() {
                         </div>
                     </section>
 
-                </main>
-            </div>
-        </div>
-    )
+        </main>
+      </div>
+    </div>
+    </AuthGuard>
+  )
 }
