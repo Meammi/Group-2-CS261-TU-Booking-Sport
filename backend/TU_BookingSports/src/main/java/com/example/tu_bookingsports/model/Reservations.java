@@ -29,6 +29,9 @@ public class Reservations {
     @Column(name = "slot_id", nullable = false)
     private UUID slot;
 
+    @Column(name = "slot_id", nullable = false)
+    private UUID slot;
+
     @Column(name = "start_time", nullable = false)
     private LocalDateTime startTime;
 
@@ -109,14 +112,6 @@ public class Reservations {
     }
 
     public void setSlotId(UUID slot) {
-        this.slot = slot;
-    }
-
-    public UUID getSlot() {
-        return slot;
-    }
-
-    public void setSlot(UUID slot) {
         this.slot = slot;
     }
 

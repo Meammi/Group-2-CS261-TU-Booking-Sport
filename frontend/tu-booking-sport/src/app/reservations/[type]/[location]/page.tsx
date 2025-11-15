@@ -6,6 +6,8 @@ import CourtCard from "@/components/CourtCard";
 import ConfirmModal from "@/components/ConfirmCard";
 import Link from "next/link";
 import ReservationHeader from "@/components/ReservationHeader";
+import AuthGuard from '@/components/AuthGuard';
+
 import { useRouter } from "next/navigation";
 import { ArrowLeftIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
 
@@ -69,6 +71,42 @@ export default function ReservationDetailPage({ params }: { params: { type: stri
         fetchAndFilterCourts();
     }, [type, location]);
 
+  // --- UI สำหรับสถานะ Loading และ Error ---
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <ArrowPathIcon className="h-12 w-12 animate-spin text-gray-500" />
+        <p className="mt-4 text-gray-600">Loading courts for {location}...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div className="text-center py-10 text-red-500">Error: {error}</div>;
+  }
+
+  return (
+    <AuthGuard>
+    <div className="bg-gray-50 min-h-screen">
+      <div className="mx-auto max-w-md bg-gray-100 min-h-screen">
+        
+        <Header studentId="6709616376" />
+
+         <ReservationHeader />
+        
+        <main className="p-4 font-nunito">
+          <header className="relative flex items-center justify-center mb-6">
+            
+            <Link href="/reservations" className="bg-gray-200 absolute left-0 p-2 rounded-full hover:bg-gray-300">
+              <ArrowLeftIcon className="h-6 w-6 text-gray-700" />
+            </Link>
+
+            
+            <div className="text-center">
+              <h1 className="text-2xl font-bold text-tu-navy">{type}</h1>
+              <p className="text-md text-gray-600">{location}</p>
+            </div>
+          </header>
     const handleSlotSelected = (court: Court, time: string) => {
         //setSelectedCourt(court)
         //setSelectedTime(time)
@@ -129,6 +167,13 @@ export default function ReservationDetailPage({ params }: { params: { type: stri
                     <ArrowPathIcon className="h-4 w-4" /> Retry
                 </button>
             </div>
+          )}
+        </main>
+      </div>
+    </div>
+    </AuthGuard>
+  );
+}
         );
     }
 
