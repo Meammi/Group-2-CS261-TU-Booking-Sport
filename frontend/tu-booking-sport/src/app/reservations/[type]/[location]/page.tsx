@@ -21,7 +21,6 @@ interface Court {
 }
 
 export default function ReservationDetailPage({ params }: { params: { type: string; location: string } }) {
-    const router = useRouter();
     const type = decodeURIComponent(params.type);
     const location = decodeURIComponent(params.location);
 
@@ -157,7 +156,12 @@ export default function ReservationDetailPage({ params }: { params: { type: stri
           {courts.length > 0 ? (
             <div className="space-y-4">
               {courts.map((court) => (
-                <CourtCard key={court.room_id} court={court} />
+                <CourtCard
+                  key={court.room_id}
+                  court={court}
+                  onSlotSelected={handleSlotSelected}
+                  selectedDate={selectedDate}
+                />
               ))}
             </div>
           ) : (
