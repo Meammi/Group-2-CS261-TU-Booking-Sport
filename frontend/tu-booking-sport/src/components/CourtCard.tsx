@@ -1,6 +1,6 @@
 'use client';
-import { useState } from 'react';
-import ConfirmModal from './ConfirmCard';
+import {useEffect, useState} from 'react';
+import ConfirmModal from '@/components/ConfirmCard';
 
 interface Court {
   name: string;
@@ -15,7 +15,7 @@ interface Court {
 interface CourtCardProps {
   court: Court;
   selectedDate?: string;
-  onSlotSelected?: (court: Court, time: string) => void;
+  onSlotSelected: (court: Court, time: string) => void;
 }
 
 interface BookingResponse {
@@ -40,7 +40,7 @@ const getStatusClasses = (status: string) => {
 
 const today = new Date().toISOString().split('T')[0];
 
-export default function CourtCard({ court, selectedDate = today, onSlotSelected }: CourtCardProps) {
+export default function CourtCard({ court, selectedDate = today, onSlotSelected}: CourtCardProps) {
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [bookingResult, setBookingResult] = useState<{type: 'success' | 'error', message: string} | null>(null);
@@ -55,6 +55,10 @@ export default function CourtCard({ court, selectedDate = today, onSlotSelected 
     // Notify parent if provided
     if (onSlotSelected) onSlotSelected(court, time);
   };
+
+    useEffect(() => {
+        onSlotSelected(court, "TiMe");
+    }, [isModalOpen]);
 
   const handleConfirmBooking = async () => {
     if (!selectedSlot) return;
@@ -115,7 +119,7 @@ export default function CourtCard({ court, selectedDate = today, onSlotSelected 
             <h3 className="text-xl font-bold text-tu-navy">{court.name}</h3>
             <p className="text-sm text-gray-500">Capacity: {court.capacity} people</p>
           </div>
-          <span className="text-lg font-semibold text-gray-800">{court.price > 0 ? `${court.price}à¸¿` : 'Free'}</span>
+          <span className="text-lg font-semibold text-gray-800">{court.price > 0 ? `${court.price}฿` : 'Free'}</span>
         </div>
 
         <div className="border-t pt-4">

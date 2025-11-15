@@ -17,4 +17,5 @@ public interface ReservationRepository extends JpaRepository<Reservations, UUID>
             LocalDateTime end,
             Collection<ReservationStatus> statuses
     );
+    List<Reservations> findByUser(UUID userId);
 }

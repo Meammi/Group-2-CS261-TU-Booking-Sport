@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Nunito } from "next/font/google"; // 1. Import แค่ Nunito
 import "./globals.css";
+import 'leaflet/dist/leaflet.css';
+
 
 // 2. ตั้งค่าแค่ Nunito
 const nunito = Nunito({

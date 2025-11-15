@@ -1,11 +1,10 @@
 "use client";
-import { API_BASE } from '@/lib/config'
-import React, { useState } from "react";
+import React, {useEffect, useState} from "react";
 
 type Props = {
   open: boolean;
   spot: string;
-  date: string;
+  date: string;   // รูปแบบแสดงผล เช่น 11/04/2025
   time: string;
   onClose: () => void;
   onConfirm?: () => void;
@@ -22,11 +21,20 @@ export default function ConfirmModal({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
+    useEffect(() => {
+        if (open) {
+            setErrorMsg(null);
+            setSuccessMsg(null);
+        }
+    }, [open]);
+
   const handleConfirm = async () => {
+    // กำหนดค่า userId และ slotId จากแหล่งข้อมูลที่มี
     let finalUserId = userId;
     let finalSlotId = slotId;
 
     try {
+      // กรณีที่ส่ง URL มาให้ดึง userId + slotId พร้อมกัน
       if ((!finalUserId || !finalSlotId) && idsUrl) {
         const r = await fetch(idsUrl, { method: 'GET' });
         if (!r.ok) {
@@ -39,6 +47,7 @@ export default function ConfirmModal({
         if (!finalSlotId) finalSlotId = data?.slotId;
       }
 
+      // กรณีถอด userId จาก JWT ใน localStorage
       if (!finalUserId) {
         const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
         if (!token) throw new Error('Please login before booking.');
@@ -53,6 +62,7 @@ export default function ConfirmModal({
           );
           const payload = JSON.parse(jsonPayload);
           finalUserId = payload?.id || payload?.userId || null;
+          // ตรวจสอบว่าเป็น UUID ถูกต้องไหม
           const isUuid = (v: any) => typeof v === 'string' && /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(v);
           if (!finalUserId || !isUuid(finalUserId)) {
             finalUserId = null as any;
@@ -62,8 +72,9 @@ export default function ConfirmModal({
         }
       }
 
+      // กรณี fallback ดึง userId จาก session cookie (/auth/me)
       if (!finalUserId) {
-        const meRes = await fetch(API_BASE + '/auth/me', {
+        const meRes = await fetch('http://localhost:8081/auth/me', {
           credentials: 'include',
         });
         if (!meRes.ok) {
@@ -77,9 +88,10 @@ export default function ConfirmModal({
         }
       }
 
+      // กรณีต้องค้นหา slotId จากค่า roomId + time โดยให้ backend resolve ให้
       if (!finalSlotId) {
         if (!roomId || !time) throw new Error('Missing roomId or time to resolve slot.');
-        const lookupUrl = `${API_BASE}/api/slot/lookup?roomId=${encodeURIComponent(roomId)}&time=${encodeURIComponent(time)}`;
+        const lookupUrl = `http://localhost:8081/api/slot/lookup?roomId=${encodeURIComponent(roomId)}&time=${encodeURIComponent(time)}`;
         const lookupRes = await fetch(lookupUrl);
         if (!lookupRes.ok) {
           let m = `Slot lookup failed (${lookupRes.status})`;
@@ -103,12 +115,15 @@ export default function ConfirmModal({
     if (roomId) payload.roomId = roomId;
 
     try {
-      const res = await fetch(API_BASE + "/reservation/create", {
+      // ส่งคำขอสร้างการจองไปที่ backend
+      const res = await fetch("http://localhost:8081/reservation/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
+          credentials: 'include',
       });
       if (!res.ok) {
+        
         let message = "Reservation failed. Please try again.";
         let raw = "";
         try {
@@ -149,7 +164,7 @@ export default function ConfirmModal({
     }
   };
   if (!open) return null;
-
+    //console.log(successMsg,errorMsg);
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* backdrop */}
@@ -185,14 +200,11 @@ export default function ConfirmModal({
             )}
           </div>
         )}
+          {(!errorMsg && !successMsg) && (
+              <div className="mt-4 text-center text-sm">
+              </div>
+          )}
       </div>
     </div>
   );
 }
-
-
-
-
-
-
-

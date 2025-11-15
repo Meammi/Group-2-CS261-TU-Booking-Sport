@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.List;
 
 @Service
 public class ReservationService {
@@ -25,6 +26,8 @@ public class ReservationService {
     private final HomepageRepository roomsRepository;
     private final SlotRepository slotRepository;
     private final RoomRepository roomRepository;
+
+    private final int MAX_RESERVATION = 10;
 
     public ReservationService(ReservationRepository reservationRepository, HomepageRepository roomsRepository, SlotRepository slotRepository, RoomRepository roomRepository) {
         this.reservationRepository = reservationRepository;
@@ -49,10 +52,13 @@ public class ReservationService {
 
 
     @Transactional
-    public Reservations createReservation(ReservationRequest request) {
+    public Reservations createReservation(ReservationRequest request,UUID loggedInUserId) {
         System.out.println("request getUserId: "+request.getUserId());
-
+        System.out.println("token getUserId: "+loggedInUserId);
         System.out.println("request getSlotId: "+request.getSlotId());
+
+
+
 
 
         Optional<Slot> slotOptional = Optional.empty();
@@ -79,7 +85,7 @@ public class ReservationService {
         System.out.println("found SlotId from slotRepo         "+slot.getSlotId());
         System.out.println("found RoomId from roomRepo         "+room.getRoom_id());
 
-        if (slot.getStatus() == Slot.SlotStatus.BOOKED) {
+        if (slot.getStatus() == Slot.SlotStatus.BOOKED || slot.getStatus() == Slot.SlotStatus.MAINTENANCE ) {
             throw new RuntimeException("Error, This court was reserve!, Slot Status: "+slot.getStatus()+", SlotId: "+slot.getSlotId());
         }
 
@@ -88,13 +94,25 @@ public class ReservationService {
 
         // Build reservation period from slot time
         LocalTime startTime = slot.getSlotTime();
-        LocalDateTime startDateTime = LocalDateTime.of(LocalDate.now(), startTime);
+        LocalDateTime startDateTime = LocalDateTime.of(LocalDate.now().plusDays(1), startTime);
         LocalDateTime endDateTime = startDateTime.plusHours(1);
+
+        // Check if current Reservation >=10
+        List<Reservations> reservations = reservationRepository.findByUser(loggedInUserId);
+        long tomorrowReservationsCount = reservations.stream()
+                .filter(b -> {
+                    return b.getEndTime().isAfter(LocalDateTime.now());
+                })
+                .count();
+        if (tomorrowReservationsCount >= MAX_RESERVATION) {
+            throw new RuntimeException("Error: Reached current maximum number of Reservations: "+tomorrowReservationsCount+"/"+MAX_RESERVATION);
+        }
+
 
         // Create reservation
         Reservations reservation = new Reservations();
 
-        reservation.setUser(request.getUserId()); //1
+        reservation.setUser(loggedInUserId); //1
         reservation.setRoom(slot.getRoom().getRoom_id()); //2
         reservation.setSlot(slot.getSlotId()); //3
 
