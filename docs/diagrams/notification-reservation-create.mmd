@@ -1,0 +1,38 @@
+sequenceDiagram
+    autonumber
+    participant F as Frontend (TU Booking UI)
+    participant B as Spring Boot API
+    participant DB as PostgreSQL
+    participant SMTP as Mail Server (SMTP)
+    participant Sch as Scheduler (Spring)
+
+    F->>B: POST /reservation/create {userId, slotId}
+    B->>B: Validate input + role (authenticated)
+    B->>DB: SELECT slot by id
+    B->>B: Check slot.status != BOOKED
+    B->>DB: UPDATE slot SET status='BOOKED'
+    B->>DB: INSERT reservations (status=PENDING/CONFIRMED, reminderSent=false)
+    alt Price > 0 (payment required)
+        B-->>F: 201 {message: "Reservation created", reservation}
+    else Free/zero price
+        B-->>F: 201 {message: "Reservation confirmed", reservation}
+    end
+
+    Note over F,B: Reminder e-mail sent later by scheduler
+
+    Sch->>B: @Scheduled reminder check
+    B->>B: Compute windowStart/windowEnd
+    B->>DB: Find upcoming CONFIRMED with reminderSent=false
+    B->>DB: Load user + room details
+    B->>SMTP: Send reminder e-mail(to, displayName, roomName, startTime)
+    alt Mail accepted
+        B->>DB: UPDATE reservations SET reminderSent=true
+    else Mail failed
+        B-->>Sch: Log error (do not flip reminderSent)
+    end
+
+%% Notes:
+%% - Excludes any DevTools-related components or flows.
+%% - Mirrors current backend: ReservationService + ReservationReminderService + EmailService.
+%% - Payment flow not expanded here; only status impact.
+

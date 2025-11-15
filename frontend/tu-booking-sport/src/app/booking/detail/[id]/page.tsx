@@ -1,6 +1,6 @@
-'use client'; 
+"use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeftIcon, MapPinIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
 import BookingActions from "@/components/BookingActions";
@@ -27,10 +27,16 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
   useEffect(() => {
     const fetchAndFindBooking = async () => {
       try {
+        const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+        if (!token) {
+          throw new Error("Please login to view your bookings.");
+        }
 
-        // 1) Get current user info to resolve userId
-        const meRes = await fetch('http://localhost:8081/auth/me', {
-          credentials: 'include',
+        const meRes = await fetch("http://localhost:8081/auth/me", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          credentials: "include",
         });
         if (!meRes.ok) {
           throw new Error(`Failed to fetch user info: ${meRes.status}`);
@@ -38,16 +44,18 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
         const me: { id: string } = await meRes.json();
         const userId = me.id;
 
-        // 2) Fetch bookings for this user
         const response = await fetch(`http://localhost:8081/MyBookings/${userId}`, {
-          credentials: 'include',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          credentials: "include",
         });
 
         if (!response.ok) {
           throw new Error(`Failed to fetch user bookings: ${response.status}`);
         }
 
-        const data: { current: Omit<BookingItem, 'id'>[]; history: Omit<BookingItem, 'id'>[] } = await response.json();
+        const data: { current: Omit<BookingItem, "id">[]; history: Omit<BookingItem, "id">[] } = await response.json();
 
         const allBookings = [
           ...data.current.map((item, index) => ({ ...item, id: index })),
@@ -74,10 +82,10 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
 
   if (isLoading) {
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen">
-            <ArrowPathIcon className="h-12 w-12 animate-spin text-gray-500" />
-            <p className="mt-4 text-gray-600">Loading booking details...</p>
-        </div>
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <ArrowPathIcon className="h-12 w-12 animate-spin text-gray-500" />
+        <p className="mt-4 text-gray-600">Loading booking details...</p>
+      </div>
     );
   }
 
@@ -93,9 +101,7 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
     );
   }
 
-  const formattedTime = (booking.startTime && booking.endTime)
-    ? `${booking.startTime.substring(0, 5)} - ${booking.endTime.substring(0, 5)}`
-    : 'N/A';
+  const formattedTime = booking.startTime && booking.endTime ? `${booking.startTime.substring(0, 5)} - ${booking.endTime.substring(0, 5)}` : "N/A";
 
   return (
     <AuthGuard>
@@ -127,8 +133,9 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
               </div>
               <BookingActions bookingId={booking.id!} status={booking.status} isCurrent={booking.isCurrent} />
             </div>
-          </main>
-        </div>
+            <BookingActions bookingId={booking.id!} status={booking.status} isCurrent={booking.isCurrent} locationName={booking.locationName} />
+          </div>
+        </main>
       </div>
     </AuthGuard>
   );

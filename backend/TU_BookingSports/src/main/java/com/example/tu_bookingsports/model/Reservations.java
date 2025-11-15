@@ -5,9 +5,12 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.util.UUID;
 import java.time.LocalDateTime;
+
+import lombok.Data;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+@Data
 @Entity
 @Table(name = "reservations")
 public class Reservations {
@@ -17,11 +20,14 @@ public class Reservations {
     @Column(name = "reservation_id" , updatable = false , nullable = false)
     private UUID reservationID;
 
+    @Column(name = "user_id", nullable = false)
+    private UUID user;
+
     @Column(name = "room_id", nullable = false)
     private UUID room;
 
-    @Column(name = "user_id", nullable = false)
-    private UUID user;
+    @Column(name = "slot_id", nullable = false)
+    private UUID slot;
 
     @Column(name = "slot_id", nullable = false)
     private UUID slot;
@@ -38,7 +44,7 @@ public class Reservations {
         CANCELLED,   // 2 ยกเลิก
     }
 
-    @Column(name = "price")
+    @Column(name = "price",precision = 10,scale = 2)
     private BigDecimal price;
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
@@ -50,11 +56,14 @@ public class Reservations {
     @Column(name = "updated", nullable = false)
     private LocalDateTime updatedAt;
 
+    @Column(name = "reminder_sent", nullable = false)
+    private boolean reminderSent = false;
     //Constuctor
     public Reservations() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
         this.status = ReservationStatus.PENDING;
+        this.reminderSent = false;
     }
 
     public Reservations(UUID room, UUID user, LocalDateTime startTime, LocalDateTime endTime, ReservationStatus status) {
@@ -65,6 +74,7 @@ public class Reservations {
         this.status = status != null ? status : ReservationStatus.PENDING;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
+        this.reminderSent = false;
     }
 
     @PreUpdate
@@ -97,7 +107,7 @@ public class Reservations {
         this.user = user;
     }
 
-    public  UUID getSlotId() {
+    public UUID getSlotId() {
         return slot;
     }
 
@@ -143,6 +153,22 @@ public class Reservations {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public boolean isReminderSent() {
+        return reminderSent;
+    }
+
+    public void setReminderSent(boolean reminderSent) {
+        this.reminderSent = reminderSent;
+    }
+
+    public BigDecimal getPrice() {
+        return price;
+    }
+
+    public void setPrice(BigDecimal price) {
+        this.price = price;
     }
 
 }

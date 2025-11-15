@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import axios from "@/lib/axios";
+import ConfirmModal from '@/components/ConfirmCard';
 
 interface Court {
   name: string;
@@ -15,6 +16,7 @@ interface Court {
 interface CourtCardProps {
   court: Court;
   selectedDate?: string;
+  onSlotSelected: (court: Court, time: string) => void;
 }
 
 interface BookingResponse {
@@ -46,8 +48,7 @@ const normalizeTime = (time: string): string => {
 const getSlotKey = (roomId: string, time: string) =>
   `${roomId}-${normalizeTime(time)}`.toUpperCase();
 
-export default function CourtCard({ court, selectedDate = new Date().toISOString().split('T')[0] }: CourtCardProps) {
-  const [slotMap, setSlotMap] = useState<Record<string, string>>({});
+export default function CourtCard({ court, selectedDate = today, onSlotSelected}: CourtCardProps) {
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [bookingResult, setBookingResult] = useState<{ type: 'success' | 'error', message: string } | null>(null);
@@ -114,7 +115,13 @@ useEffect(() => {
     setBookingResult(null);
     setSelectedSlot(time);
     setIsModalOpen(true);
+    // Notify parent if provided
+    if (onSlotSelected) onSlotSelected(court, time);
   };
+
+    useEffect(() => {
+        onSlotSelected(court, "TiMe");
+    }, [isModalOpen]);
 
   const handleConfirmBooking = async () => {
     if (!selectedSlot) return;
@@ -257,6 +264,15 @@ useEffect(() => {
           </div>
         </div>
       )}
+      <ConfirmModal
+        open={isModalOpen}
+        spot={court.name}
+        date={selectedDate}
+        time={selectedSlot || ''}
+        onClose={() => setIsModalOpen(false)}
+        // Let ConfirmModal handle the API call itself
+        roomId={court.room_id}
+      />
 
       {/* Card */}
       <div className="m-4 rounded-xl bg-white p-4 shadow-lg border-l-4 border-tu-navy transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">

@@ -1,15 +1,22 @@
 package com.example.tu_bookingsports.service;
 
+import com.example.tu_bookingsports.model.GeoLocation;
 import com.example.tu_bookingsports.model.Rooms;
 import com.example.tu_bookingsports.model.Slot;
 import com.example.tu_bookingsports.repository.RoomRepository;
 import com.example.tu_bookingsports.repository.SlotRepository;
 import com.example.tu_bookingsports.DTO.RoomReservationDTO; // Import DTO
 import com.example.tu_bookingsports.DTO.SlotDetailDTO;   // Import DTO
+import com.example.tu_bookingsports.DTO.GeolocationResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
+
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Service
 public class RoomService {
@@ -70,5 +77,20 @@ public class RoomService {
 
         dto.setSlots(slotDTOs);
         return dto;
+    }
+
+    public GeolocationResponse getLocationByName(String locationName) {
+        //ค้นหา Room "แรก" ที่เจอด้วย loc_name นี้
+        List<Rooms> rooms = roomRepository.findFirstByLocName(locationName);
+
+        if (rooms.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Location not found: " + locationName);
+        }
+
+        GeoLocation locationModel = rooms.get(0).getLocation();
+        return new GeolocationResponse(
+                locationModel.getLatitude(),
+                locationModel.getLongitude()
+        );
     }
 }

@@ -1,0 +1,43 @@
+services:
+  backend:
+    build:
+      context: ./backend/TU_BookingSports
+      dockerfile: Dockerfile
+    container_name: tu-booking-backend
+    env_file:
+      - .env
+    environment:
+      - DB_URL=${DB_URL}
+      - DB_USERNAME=${DB_USERNAME:-sa}
+      - DB_PASSWORD=${DB_PASSWORD:-YourStrong@Passw0rd}
+      - JWT_SECRET=${JWT_SECRET:-change-me}
+      - JWT_EXPIRATION=${JWT_EXPIRATION:-3600000}
+      - USERNAME=${USERNAME:-}
+      - PASSWORD=${PASSWORD:-}
+      - TUAPI_APPLICATION_KEY=${TUAPI_APPLICATION_KEY:-}
+      - BRANCH_ID=${BRANCH_ID:-}
+      - API_KEY=${API_KEY:-}
+      - JAVA_TOOL_OPTIONS=-Duser.timezone=Asia/Bangkok
+      - TZ=Asia/Bangkok
+      - DEV_TOOLS_ENABLED=true
+    ports:
+      - "8081:8081"
+    networks:
+      - mynetwork
+
+  frontend:
+    build:
+      context: ./frontend/tu-booking-sport
+      dockerfile: Dockerfile
+    container_name: tu-booking-frontend
+    depends_on:
+      - backend
+    environment:
+      - NEXT_PUBLIC_API_BASE=${NEXT_PUBLIC_API_BASE:-http://localhost:8081}
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+    ports:
+      - "3000:3000"
+networks:
+  mynetwork:
+    external: true

@@ -1,0 +1,45 @@
+sequenceDiagram
+    autonumber
+    participant Sch as Scheduler (Spring)
+    participant Rem as ReservationReminderService
+    participant ResRepo as ReservationRepository
+    participant UserRepo as UserRepository
+    participant RoomRepo as RoomRepository
+    participant Email as EmailService
+    participant Mail as JavaMailSender / SMTP
+
+    Sch->>Rem: @Scheduled fixedDelay trigger
+    Rem->>Rem: Compute windowStart/windowEnd
+    Rem->>ResRepo: findByStartTimeBetweenAndStatusInAndReminderSentFalse(windowStart, windowEnd, CONFIRMED)
+    ResRepo-->>Rem: List<Reservations> upcoming
+
+    alt No upcoming reservations
+        Rem-->>Sch: Return (nothing to notify)
+    else Upcoming reservations found
+        loop For each reservation
+            Rem->>UserRepo: findById(reservation.user)
+            alt User not found or no email
+                Rem->>ResRepo: reservation.reminderSent = true; save()
+                Rem-->>Sch: Skip (cannot notify)
+            else Valid user and email
+                Rem->>RoomRepo: findById(reservation.room)
+                RoomRepo-->>Rem: Optional<Room> (name)
+
+                Rem->>Email: sendReservationReminderEmail(to, displayName, roomName, startTime)
+                Email->>Mail: send(SimpleMailMessage)
+                Mail-->>Email: Accepted / Exception
+
+                alt Mail accepted
+                    Rem->>ResRepo: reservation.reminderSent = true; save()
+                else Mail failed
+                    Rem-->>Sch: Log error (do not flip reminderSent)
+                end
+            end
+        end
+    end
+
+%% Notes:
+%% - Excludes any DevTools-related components or flows.
+%% - Based on EmailService and ReservationReminderService behavior in backend.
+%% - Reminder lead/window/interval read from application properties.
+

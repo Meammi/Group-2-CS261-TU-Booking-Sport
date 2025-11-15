@@ -1,4 +1,5 @@
-'use client';
+"use client";
+import { API_BASE } from '@/lib/config'
 
 import { useState, useEffect } from 'react';
 import SportCard from "@/components/SportCard";
@@ -105,9 +106,7 @@ export default function HomePage() {
       setIsLoading(true);
       setError(null);
       try {
-        const sportsResp = await fetch("http://localhost:8081/homepage");
-        if (!sportsResp.ok) throw new Error("Failed to fetch sports data");
-        const backendData: BackendSport[] = await sportsResp.json();
+        const response = await fetch(API_BASE + '/homepage'); 
 
         const sortedData = backendData.sort((a, b) => {
           const aBad = a.type.toLowerCase().includes("badminton");

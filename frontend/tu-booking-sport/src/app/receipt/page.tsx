@@ -1,4 +1,5 @@
 "use client";
+import { API_BASE } from '@/lib/config'
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import QrScanner from "qr-scanner";
@@ -50,7 +51,7 @@ function ReceiptContent() {
 
     const fetchData = async () => {
       try {
-        const res = await fetch(`http://localhost:8081/api/payments/${id}`);
+        const res = await fetch(`/api/payments/`);
         if (!res.ok) throw new Error("Failed to fetch data");
         const json = await res.json();
 
@@ -112,7 +113,7 @@ function ReceiptContent() {
         slipId: scanned,
       };
 
-      const res = await fetch("http://localhost:8081/api/slipChecking", {
+      const res = await fetch(API_BASE + "/api/slipChecking", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
@@ -324,3 +325,10 @@ function Row({
     </div>
   );
 }
+
+
+
+
+
+
+
