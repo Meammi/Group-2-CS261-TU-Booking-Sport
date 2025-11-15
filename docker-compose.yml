@@ -15,28 +15,11 @@ services:
     networks:
       - mynetwork
     healthcheck:
-      test: /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P ${DB_PASSWORD:-YourStrong@Passw0rd} -Q "SELECT 1" || exit 1
+      test: [ "CMD", "/opt/mssql-tools/bin/sqlcmd", "-S", "localhost", "-U", "sa", "-P", "${DB_PASSWORD:-YourStrong@Passw0rd}", "-Q", "SELECT 1" ]
       interval: 10s
-      timeout: 3s
+      timeout: 5s
       retries: 30
-      start_period: 30s
-
-  db-init:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: tu-booking-db-init
-    environment:
-      - SA_PASSWORD=${DB_PASSWORD:-YourStrong@Passw0rd}
-      - DB_HOST=db
-    volumes:
-      - ./database/init.sql:/init.sql:ro
-      - ./database/init-db.sh:/init-db.sh:ro
-    networks:
-      - mynetwork
-    depends_on:
-      db:
-        condition: service_healthy
-    entrypoint: ["/bin/bash", "/init-db.sh"]
-    restart: "no"
+      start_period: 20s
 
   backend:
     build:
@@ -48,22 +31,36 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    # disabled healthcheck to avoid blocking db-init
+    # healthcheck:
+    #   test: ["CMD-SHELL", "curl -f http://localhost:8081/actuator/health || exit 1"]
     environment:
       - DB_URL=${DB_URL:-jdbc:sqlserver://db:1433;databaseName=myDB1;encrypt=true;trustServerCertificate=true;}
       - DB_USERNAME=${DB_USERNAME:-sa}
       - DB_PASSWORD=${DB_PASSWORD:-YourStrong@Passw0rd}
       - JWT_SECRET=${JWT_SECRET:-change-me}
       - JWT_EXPIRATION=${JWT_EXPIRATION:-3600000}
-      - USERNAME=${USERNAME:-}
-      - PASSWORD=${PASSWORD:-}
-      - TUAPI_APPLICATION_KEY=${TUAPI_APPLICATION_KEY:-}
-      - BRANCH_ID=${BRANCH_ID:-}
-      - API_KEY=${API_KEY:-}
       - JAVA_TOOL_OPTIONS=-Duser.timezone=Asia/Bangkok
       - TZ=Asia/Bangkok
-      - DEV_TOOLS_ENABLED=true
     ports:
       - "8081:8081"
+    networks:
+      - mynetwork
+
+  db-init:
+    build:
+      context: ./database
+      dockerfile: Dockerfile
+    container_name: tu-booking-db-init
+    depends_on:
+      db:
+        condition: service_healthy
+      backend:
+        condition: service_started
+    environment:
+      - DB_URL=${DB_URL:-jdbc:sqlserver://db:1433;databaseName=myDB1;encrypt=true;trustServerCertificate=true;}
+      - DB_USERNAME=${DB_USERNAME:-sa}
+      - DB_PASSWORD=${DB_PASSWORD:-YourStrong@Passw0rd}
     networks:
       - mynetwork
 
@@ -74,7 +71,7 @@ services:
     container_name: tu-booking-frontend
     depends_on:
       backend:
-        condition: service_healthy
+        condition: service_started
     environment:
       - NEXT_PUBLIC_API_BASE=${NEXT_PUBLIC_API_BASE:-http://localhost:8081}
       - NODE_ENV=production
@@ -83,6 +80,7 @@ services:
       - "3000:3000"
     networks:
       - mynetwork
+
 volumes:
   sqlserver-data:
 
