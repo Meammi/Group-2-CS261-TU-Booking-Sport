@@ -133,7 +133,7 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
                 </span>
               </div>
             </div>
-            <BookingActions bookingId={booking.id!} status={booking.status} isCurrent={booking.isCurrent} />
+            <BookingActions bookingId={booking.id!} status={booking.status} isCurrent={booking.isCurrent} locationName={booking.locationName}/>
           </div>
         </main>
       </div>

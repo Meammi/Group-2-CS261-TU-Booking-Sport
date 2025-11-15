@@ -19,19 +19,19 @@ interface BookingItem {
 }
 
 const getImageForLocation = (locationName: string, roomName?: string): string => {
-    const normalizedLocation = locationName.toLowerCase().trim();
-    if (normalizedLocation === 'melodysphere') {
-        const rn = (roomName || '').toLowerCase();
-        if (rn.includes('full')) return '/images/musicroom.jpg';
-        if (rn.includes('karaoke')) return '/images/karaoke.jpg';
-        return '/images/karaoke.jpg';
-    }
-    switch (normalizedLocation) {
-        case 'gym 4': return '/images/gym4.jpg';
-        case 'karaoke': return '/images/karaoke.jpg';
-        case 'interzone': return '/images/interzone.jpg';
-        default: return 'https://placehold.co/100x100/cccccc/FFFFFF?text=Image';
-    }
+  const normalizedLocation = locationName.toLowerCase().trim();
+  if (normalizedLocation === 'melodysphere') {
+    const rn = (roomName || '').toLowerCase();
+    if (rn.includes('full')) return '/images/musicroom.jpg';
+    if (rn.includes('karaoke')) return '/images/karaoke.jpg';
+    return '/images/karaoke.jpg';
+  }
+  switch (normalizedLocation) {
+    case 'gym 4': return '/images/gym4.jpg';
+    case 'karaoke': return '/images/karaoke.jpg';
+    case 'interzone': return '/images/interzone.jpg';
+    default: return 'https://placehold.co/100x100/cccccc/FFFFFF?text=Image';
+  }
 };
 
 export default function MyBookingPage() {
