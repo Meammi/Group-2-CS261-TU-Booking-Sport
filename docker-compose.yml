@@ -12,6 +12,7 @@ services:
       - "1433:1433"
     volumes:
       - sqlserver-data:/var/opt/mssql
+      - ./database/init-scripts:/docker-entrypoint-initdb.d
     networks:
       - mynetwork
     healthcheck:
@@ -21,32 +22,6 @@ services:
       retries: 30
       start_period: 20s
 
-  backend:
-    build:
-      context: ./backend/TU_BookingSports
-      dockerfile: Dockerfile
-    container_name: tu-booking-backend
-    env_file:
-      - .env
-    depends_on:
-      db:
-        condition: service_healthy
-    # disabled healthcheck to avoid blocking db-init
-    # healthcheck:
-    #   test: ["CMD-SHELL", "curl -f http://localhost:8081/actuator/health || exit 1"]
-    environment:
-      - DB_URL=${DB_URL:-jdbc:sqlserver://db:1433;databaseName=myDB1;encrypt=true;trustServerCertificate=true;}
-      - DB_USERNAME=${DB_USERNAME:-sa}
-      - DB_PASSWORD=${DB_PASSWORD:-YourStrong@Passw0rd}
-      - JWT_SECRET=${JWT_SECRET:-change-me}
-      - JWT_EXPIRATION=${JWT_EXPIRATION:-3600000}
-      - JAVA_TOOL_OPTIONS=-Duser.timezone=Asia/Bangkok
-      - TZ=Asia/Bangkok
-    ports:
-      - "8081:8081"
-    networks:
-      - mynetwork
-
   db-init:
     build:
       context: ./database
@@ -55,14 +30,80 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      backend:
-        condition: service_started
     environment:
-      - DB_URL=${DB_URL:-jdbc:sqlserver://db:1433;databaseName=myDB1;encrypt=true;trustServerCertificate=true;}
       - DB_USERNAME=${DB_USERNAME:-sa}
       - DB_PASSWORD=${DB_PASSWORD:-YourStrong@Passw0rd}
     networks:
       - mynetwork
+    command: >
+      /bin/bash -c "
+        echo 'Waiting for SQL Server...';
+        until /opt/mssql-tools/bin/sqlcmd -S db -U $$DB_USERNAME -P $$DB_PASSWORD -Q 'SELECT 1' >/dev/null 2>&1; do
+          sleep 2;
+        done;
+        echo 'Creating database if not exists...';
+        /opt/mssql-tools/bin/sqlcmd -S db -U $$DB_USERNAME -P $$DB_PASSWORD -i /docker-entrypoint-initdb.d/init-database.sql;
+        echo 'Verifying database creation...';
+        until /opt/mssql-tools/bin/sqlcmd -S db -U $$DB_USERNAME -P $$DB_PASSWORD -d myDB1 -Q 'SELECT 1' >/dev/null 2>&1; do
+          echo 'Waiting for database myDB1 to be ready...';
+          sleep 2;
+        done;
+        echo 'Database myDB1 is ready!';
+      "
+    restart: "no"
+
+  backend:
+    build:
+      context: ./backend/TU_BookingSports
+      dockerfile: Dockerfile
+    container_name: tu-booking-backend
+    env_file:
+      - .env
+    depends_on:
+      db-init:
+        condition: service_completed_successfully
+    environment:
+      - DB_URL=${DB_URL:-jdbc:sqlserver://db:1433;databaseName=myDB1;encrypt=true;trustServerCertificate=true;}
+      - DB_USERNAME=${DB_USERNAME:-sa}
+      - DB_PASSWORD=${DB_PASSWORD:-YourStrong@Passw0rd}
+      - JWT_SECRET=${JWT_SECRET:-change-me}
+      - JWT_EXPIRATION=${JWT_EXPIRATION:-3600000}
+      - JAVA_TOOL_OPTIONS=-Duser.timezone=Asia/Bangkok
+      - TZ=Asia/Bangkok
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+    ports:
+      - "8081:8081"
+    networks:
+      - mynetwork
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+
+  data-init:
+    build:
+      context: ./database
+      dockerfile: Dockerfile
+    container_name: tu-booking-data-init
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      - DB_USERNAME=${DB_USERNAME:-sa}
+      - DB_PASSWORD=${DB_PASSWORD:-YourStrong@Passw0rd}
+    networks:
+      - mynetwork
+    command: >
+      /bin/bash -c "
+        echo 'Waiting for backend to create tables...';
+        sleep 10;
+        echo 'Inserting initial data...';
+        /opt/mssql-tools/bin/sqlcmd -S db -U $$DB_USERNAME -P $$DB_PASSWORD -d myDB1 -i /docker-entrypoint-initdb.d/init-data.sql;
+        echo 'Initial data inserted successfully!';
+      "
+    restart: "no"
 
   frontend:
     build:
@@ -71,7 +112,7 @@ services:
     container_name: tu-booking-frontend
     depends_on:
       backend:
-        condition: service_started
+        condition: service_healthy
     environment:
       - NEXT_PUBLIC_API_BASE=${NEXT_PUBLIC_API_BASE:-http://localhost:8081}
       - NODE_ENV=production
@@ -86,4 +127,3 @@ volumes:
 
 networks:
   mynetwork:
-    external: true
