@@ -16,8 +16,6 @@ export default function ReservationCard({ href, imageUrl, title, location, total
     <a
       href={href}
       className="block m-4 rounded-xl bg-white shadow-lg overflow-hidden group transition-all duration-300 hover:shadow-2xl hover:-translate-y-1"
-      // เพิ่ม target="_blank" เพื่อป้องกันการเปลี่ยนหน้าใน editor
-      target="_blank"
       rel="noopener noreferrer"
     >
       <div className="relative h-40 w-full">

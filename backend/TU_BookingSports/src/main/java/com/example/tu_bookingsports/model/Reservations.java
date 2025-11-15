@@ -5,9 +5,12 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.util.UUID;
 import java.time.LocalDateTime;
+
+import lombok.Data;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+@Data
 @Entity
 @Table(name = "reservations")
 public class Reservations {
@@ -17,11 +20,14 @@ public class Reservations {
     @Column(name = "reservation_id" , updatable = false , nullable = false)
     private UUID reservationID;
 
+    @Column(name = "user_id", nullable = false)
+    private UUID user;
+
     @Column(name = "room_id", nullable = false)
     private UUID room;
 
-    @Column(name = "user_id", nullable = false)
-    private UUID user;
+    @Column(name = "slot_id", nullable = false)
+    private UUID slot;
 
     @Column(name = "start_time", nullable = false)
     private LocalDateTime startTime;
@@ -35,7 +41,7 @@ public class Reservations {
         CANCELLED,   // 2 ยกเลิก
     }
 
-    @Column(name = "price")
+    @Column(name = "price",precision = 10,scale = 2)
     private BigDecimal price;
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
