@@ -9,6 +9,9 @@ import com.example.tu_bookingsports.repository.HomepageRepository;
 import com.example.tu_bookingsports.repository.ReservationRepository;
 import com.example.tu_bookingsports.repository.RoomRepository;
 import com.example.tu_bookingsports.repository.SlotRepository;
+import com.example.tu_bookingsports.service.PaymentService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +29,9 @@ public class ReservationService {
     private final HomepageRepository roomsRepository;
     private final SlotRepository slotRepository;
     private final RoomRepository roomRepository;
+    @Autowired
+    @Lazy
+    private PaymentService paymentService;
 
     private final int MAX_RESERVATION = 10;
 
@@ -123,15 +129,25 @@ public class ReservationService {
                 .map(Rooms::getPrice)
                 .orElse(BigDecimal.ZERO);
 
+        reservation.setPrice(price); //7
+
+        reservationRepository.save(reservation);
+
         if (price.compareTo(BigDecimal.ZERO) <= 0) {
             reservation.setStatus(Reservations.ReservationStatus.CONFIRMED);//6
         } else {
             reservation.setStatus(Reservations.ReservationStatus.PENDING);//6
+            try {
+                paymentService.createPayment(reservation.getReservationID());
+            } catch (java.io.IOException | com.google.zxing.WriterException e) {
+                // Wrap checked exceptions in a RuntimeException to trigger transaction rollback
+                throw new RuntimeException("Failed to create payment", e);
+            }
         }
 
-        reservation.setPrice(price); //7
+        
 
-        return reservationRepository.save(reservation);
+        return reservation;
 
     }
 }
