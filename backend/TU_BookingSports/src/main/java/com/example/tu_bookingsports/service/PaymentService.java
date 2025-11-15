@@ -104,7 +104,7 @@ public class PaymentService {
                 payment.setPaymentStatus(Payment.PaymentStatus.REJECTED);
                 paymentRepository.save(payment);
             }
-                    }
+        }
         return result;
 
     }

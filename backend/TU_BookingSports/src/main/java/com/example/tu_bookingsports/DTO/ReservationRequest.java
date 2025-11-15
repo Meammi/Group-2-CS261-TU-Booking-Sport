@@ -1,8 +1,6 @@
 package com.example.tu_bookingsports.DTO;
-import java.time.LocalTime;
 import java.util.UUID;
 
-import com.example.tu_bookingsports.model.Reservations;
 import lombok.Getter;
 import lombok.Setter;
 
