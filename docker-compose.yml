@@ -7,7 +7,7 @@ services:
     env_file:
       - .env
     environment:
-      - DB_URL=${DB_URL}
+      - DB_URL=${DB_URL:-jdbc:sqlserver://sql-server:1433;databaseName=myDB1;encrypt=true;trustServerCertificate=true;}
       - DB_USERNAME=${DB_USERNAME:-sa}
       - DB_PASSWORD=${DB_PASSWORD:-YourStrong@Passw0rd}
       - JWT_SECRET=${JWT_SECRET:-change-me}
@@ -38,6 +38,8 @@ services:
       - NEXT_TELEMETRY_DISABLED=1
     ports:
       - "3000:3000"
+    networks:
+      - mynetwork
 networks:
   mynetwork:
     external: true

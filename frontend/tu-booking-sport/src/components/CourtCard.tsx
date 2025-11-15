@@ -48,6 +48,8 @@ const normalizeTime = (time: string): string => {
 const getSlotKey = (roomId: string, time: string) =>
   `${roomId}-${normalizeTime(time)}`.toUpperCase();
 
+const today = new Date().toISOString().split("T")[0];
+
 export default function CourtCard({ court, selectedDate = today, onSlotSelected}: CourtCardProps) {
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -56,6 +58,7 @@ export default function CourtCard({ court, selectedDate = today, onSlotSelected}
   const [hoveredSlot, setHoveredSlot] = useState<string | null>(null);
   const [starredSlots, setStarredSlots] = useState<string[]>([]);
   const [favoriteMap, setFavoriteMap] = useState<Record<string, string>>({});
+  const [slotMap, setSlotMap] = useState<Record<string, string>>({});
 
   const timeSlots = Object.entries(court.slot_time);
 

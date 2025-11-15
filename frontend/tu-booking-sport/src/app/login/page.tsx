@@ -119,7 +119,7 @@ export default function Home() {
                 />
                 <span className="absolute right-3 top-3">
                   <Image
-                    src="/images/email.png"
+                    src="/images/Email.png"
                     alt="email icon"
                     width={20}
                     height={20}

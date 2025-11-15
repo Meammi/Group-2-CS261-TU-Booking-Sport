@@ -107,6 +107,10 @@ export default function HomePage() {
       setError(null);
       try {
         const response = await fetch(API_BASE + '/homepage'); 
+        if (!response.ok) {
+          throw new Error(`Failed to fetch homepage data: ${response.status}`);
+        }
+        const backendData: BackendSport[] = await response.json();
 
         const sortedData = backendData.sort((a, b) => {
           const aBad = a.type.toLowerCase().includes("badminton");

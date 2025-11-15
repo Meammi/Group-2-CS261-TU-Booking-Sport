@@ -111,7 +111,7 @@ public class DevToolsController {
         Reservations r = new Reservations();
         r.setUser(user.getUserId());
         r.setRoom(room.getRoom_id());
-        r.setSlot(slotId);
+        r.setSlotId(slotId);
         r.setStartTime(start);
         r.setEndTime(end);
         r.setStatus(Reservations.ReservationStatus.CONFIRMED);
@@ -124,7 +124,7 @@ public class DevToolsController {
                 "reservationId", r.getReservationID(),
                 "userId", r.getUser(),
                 "roomId", r.getRoom(),
-                "slotId", r.getSlot(),
+                "slotId", r.getSlotId(),
                 "startTime", r.getStartTime().toString(),
                 "status", r.getStatus().toString()
         ));

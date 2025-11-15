@@ -29,9 +29,6 @@ public class Reservations {
     @Column(name = "slot_id", nullable = false)
     private UUID slot;
 
-    @Column(name = "slot_id", nullable = false)
-    private UUID slot;
-
     @Column(name = "start_time", nullable = false)
     private LocalDateTime startTime;
 

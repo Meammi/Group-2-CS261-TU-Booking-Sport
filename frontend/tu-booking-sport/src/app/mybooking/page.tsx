@@ -108,120 +108,74 @@ export default function MyBookingPage() {
 
   return (
     <AuthGuard>
-    <div className="bg-gray-50 min-h-screen">
-      <div className="mx-auto max-w-md bg-gray-100 min-h-screen">
-        <Header studentId="6709616376" />
-        <main className="p-4 font-nunito">
-          
-          <div className="flex flex-col items-center gap-2 mb-6">
-            <h1 className="text-3xl font-bold text-gray-800">My Booking</h1>
-          </div>
-
-          <section>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 border-t-2 border-gray-300"></div>
-              <h2 className="bg-gray-100 text-lg font-bold text-tu-navy px-2">Current</h2>
-              <div className="flex-grow border-t-2 border-gray-300"></div>
+      <div className="bg-gray-50 min-h-screen">
+        <div className="mx-auto max-w-md bg-gray-100 min-h-screen">
+          <Header studentId="6709616376" />
+          <main className="p-4 font-nunito">
+            
+            <div className="flex flex-col items-center gap-2 mb-6">
+              <h1 className="text-3xl font-bold text-gray-800">My Booking</h1>
             </div>
-            <div className="space-y-4">
-              {currentBookings.length > 0 ? (
-                currentBookings.map(item => (
-                  <BookingCard
-                    key={item.id}
-                    id={item.id} 
-                    imageUrl={getImageForLocation(item.locationName, item.name)}
-                    title={item.name}
-                    location={item.locationName}
-                    date={item.bookingDate}
-                    time={`${item.startTime.substring(0, 5)} - ${item.endTime.substring(0, 5)}`}
-                  />
-                ))
-              ) : (
-                <div className="flex flex-col items-center justify-center text-center py-8 text-gray-500">
-                  <InboxIcon className="h-16 w-16 text-gray-400 mb-2" />
-                  <p className="text-sm">No current bookings.</p>
-                </div>
-              )}
-            </div>
-        );
-    }
 
-    if (error) {
-        return (
-            <div className="flex items-center justify-center min-h-screen text-red-500">
-                <p>Error: {error}</p>
-            </div>
-        );
-    }
+            <section>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 border-t-2 border-gray-300"></div>
+                <h2 className="bg-gray-100 text-lg font-bold text-tu-navy px-2">Current</h2>
+                <div className="flex-grow border-t-2 border-gray-300"></div>
+              </div>
+              <div className="space-y-4">
+                {currentBookings.length > 0 ? (
+                  currentBookings.map(item => (
+                    <BookingCard
+                      key={item.id}
+                      id={item.id}
+                      imageUrl={getImageForLocation(item.locationName, item.name)}
+                      title={item.name}
+                      location={item.locationName}
+                      date={item.bookingDate}
+                      time={`${item.startTime.substring(0, 5)} - ${item.endTime.substring(0, 5)}`}
+                    />
+                  ))
+                ) : (
+                  <div className="flex flex-col items-center justify-center text-center py-8 text-gray-500">
+                    <InboxIcon className="h-16 w-16 text-gray-400 mb-2" />
+                    <p className="text-sm">No current bookings.</p>
+                  </div>
+                )}
+              </div>
+            </section>
 
-    return (
-        <div className="bg-gray-50 min-h-screen">
-            <div className="mx-auto max-w-md bg-gray-100 min-h-screen">
-                <Header studentId="6709616376" />
-                <main className="p-4 font-nunito">
+            <section className="mt-8">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 border-t-2 border-gray-300"></div>
+                <h2 className="bg-gray-100 text-lg font-bold text-tu-navy px-2">History</h2>
+                <div className="flex-grow border-t-2 border-gray-300"></div>
+              </div>
+              <div className="space-y-4">
+                {historyBookings.length > 0 ? (
+                  historyBookings.map(item => (
+                    <BookingCard
+                      key={item.id}
+                      id={item.id}
+                      imageUrl={getImageForLocation(item.locationName, item.name)}
+                      title={item.name}
+                      location={item.locationName}
+                      date={item.bookingDate}
+                      time={`${item.startTime.substring(0, 5)} - ${item.endTime.substring(0, 5)}`}
+                    />
+                  ))
+                ) : (
+                  <div className="flex flex-col items-center justify-center text-center py-8 text-gray-500">
+                    <InboxIcon className="h-16 w-16 text-gray-400 mb-2" />
+                    <p className="text-sm">No booking history.</p>
+                  </div>
+                )}
+              </div>
+            </section>
 
-                    <div className="flex flex-col items-center gap-2 mb-6">
-                        <h1 className="text-3xl font-bold text-gray-800">My Booking</h1>
-                    </div>
-
-                    <section>
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="w-10 border-t-2 border-gray-300"></div>
-                            <h2 className="bg-gray-100 text-lg font-bold text-tu-navy px-2">Current</h2>
-                            <div className="flex-grow border-t-2 border-gray-300"></div>
-                        </div>
-                        <div className="space-y-4">
-                            {currentBookings.length > 0 ? (
-                                currentBookings.map(item => (
-                                    <BookingCard
-                                        key={item.id}
-                                        id={item.id}
-                                        imageUrl={getImageForLocation(item.locationName, item.name)}
-                                        title={item.name}
-                                        location={item.locationName}
-                                        date={item.bookingDate}
-                                        time={`${item.startTime.substring(0, 5)} - ${item.endTime.substring(0, 5)}`}
-                                    />
-                                ))
-                            ) : (
-                                <div className="flex flex-col items-center justify-center text-center py-8 text-gray-500">
-                                    <InboxIcon className="h-16 w-16 text-gray-400 mb-2" />
-                                    <p className="text-sm">No current bookings.</p>
-                                </div>
-                            )}
-                        </div>
-                    </section>
-
-                    <section className="mt-8">
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="w-10 border-t-2 border-gray-300"></div>
-                            <h2 className="bg-gray-100 text-lg font-bold text-tu-navy px-2">History</h2>
-                            <div className="flex-grow border-t-2 border-gray-300"></div>
-                        </div>
-                        <div className="space-y-4">
-                            {historyBookings.length > 0 ? (
-                                historyBookings.map(item => (
-                                    <BookingCard
-                                        key={item.id}
-                                        id={item.id}
-                                        imageUrl={getImageForLocation(item.locationName, item.name)}
-                                        title={item.name}
-                                        location={item.locationName}
-                                        date={item.bookingDate}
-                                        time={`${item.startTime.substring(0, 5)} - ${item.endTime.substring(0, 5)}`}
-                                    />
-                                ))
-                            ) : (
-                                <div className="flex flex-col items-center justify-center text-center py-8 text-gray-500">
-                                    <InboxIcon className="h-16 w-16 text-gray-400 mb-2" />
-                                    <p className="text-sm">No booking history.</p>
-                                </div>
-                            )}
-                        </div>
-                    </section>
-
-                </main>
-            </div>
+          </main>
         </div>
-    )
+      </div>
+    </AuthGuard>
+  );
 }

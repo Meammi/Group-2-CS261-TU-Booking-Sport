@@ -114,7 +114,7 @@ public class ReservationService {
 
         reservation.setUser(loggedInUserId); //1
         reservation.setRoom(slot.getRoom().getRoom_id()); //2
-        reservation.setSlot(slot.getSlotId()); //3
+        reservation.setSlotId(slot.getSlotId()); //3
 
         reservation.setStartTime(startDateTime); //4
         reservation.setEndTime(endDateTime); //5
