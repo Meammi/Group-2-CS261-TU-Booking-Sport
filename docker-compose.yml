@@ -1,4 +1,43 @@
 services:
+  db:
+    build:
+      context: ./database
+      dockerfile: Dockerfile
+    container_name: tu-booking-db
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=${DB_PASSWORD:-YourStrong@Passw0rd}
+      - MSSQL_PID=Express
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    networks:
+      - mynetwork
+    healthcheck:
+      test: /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P ${DB_PASSWORD:-YourStrong@Passw0rd} -Q "SELECT 1" || exit 1
+      interval: 10s
+      timeout: 3s
+      retries: 30
+      start_period: 30s
+
+  db-init:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: tu-booking-db-init
+    environment:
+      - SA_PASSWORD=${DB_PASSWORD:-YourStrong@Passw0rd}
+      - DB_HOST=db
+    volumes:
+      - ./database/init.sql:/init.sql:ro
+      - ./database/init-db.sh:/init-db.sh:ro
+    networks:
+      - mynetwork
+    depends_on:
+      db:
+        condition: service_healthy
+    entrypoint: ["/bin/bash", "/init-db.sh"]
+    restart: "no"
+
   backend:
     build:
       context: ./backend/TU_BookingSports
@@ -6,8 +45,11 @@ services:
     container_name: tu-booking-backend
     env_file:
       - .env
+    depends_on:
+      db:
+        condition: service_healthy
     environment:
-      - DB_URL=${DB_URL:-jdbc:sqlserver://sql-server:1433;databaseName=myDB1;encrypt=true;trustServerCertificate=true;}
+      - DB_URL=${DB_URL:-jdbc:sqlserver://db:1433;databaseName=myDB1;encrypt=true;trustServerCertificate=true;}
       - DB_USERNAME=${DB_USERNAME:-sa}
       - DB_PASSWORD=${DB_PASSWORD:-YourStrong@Passw0rd}
       - JWT_SECRET=${JWT_SECRET:-change-me}
@@ -31,7 +73,8 @@ services:
       dockerfile: Dockerfile
     container_name: tu-booking-frontend
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     environment:
       - NEXT_PUBLIC_API_BASE=${NEXT_PUBLIC_API_BASE:-http://localhost:8081}
       - NODE_ENV=production
@@ -40,6 +83,9 @@ services:
       - "3000:3000"
     networks:
       - mynetwork
+volumes:
+  sqlserver-data:
+
 networks:
   mynetwork:
     external: true
