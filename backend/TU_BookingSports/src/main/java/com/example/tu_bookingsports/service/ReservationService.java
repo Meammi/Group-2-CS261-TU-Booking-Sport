@@ -131,7 +131,7 @@ public class ReservationService {
 
         reservation.setPrice(price); //7
 
-        reservationRepository.save(reservation);
+        
 
         if (price.compareTo(BigDecimal.ZERO) <= 0) {
             reservation.setStatus(Reservations.ReservationStatus.CONFIRMED);//6
@@ -147,7 +147,7 @@ public class ReservationService {
 
         
 
-        return reservation;
+        return reservationRepository.save(reservation);
 
     }
 }
