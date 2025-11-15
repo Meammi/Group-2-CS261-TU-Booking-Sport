@@ -2,14 +2,14 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import axios from "axios";
+import axios from "@/lib/axios";
 
 export default function LogoutModal({ onClose }: { onClose: () => void }) {
   const router = useRouter();
 
   const handleConfirm = async () => {
     try {
-      await axios.post("http://localhost:8081/auth/logout", {}, {
+      await axios.post("/auth/logout", {}, {
         withCredentials: true, // ✅ ส่ง cookie ไปด้วย
       });
 

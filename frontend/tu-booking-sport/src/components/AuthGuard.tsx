@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import axios from "axios";
+import axios from "@/lib/axios";
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
