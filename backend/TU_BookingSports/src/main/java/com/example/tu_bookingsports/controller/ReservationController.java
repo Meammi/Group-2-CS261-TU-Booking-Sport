@@ -57,7 +57,7 @@ public class ReservationController {
         if (request.getUserId() != null && request.getSlotId() != null) {
             try {
                 System.out.println("reservation controller is creating reservation");
-                Reservations newReservation = reservationService.createReservation(request);
+                Reservations newReservation = reservationService.createReservation(request, loggedInUserId);
                 Map<String, Object> body = new HashMap<>();
                 body.put("message", "Reservation created successfully");
                 body.put("reservation", newReservation);

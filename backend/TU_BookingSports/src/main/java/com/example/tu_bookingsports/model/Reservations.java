@@ -29,9 +29,6 @@ public class Reservations {
     @Column(name = "slot_id", nullable = false)
     private UUID slot;
 
-    @Column(name = "slot_id", nullable = false)
-    private UUID slot;
-
     @Column(name = "start_time", nullable = false)
     private LocalDateTime startTime;
 
@@ -107,11 +104,19 @@ public class Reservations {
         this.user = user;
     }
 
-    public  UUID getSlotId() {
+    public UUID getSlotId() {
         return slot;
     }
 
     public void setSlotId(UUID slot) {
+        this.slot = slot;
+    }
+
+    public UUID getSlot() {
+        return slot;
+    }
+
+    public void setSlot(UUID slot) {
         this.slot = slot;
     }
 
@@ -161,6 +166,14 @@ public class Reservations {
 
     public void setReminderSent(boolean reminderSent) {
         this.reminderSent = reminderSent;
+    }
+
+    public BigDecimal getPrice() {
+        return price;
+    }
+
+    public void setPrice(BigDecimal price) {
+        this.price = price;
     }
 
 }

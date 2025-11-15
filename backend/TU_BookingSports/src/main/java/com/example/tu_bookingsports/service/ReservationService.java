@@ -94,7 +94,7 @@ public class ReservationService {
 
         // Build reservation period from slot time
         LocalTime startTime = slot.getSlotTime();
-        LocalDateTime startDateTime = LocalDateTime.of(LocalDate.now().plusDays(1), startTime);
+        LocalDateTime startDateTime = LocalDateTime.of(LocalDate.now().plusDays(0), startTime);
         LocalDateTime endDateTime = startDateTime.plusHours(1);
 
         // Check if current Reservation >=10
