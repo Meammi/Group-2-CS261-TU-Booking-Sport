@@ -87,8 +87,7 @@ export default function ConfirmModal({
         if (!finalSlotId) finalSlotId = data?.slotId;
       }
 
-      // กรณีถอด userId จาก JWT ใน localStorage
-
+      
 
       // กรณี fallback ดึง userId จาก session cookie (/auth/me)
       if (!finalUserId) {

@@ -34,9 +34,9 @@ const lockPastSlots = (courts: Court[], selectedDate: string): Court[] => {
       if (status === "AVAILABLE") {
         const [hourStr = "0", minuteStr = "0"] = time.split(":");
         const slotMinutes = parseInt(hourStr, 10) * 60 + parseInt(minuteStr, 10);
-        if (!Number.isNaN(slotMinutes) && slotMinutes < currentMinutes) {
-          nextStatus = "BOOKED";
-        }
+        //if (!Number.isNaN(slotMinutes) && slotMinutes < currentMinutes) {
+          //nextStatus = "BOOKED";
+        //}
       }
       updatedSlots[time] = nextStatus;
     });

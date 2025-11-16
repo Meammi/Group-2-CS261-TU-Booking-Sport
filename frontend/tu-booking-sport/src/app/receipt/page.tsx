@@ -2,6 +2,7 @@
 import { API_BASE } from '@/lib/config'
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import QrScanner from "qr-scanner";
 import QRCode from "qrcode";
 import { Suspense } from "react";
@@ -32,6 +33,7 @@ const RIGHT_COL_WIDTH = "w-24";
 
 // แยก component ที่ใช้ useSearchParams ออกมา
 function ReceiptContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
 
@@ -140,6 +142,7 @@ function ReceiptContent() {
       const json = await res.json();
       if (res.ok && json.success) {
         setCheckResult("ตรวจสอบสำเร็จ ✅");
+        router.push('/mybooking');
       } else {
         setCheckResult(`ตรวจสอบไม่สำเร็จ: ${json.message ?? "ไม่ทราบเหตุผล"}`);
       }
@@ -280,6 +283,9 @@ function ReceiptContent() {
             <button
               type="button"
               className="px-6 py-2 rounded-md border bg-red-600 text-white text-[14px] active:scale-[.99]"
+              onClick={(e) => {
+                router.push('/mybooking');
+              }}
             >
               Cancel
             </button>
