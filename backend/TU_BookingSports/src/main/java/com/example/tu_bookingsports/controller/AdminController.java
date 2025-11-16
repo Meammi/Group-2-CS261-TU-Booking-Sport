@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.DeleteMapping;
 
 import java.util.UUID;
 
@@ -57,5 +58,35 @@ public class AdminController {
             return ResponseEntity.status(403).build();
         }
         return ResponseEntity.ok(adminService.updateSlot(slotId, updatedSlot, admin));
+    }
+
+    @DeleteMapping("/rooms/{roomId}")
+    public ResponseEntity<Void> deleteRoom(
+            @PathVariable UUID roomId,
+            @CookieValue(value = "access_token", required = false) String token) {
+        if (token == null || !authService.getJwtUtils().isTokenValid(token)) {
+            return ResponseEntity.status(401).build();
+        }
+        User admin = authService.getCurrentUser(token);
+        if (!adminService.isAdmin(admin)) {
+            return ResponseEntity.status(403).build();
+        }
+        adminService.deleteRoomAndAssociatedSlots(roomId, admin);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/slots/{slotId}")
+    public ResponseEntity<Void> deleteSlot(
+            @PathVariable UUID slotId,
+            @CookieValue(value = "access_token", required = false) String token) {
+        if (token == null || !authService.getJwtUtils().isTokenValid(token)) {
+            return ResponseEntity.status(401).build();
+        }
+        User admin = authService.getCurrentUser(token);
+        if (!adminService.isAdmin(admin)) {
+            return ResponseEntity.status(403).build();
+        }
+        adminService.deleteSlot(slotId, admin);
+        return ResponseEntity.ok().build();
     }
 }

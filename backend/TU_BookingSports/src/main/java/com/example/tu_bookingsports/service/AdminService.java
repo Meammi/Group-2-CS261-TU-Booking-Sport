@@ -87,4 +87,31 @@ public class AdminService {
 
         return slotRepository.save(slot);
     }
+
+    @Transactional
+    public void deleteRoomAndAssociatedSlots(UUID roomId, User admin) {
+        Rooms room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new RuntimeException("Room not found with id: " + roomId));
+
+        logAdminAction(admin, AdminAuditLog.ActionType.DELETE, AdminAuditLog.EntityType.SLOT, roomId.toString(),
+                "Deleted all slots for room " + room.getName());
+
+        slotRepository.deleteByRoomId(roomId);
+
+        logAdminAction(admin, AdminAuditLog.ActionType.DELETE, AdminAuditLog.EntityType.ROOM, roomId.toString(),
+                "Deleted room: " + room.getName());
+
+        roomRepository.deleteById(roomId);
+    }
+
+    @Transactional
+    public void deleteSlot(UUID slotId, User admin) {
+        Slot slot = slotRepository.findById(slotId)
+                .orElseThrow(() -> new RuntimeException("Slot not found with id: " + slotId));
+
+        logAdminAction(admin, AdminAuditLog.ActionType.DELETE, AdminAuditLog.EntityType.SLOT, slotId.toString(),
+                "Deleted slot for room " + slot.getRoom().getName() + " at " + slot.getSlotTime());
+
+        slotRepository.deleteById(slotId);
+    }
 }
