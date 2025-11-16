@@ -51,29 +51,7 @@ export default function ConfirmModal({
       }
 
       // กรณีถอด userId จาก JWT ใน localStorage
-      if (!finalUserId) {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
-        if (!token) throw new Error('Please login before booking.');
-        try {
-          const base64Url = token.split('.')[1];
-          const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-          const jsonPayload = decodeURIComponent(
-            atob(base64)
-              .split('')
-              .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-              .join('')
-          );
-          const payload = JSON.parse(jsonPayload);
-          finalUserId = payload?.id || payload?.userId || null;
-          // ตรวจสอบว่าเป็น UUID ถูกต้องไหม
-          const isUuid = (v: any) => typeof v === 'string' && /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(v);
-          if (!finalUserId || !isUuid(finalUserId)) {
-            finalUserId = null as any;
-          }
-        } catch (e) {
-          finalUserId = null as any;
-        }
-      }
+      
 
       // กรณี fallback ดึง userId จาก session cookie (/auth/me)
       if (!finalUserId) {
