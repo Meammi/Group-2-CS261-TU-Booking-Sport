@@ -1,7 +1,9 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import axios from "@/lib/axios";
-import ConfirmModal from "@/components/ConfirmCard"; // (คุณใช้ชื่อ ConfirmCard.tsx หรือ ConfirmModal.tsx ให้แน่ใจว่า import ถูกต้องนะครับ)
+import ConfirmModal from "@/components/ConfirmCard";
+import { HeartIcon as HeartIconSolid } from "@heroicons/react/24/solid";
+
 
 interface cardProps {
   roomId: string;
@@ -32,7 +34,7 @@ export default function FavoriteCard({
   locationName,
   startTime,
 }: cardProps) {
-  
+
   let imageUrl = defaultUrl;
 
   if (locationName === "Gym 4") {
@@ -99,11 +101,11 @@ export default function FavoriteCard({
   const [datePart, timePartRaw] = startTime.includes("T")
     ? startTime.split("T")
     : ["", startTime];
-  
+
   // --- 2. แก้ไขบรรทัดนี้: ถ้าไม่มี datePart ให้ใช้ "วันที่ปัจจุบัน" แทน "N/A" ---
   const displayDate = datePart || getTodayDateString();
   // -----------------------------------------------------------
-  
+
   const displayTime = (timePartRaw || startTime || "").substring(0, 5);
 
   return (
@@ -143,15 +145,20 @@ export default function FavoriteCard({
           <p className="text-sm text-gray-600">Time: {startTime}</p>
         </div>
         <div>
-          <img
-            src={isStarred ? "/images/star-open.png" : "/images/star-close.png"}
-            alt="star"
+          <div
             onClick={(e) => {
               e.stopPropagation();
               handleStarClick();
             }}
-            className="absolute top-2.5 right-2.5 w-5 h-5 cursor-pointer transition-transform hover:scale-110"
-          />
+            className="absolute top-4 right-5 cursor-pointer transition-transform hover:scale-110"
+          >
+            {isStarred ? (
+              <HeartIconSolid className="w-6 h-6 text-red-400 drop-shadow" />
+            ) : (
+              <HeartIconSolid className="w-6 h-6 text-gray-500 opacity-50" />
+            )}
+          </div>
+
         </div>
       </div>
       {confirmationMessage && (

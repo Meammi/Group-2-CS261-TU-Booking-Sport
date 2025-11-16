@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import axios from "@/lib/axios";
 import ConfirmModal from '@/components/ConfirmCard';
+import { HeartIcon as HeartIconSolid } from "@heroicons/react/24/solid";
 
 interface Court {
   name: string;
@@ -50,7 +51,7 @@ const getSlotKey = (roomId: string, time: string) =>
 
 const today = new Date().toISOString().split('T')[0];
 
-export default function CourtCard({ court, selectedDate = today, onSlotSelected}: CourtCardProps) {
+export default function CourtCard({ court, selectedDate = today, onSlotSelected }: CourtCardProps) {
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [bookingResult, setBookingResult] = useState<{ type: 'success' | 'error', message: string } | null>(null);
@@ -85,33 +86,33 @@ export default function CourtCard({ court, selectedDate = today, onSlotSelected}
     fetchSlotMap();
   }, [court.room_id, selectedDate]);
 
-useEffect(() => {
-  async function fetchFavoriteSlots() {
-    try {
-      const res = await axios.get("/favorite/me"); // returns array of favorites
-      const slots: string[] = [];
-      const map: Record<string, string> = {};
+  useEffect(() => {
+    async function fetchFavoriteSlots() {
+      try {
+        const res = await axios.get("/favorite/me"); // returns array of favorites
+        const slots: string[] = [];
+        const map: Record<string, string> = {};
 
-      res.data.forEach((fav: {
-        favoriteId: string;
-        roomId: string;
-        startTime: string;
-      }) => {
-        const time = fav.startTime.substring(0, 5); // "16:00:00" → "16:00"
-        const slotKey = `${fav.roomId}-${time}`.toUpperCase();
-        slots.push(slotKey);
-        map[slotKey] = fav.favoriteId;
-      });
+        res.data.forEach((fav: {
+          favoriteId: string;
+          roomId: string;
+          startTime: string;
+        }) => {
+          const time = fav.startTime.substring(0, 5); // "16:00:00" → "16:00"
+          const slotKey = `${fav.roomId}-${time}`.toUpperCase();
+          slots.push(slotKey);
+          map[slotKey] = fav.favoriteId;
+        });
 
-      setStarredSlots(slots);
-      setFavoriteMap(map);
-    } catch (error) {
-      console.error("Error fetching favorite slots:", error);
+        setStarredSlots(slots);
+        setFavoriteMap(map);
+      } catch (error) {
+        console.error("Error fetching favorite slots:", error);
+      }
     }
-  }
 
-  fetchFavoriteSlots();
-}, []);
+    fetchFavoriteSlots();
+  }, []);
 
 
   const handleSlotClick = (time: string) => {
@@ -122,9 +123,9 @@ useEffect(() => {
     if (onSlotSelected) onSlotSelected(court, time);
   };
 
-    useEffect(() => {
-        onSlotSelected(court, "TiMe");
-    }, [isModalOpen]);
+  useEffect(() => {
+    onSlotSelected(court, "TiMe");
+  }, [isModalOpen]);
 
   const handleConfirmBooking = async () => {
     if (!selectedSlot) return;
@@ -294,34 +295,44 @@ useEffect(() => {
           {timeSlots.length > 0 ? (
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
               {timeSlots.map(([time, status]) => {
-                const slotKey = getSlotKey(court.room_id, time);
-                const isStarred = starredSlots.includes(slotKey) || (favoriteMap[slotKey] && typeof favoriteMap[slotKey] === 'string');
-                const isHovered = hoveredSlot === time;
+                    const slotKey = getSlotKey(court.room_id, time);
+                    const isStarred = starredSlots.includes(slotKey) || (favoriteMap[slotKey] && typeof favoriteMap[slotKey] === 'string');
 
-                return (
-                  <button
-                    key={time}
-                    disabled={status !== 'AVAILABLE'}
-                    onClick={() => handleSlotClick(time)}
-                    onMouseEnter={() => setHoveredSlot(time)}
-                    onMouseLeave={() => setHoveredSlot(null)}
-                    className={`relative rounded-lg p-2 text-sm font-mono font-semibold transition-all duration-200 ${getStatusClasses(status)}`}
-                  >
-                    {time.substring(0, 5)}
-                    <img
-                      src={isStarred ? "/images/star-open.png" : "/images/star-close.png"}
-                      alt="star"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleStarClick(time, court.room_id);
-                      }}
-                      className={`absolute top-1 right-1 w-4 h-4 cursor-pointer transition-transform duration-200 ${
-                        isHovered ? "scale-110" : "scale-100"
-                      }`}
-                    />
-                  </button>
-                );
-              })}
+                    return (
+                      <button
+                        key={time}
+                        disabled={status !== 'AVAILABLE'}
+                        onClick={() => handleSlotClick(time)}
+                        className={`
+                          flex relative rounded-lg text-sm font-mono font-semibold 
+                          transition-all duration-200 ${getStatusClasses(status)} overflow-hidden
+                        `}
+                      >
+  
+                        <div
+                          onClick={(e) => {
+                            e.stopPropagation(); 
+                            handleStarClick(time, court.room_id);
+                          }}
+                          title={isStarred ? "Remove from favorites" : "Add to favorites"}
+                          className={`
+                            flex items-center pl-2 pr-0 py-3 cursor-pointer // 👈 กำหนด padding
+                            transition-colors duration-200
+                          `}
+                        >
+                          {isStarred ? (
+                            <HeartIconSolid className="w-5 h-5 text-red-400 drop-shadow" />
+                          ) : (
+                            <HeartIconSolid className="w-5 h-5 text-gray-300 opacity-50" />
+                          )}
+                        </div>
+                        <span className="flex-grow py-3 text-center">
+                          {time.substring(0, 5)}
+                        </span>
+
+                      </button>
+                    );
+                  })}
             </div>
           ) : (
             <p className="text-sm text-gray-500 text-center py-4">
@@ -332,11 +343,10 @@ useEffect(() => {
 
         {bookingResult && (
           <div
-            className={`mt-4 p-2 rounded-lg text-center text-sm font-semibold ${
-              bookingResult.type === 'success'
-                ? 'bg-green-100 text-green-800'
-                : 'bg-red-100 text-red-800'
-            }`}
+            className={`mt-4 p-2 rounded-lg text-center text-sm font-semibold ${bookingResult.type === 'success'
+              ? 'bg-green-100 text-green-800'
+              : 'bg-red-100 text-red-800'
+              }`}
           >
             {bookingResult.message}
           </div>
