@@ -162,93 +162,126 @@ function ReceiptContent() {
   };
 
   return (
-    <main className="bg-gray-50 min-h-screen flex justify-center items-center">
-      <section className="mx-auto max-w-md w-full bg-white shadow-sm py-8 px-6">
-
+    <main className="bg-neutral-100 min-h-screen overflow-y-scroll font-sans">
+      <div className="mx-auto max-w-md bg-white min-h-screen shadow-md ">
         {/* Top bar */}
         <Header studentId={studentId} />
+        <div className="py-8 px-6 ">
+          {/* Title */}
+          <h1 className="text-center text-2xl font-bold text-tu-navy tracking-wider mt-2 uppercase">
+            Receipt
+          </h1>
 
-        {/* Title */}
-        <h1 className="text-center text-[22px] font-bold text-neutral-800 tracking-wide mt-2">
-          RECEIPT
-        </h1>
+          <div className="mt-4 border-t border-dashed border-neutral-300 " />
+          <div className="mt-4 space-y-3 text-sm">
 
-        <div className="mt-4 border-t border-gray-200" />
+            {/* นี่คือ <Row> "Shop Name" เดิม */}
+            <div className="flex">
+              <div className="flex-1 text-neutral-500">Shop Name:</div>
+              <div className={`${RIGHT_COL_WIDTH} text-right text-neutral-800 font-semibold`}>
+                {data.shopName}
+              </div>
+            </div>
 
-        {/* Shop / Date */}
-        <div className="mt-4 space-y-3 text-[14px] text-neutral-700">
-          <Row label="Shop Name:" value={data.shopName} rightColWidth={RIGHT_COL_WIDTH} />
-          <Row label="Date:" value={data.dateStr} rightColWidth={RIGHT_COL_WIDTH} />
-        </div>
+            {/* นี่คือ <Row> "Date" เดิม */}
+            <div className="flex">
+              <div className="flex-1 text-neutral-500">Date:</div>
+              <div className={`${RIGHT_COL_WIDTH} text-right text-neutral-800 font-semibold`}>
+                {data.dateStr}
+              </div>
+            </div>
 
-        <div className="mt-4 border-t border-gray-200" />
-
-        {/* Items */}
-        <div className="mt-4 text-[14px] text-neutral-700">
-          <div className="flex font-semibold text-neutral-800">
-            <div className="flex-1">Description</div>
-            <div className={`${RIGHT_COL_WIDTH} text-right`}>Price</div>
           </div>
 
-          <div className="mt-2 flex">
-            <div className="flex-1">{data.itemName}</div>
-            <div className={`${RIGHT_COL_WIDTH} text-right`}>
-              {data.price.toFixed(2)}
+
+          <div className="mt-4 border-t border-dashed border-neutral-300" />
+
+          {/* Items */}
+          <div className="mt-4 text-sm text-neutral-600">
+            <div className="flex font-semibold text-neutral-800">
+              <div className="flex-1">Description</div>
+              <div className={`${RIGHT_COL_WIDTH} text-right`}>Price</div>
+            </div>
+
+            <div className="mt-3 flex">
+              <div className="flex-1">{data.itemName}</div>
+              <div className={`${RIGHT_COL_WIDTH} text-right font-medium text-neutral-700`}>
+                {data.price.toFixed(2)}
+              </div>
+            </div>
+
+            <div className="my-4 border-t border-dashed border-neutral-300" />
+
+            <div className="flex">
+              <div className="flex-1">Tax</div>
+              <div className={`${RIGHT_COL_WIDTH} text-right font-medium text-neutral-700`}>
+                {Number(data.tax || 0).toFixed(2)}
+              </div>
+            </div>
+
+            <div className="mt-2 flex items-baseline font-bold text-neutral-900 text-base">
+              <div className="flex-1">Total</div>
+              <div className={`${RIGHT_COL_WIDTH} text-right`}>
+                {total.toFixed(2)}
+              </div>
             </div>
           </div>
 
-          <div className="my-4 border-t border-gray-200" />
+          <div className="mt-6 border-t border-neutral-200" />
 
-          <div className="flex">
-            <div className="flex-1">Tax</div>
-            <div className={`${RIGHT_COL_WIDTH} text-right`}>
-              {Number(data.tax || 0).toFixed(2)}
+          {/* QR Section */}
+          <div className="mt-6 flex flex-col items-center gap-4 text-center">
+            <div ref={qrRef} className="rounded-lg border border-neutral-200 bg-white p-2">
+              {qrDataUrl ? (
+                <img src={qrDataUrl} alt="QR Code" className="w-28 h-28" />
+              ) : (
+                <div className="w-28 h-28 flex items-center justify-center">
+                  <p className="text-xs text-neutral-500">Generating QR…</p>
+                </div>
+              )}
             </div>
-          </div>
-
-          <div className="mt-1 flex font-semibold text-neutral-800">
-            <div className="flex-1">Total</div>
-            <div className={`${RIGHT_COL_WIDTH} text-right`}>
-              {total.toFixed(2)}
+            <div>
+              <p className="text-lg font-bold text-neutral-900">No. {data.orderNo}</p>
+              <p className="mt-1 text-sm text-neutral-600">
+                Thank you for Booking!
+              </p>
             </div>
           </div>
         </div>
-
-        <div className="mt-6 border-t border-gray-200" />
-
-        {/* QR Section */}
-        <div className="mt-6 flex flex-col items-center gap-4 text-center">
-          <div ref={qrRef} className="rounded-md border border-gray-200 bg-neutral-50 p-3">
-            {qrDataUrl ? (
-              <img src={qrDataUrl} alt="QR Code" className="w-24 h-24" />
-            ) : (
-              <p className="text-[11px] text-neutral-500">Generating QR…</p>
-            )}
+        {/* Checking Result */}
+        {(checking || checkResult) && (
+          <div className="mt-4 px-6">
+            <div className={`p-4 rounded-lg text-center ${checking
+                ? 'bg-blue-50 text-blue-700'
+                : checkResult?.includes('✅')
+                  ? 'bg-green-50 text-green-700'
+                  : 'bg-red-50 text-red-700'
+              }`}>
+              {checking ? (
+                <p className="font-medium">Checking QR Code...</p>
+              ) : (
+                <p className="font-medium">{checkResult}</p>
+              )}
+            </div>
           </div>
-          <div>
-            <p className="text-[16px] font-bold text-neutral-800">No. {data.orderNo}</p>
-            <p className="mt-1 text-[13px] text-neutral-600">
-              Thank you for Booking!
-            </p>
-          </div>
-        </div>
+        )}
 
         {/* Buttons */}
-        <div className="mt-10 flex flex-col items-center gap-4">
+        <div className="mt-3 flex flex-col items-center gap-3 ">
+          <label
+            htmlFor="upload-slip"
+            className="w-400 text-center px-6 py-3 rounded-lg bg-tu-navy text-white text-sm font-semibold cursor-pointer hover:bg-neutral-800 active:scale-[.98] transition"
+          >
+            Upload Slip
+          </label>
+
           <button
             type="button"
-            className="px-6 py-2 rounded-md bg-gray-700 text-white text-[14px] hover:bg-gray-900 active:scale-95 transition"
+            className="w-400 px-6 py-3 rounded-lg bg-transparent text-neutral-600 text-sm font-semibold border border-neutral-300 hover:bg-neutral-100 active:scale-[.98] transition"
             onClick={() => router.push('/mybooking')}
           >
             Cancel
           </button>
-
-          <label
-            htmlFor="upload-slip"
-            className="px-6 py-2 rounded-md bg-green-600 text-white text-[14px] cursor-pointer hover:bg-green-700 active:scale-95 transition"
-          >
-            Upload Slip
-          </label>
 
           <input
             type="file"
@@ -261,7 +294,7 @@ function ReceiptContent() {
             }}
           />
         </div>
-      </section>
+      </div>
     </main>
   );
 }
