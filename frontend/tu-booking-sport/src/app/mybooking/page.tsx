@@ -16,6 +16,7 @@ interface BookingItem {
   startTime: string;
   endTime: string;
   imageUrl?: string;
+  reservationId: string;
 }
 
 const getImageForLocation = (locationName: string, roomName?: string): string => {
@@ -121,6 +122,7 @@ export default function MyBookingPage() {
                 {currentBookings.length > 0 ? (
                   currentBookings.map((item) => (
                     <BookingCard
+                      reservationId={item.reservationId}
                       key={item.id}
                       id={item.id}
                       imageUrl={getImageForLocation(item.locationName, item.name)}
@@ -128,6 +130,7 @@ export default function MyBookingPage() {
                       location={item.locationName}
                       date={item.bookingDate}
                       time={`${item.startTime.substring(0, 5)} - ${item.endTime.substring(0, 5)}`}
+                      status={item.status}
                     />
                   ))
                 ) : (
@@ -151,11 +154,13 @@ export default function MyBookingPage() {
                     <BookingCard
                       key={item.id}
                       id={item.id}
+                      reservationId={item.reservationId}
                       imageUrl={getImageForLocation(item.locationName, item.name)}
                       title={item.name}
                       location={item.locationName}
                       date={item.bookingDate}
                       time={`${item.startTime.substring(0, 5)} - ${item.endTime.substring(0, 5)}`}
+                      status={item.status}
                     />
                   ))
                 ) : (
