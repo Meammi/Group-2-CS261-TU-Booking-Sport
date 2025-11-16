@@ -1,5 +1,6 @@
 ﻿package com.example.tu_bookingsports.service;
 
+import com.example.tu_bookingsports.DTO.AdminRequest;
 import com.example.tu_bookingsports.model.AdminAuditLog;
 import com.example.tu_bookingsports.model.Rooms;
 import com.example.tu_bookingsports.model.Slot;
@@ -17,7 +18,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-// Excerpt for Team: update endpoints
+
 @Service
 public class AdminService {
     private final AdminAuditLogRepository auditLogRepository;
@@ -29,7 +30,7 @@ public class AdminService {
 
     private Set<String> adminEmailsSet;
 
-    public AdminService_Team(AdminAuditLogRepository auditLogRepository,
+    public AdminService(AdminAuditLogRepository auditLogRepository,
                              RoomRepository roomRepository,
                              SlotRepository slotRepository) {
         this.auditLogRepository = auditLogRepository;
@@ -51,6 +52,38 @@ public class AdminService {
         log.setEntityId(entityId);
         log.setDetails(details);
         auditLogRepository.save(log);
+    }
+
+    @Transactional
+    public Slot createSlotForRoom(AdminRequest request, User admin) {
+        var room = roomRepository.findById(request.getRoom().getRoom_id())
+                .orElseThrow(() -> new RuntimeException("Room not found with id: " + request.getRoom().getRoom_id()));
+
+        Slot existingSlot = slotRepository.findByRoomIdAndSlotTimeNative(room.getRoom_id(), request.getSlotTime().toString());
+        if (existingSlot != null) {
+            throw new RuntimeException("A slot for this room at " + request.getSlotTime() + " already exists.");
+        }
+
+        Slot newSlot = new Slot();
+        newSlot.setRoom(room);
+        newSlot.setSlotTime(request.getSlotTime());
+        newSlot.setStatus(request.getStatus() != null ? request.getStatus() : Slot.SlotStatus.AVAILABLE);
+        newSlot = slotRepository.save(newSlot);
+
+        logAdminAction(admin, AdminAuditLog.ActionType.CREATE, AdminAuditLog.EntityType.SLOT, newSlot.getSlotId().toString(),
+                "Created new slot for room " + newSlot.getRoom().getName() + " at " + newSlot.getSlotTime());
+
+        return newSlot;
+    }
+
+    @Transactional
+    public Rooms createRoom(Rooms room, User admin) {
+        Rooms newRoom = roomRepository.save(room);
+
+        logAdminAction(admin, AdminAuditLog.ActionType.CREATE, AdminAuditLog.EntityType.ROOM, newRoom.getRoom_id().toString(),
+                "Created new room: " + newRoom.getName());
+
+        return newRoom;
     }
 
     @Transactional
