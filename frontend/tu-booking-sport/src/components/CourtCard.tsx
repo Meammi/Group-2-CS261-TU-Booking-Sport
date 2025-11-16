@@ -1,5 +1,5 @@
-'use client';
-import { useEffect, useState } from 'react';
+"use client";
+import { useEffect, useState } from "react";
 import axios from "@/lib/axios";
 import ConfirmModal from '@/components/ConfirmCard';
 import { HeartIcon as HeartIconSolid } from "@heroicons/react/24/solid";
@@ -11,7 +11,7 @@ interface Court {
   price: number;
   room_id: string;
   loc_name: string;
-  slot_time: { [time: string]: 'AVAILABLE' | 'BOOKED' | 'MAINTENANCE' };
+  slot_time: { [time: string]: "AVAILABLE" | "BOOKED" | "MAINTENANCE" };
 }
 
 interface CourtCardProps {
@@ -29,14 +29,14 @@ interface BookingResponse {
 
 const getStatusClasses = (status: string) => {
   switch (status) {
-    case 'AVAILABLE':
-      return 'bg-green-500 hover:bg-green-600 text-white shadow-sm hover:shadow-md transform hover:-translate-y-0.5';
-    case 'BOOKED':
-      return 'bg-gray-400 text-gray-200 cursor-not-allowed';
-    case 'MAINTENANCE':
-      return 'bg-yellow-500 text-white cursor-not-allowed';
+    case "AVAILABLE":
+      return "bg-green-500 hover:bg-green-600 text-white shadow-sm hover:shadow-md transform hover:-translate-y-0.5";
+    case "BOOKED":
+      return "bg-gray-400 text-gray-200 cursor-not-allowed";
+    case "MAINTENANCE":
+      return "bg-yellow-500 text-white cursor-not-allowed";
     default:
-      return 'bg-gray-300';
+      return "bg-gray-300";
   }
 };
 
@@ -49,12 +49,19 @@ const normalizeTime = (time: string): string => {
 const getSlotKey = (roomId: string, time: string) =>
   `${roomId}-${normalizeTime(time)}`.toUpperCase();
 
-const today = new Date().toISOString().split('T')[0];
+const today = new Date().toISOString().split("T")[0];
 
-export default function CourtCard({ court, selectedDate = today, onSlotSelected }: CourtCardProps) {
+export default function CourtCard({
+  court,
+  selectedDate = today,
+  onSlotSelected,
+}: CourtCardProps) {
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [bookingResult, setBookingResult] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+  const [bookingResult, setBookingResult] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [hoveredSlot, setHoveredSlot] = useState<string | null>(null);
   const [starredSlots, setStarredSlots] = useState<string[]>([]);
@@ -68,11 +75,12 @@ export default function CourtCard({ court, selectedDate = today, onSlotSelected 
     return match ? match[1] : "00:00"; // fallback
   }
 
-
   useEffect(() => {
     const fetchSlotMap = async () => {
       try {
-        const res = await axios.get(`/slot?room_id=${court.room_id}&date=${selectedDate}`);
+        const res = await axios.get(
+          `/slot?room_id=${court.room_id}&date=${selectedDate}`
+        );
         const map: Record<string, string> = {};
         res.data.forEach((slot: { slotId: string; slotTime: string }) => {
           const key = getSlotKey(court.room_id, slot.slotTime);
@@ -93,16 +101,14 @@ export default function CourtCard({ court, selectedDate = today, onSlotSelected 
         const slots: string[] = [];
         const map: Record<string, string> = {};
 
-        res.data.forEach((fav: {
-          favoriteId: string;
-          roomId: string;
-          startTime: string;
-        }) => {
-          const time = fav.startTime.substring(0, 5); // "16:00:00" → "16:00"
-          const slotKey = `${fav.roomId}-${time}`.toUpperCase();
-          slots.push(slotKey);
-          map[slotKey] = fav.favoriteId;
-        });
+        res.data.forEach(
+          (fav: { favoriteId: string; roomId: string; startTime: string }) => {
+            const time = fav.startTime.substring(0, 5); // "16:00:00" → "16:00"
+            const slotKey = `${fav.roomId}-${time}`.toUpperCase();
+            slots.push(slotKey);
+            map[slotKey] = fav.favoriteId;
+          }
+        );
 
         setStarredSlots(slots);
         setFavoriteMap(map);
@@ -113,7 +119,6 @@ export default function CourtCard({ court, selectedDate = today, onSlotSelected 
 
     fetchFavoriteSlots();
   }, []);
-
 
   const handleSlotClick = (time: string) => {
     setBookingResult(null);
@@ -147,21 +152,28 @@ export default function CourtCard({ court, selectedDate = today, onSlotSelected 
     };
 
     try {
-      const response = await fetch('/api/reservation', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+      const response = await fetch("/api/reservation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || errorData.error || 'Booking failed. Please try again.');
+        throw new Error(
+          errorData.message ||
+            errorData.error ||
+            "Booking failed. Please try again."
+        );
       }
 
       const result: BookingResponse = await response.json();
-      setBookingResult({ type: 'success', message: `Successfully booked! ID: ${result.reservation_id}` });
+      setBookingResult({
+        type: "success",
+        message: `Successfully booked! ID: ${result.reservation_id}`,
+      });
     } catch (error: any) {
-      setBookingResult({ type: 'error', message: error.message });
+      setBookingResult({ type: "error", message: error.message });
     } finally {
       setIsLoading(false);
       setIsModalOpen(false);
@@ -175,7 +187,9 @@ export default function CourtCard({ court, selectedDate = today, onSlotSelected 
 
     if (!slotId) {
       try {
-        const resp = await axios.get(`/api/slot/lookup`, { params: { roomId: room_id, time: normalizeTime(time) } });
+        const resp = await axios.get(`/api/slot/lookup`, {
+          params: { roomId: room_id, time: normalizeTime(time) },
+        });
         slotId = resp.data?.slotId;
         if (!slotId) return;
       } catch (err) {
@@ -188,30 +202,50 @@ export default function CourtCard({ court, selectedDate = today, onSlotSelected 
 
     if (!starred) {
       try {
-        const response = await axios.post("/favorite/create", { roomId: room_id, slotId: slotIdToSend }, { withCredentials: true });
-        let favoriteId = response.data?.favorite_id || response.data?.favoriteId || response.data?.id;
+        const response = await axios.post(
+          "/favorite/create",
+          { roomId: room_id, slotId: slotIdToSend },
+          { withCredentials: true }
+        );
+        let favoriteId =
+          response.data?.favorite_id ||
+          response.data?.favoriteId ||
+          response.data?.id;
         if (!favoriteId) {
-          const lookup = await axios.get('/favorite/lookup', { params: { roomId: room_id, slotId: slotIdToSend } });
-          favoriteId = lookup.data?.favorite_id || lookup.data?.favoriteId || lookup.data?.id;
+          const lookup = await axios.get("/favorite/lookup", {
+            params: { roomId: room_id, slotId: slotIdToSend },
+          });
+          favoriteId =
+            lookup.data?.favorite_id ||
+            lookup.data?.favoriteId ||
+            lookup.data?.id;
         }
         if (favoriteId) {
           setStarredSlots((prev) => [...prev, slotKey]);
           setFavoriteMap((prev) => ({ ...prev, [slotKey]: favoriteId }));
         }
       } catch (err: any) {
-        console.error("Error adding favorite:", err.response?.data || err.message);
+        console.error(
+          "Error adding favorite:",
+          err.response?.data || err.message
+        );
       }
     } else {
       let favoriteId = favoriteMap[slotKey];
       if (!favoriteId) {
         try {
-          const lookup = await axios.get('/favorite/lookup', { params: { roomId: room_id, slotId: slotIdToSend } });
-          favoriteId = lookup.data?.favorite_id || lookup.data?.favoriteId || lookup.data?.id;
+          const lookup = await axios.get("/favorite/lookup", {
+            params: { roomId: room_id, slotId: slotIdToSend },
+          });
+          favoriteId =
+            lookup.data?.favorite_id ||
+            lookup.data?.favoriteId ||
+            lookup.data?.id;
           if (favoriteId) {
             setFavoriteMap((prev) => ({ ...prev, [slotKey]: favoriteId }));
           }
         } catch (err) {
-          console.warn('Favorite lookup failed for remove', err);
+          console.warn("Favorite lookup failed for remove", err);
         }
       }
 
@@ -226,7 +260,9 @@ export default function CourtCard({ court, selectedDate = today, onSlotSelected 
       }
 
       try {
-        await axios.delete(`/favorite/delete/${favoriteId}`, { withCredentials: true });
+        await axios.delete(`/favorite/delete/${favoriteId}`, {
+          withCredentials: true,
+        });
         setStarredSlots((prev) => prev.filter((t) => t !== slotKey));
         setFavoriteMap((prev) => {
           const updated = { ...prev };
@@ -241,38 +277,11 @@ export default function CourtCard({ court, selectedDate = today, onSlotSelected 
 
   return (
     <>
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm text-center">
-            <h3 className="text-xl font-bold text-tu-navy mb-2">Confirm Your Booking</h3>
-            <p className="text-gray-600 mb-6">
-              Are you sure you want to book <br />
-              <span className="font-bold">{court.name}</span> at <span className="font-bold">{selectedSlot}</span>?
-            </p>
-            <div className="flex justify-center gap-4">
-              <button
-                onClick={() => setIsModalOpen(false)}
-                disabled={isLoading}
-                className="px-6 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold transition disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleConfirmBooking}
-                disabled={isLoading}
-                className="px-6 py-2 rounded-lg bg-tu-navy hover:bg-tu-navy/90 text-white font-semibold transition disabled:opacity-50"
-              >
-                {isLoading ? 'Booking...' : 'Confirm'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
       <ConfirmModal
         open={isModalOpen}
         spot={court.name}
         date={selectedDate}
-        time={selectedSlot || ''}
+        time={selectedSlot || ""}
         onClose={() => setIsModalOpen(false)}
         // Let ConfirmModal handle the API call itself
         roomId={court.room_id}
@@ -283,15 +292,19 @@ export default function CourtCard({ court, selectedDate = today, onSlotSelected 
         <div className="flex justify-between items-start mb-4">
           <div>
             <h3 className="text-xl font-bold text-tu-navy">{court.name}</h3>
-            <p className="text-sm text-gray-500">Capacity: {court.capacity} people</p>
+            <p className="text-sm text-gray-500">
+              Capacity: {court.capacity} people
+            </p>
           </div>
           <span className="text-lg font-semibold text-gray-800">
-            {court.price > 0 ? `${court.price}฿` : 'Free'}
+            {court.price > 0 ? `${court.price}฿` : "Free"}
           </span>
         </div>
 
         <div className="border-t pt-4">
-          <p className="text-sm font-semibold mb-3 text-gray-700">Available Times:</p>
+          <p className="text-sm font-semibold mb-3 text-gray-700">
+            Available Times:
+          </p>
           {timeSlots.length > 0 ? (
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
               {timeSlots.map(([time, status]) => {
@@ -343,10 +356,11 @@ export default function CourtCard({ court, selectedDate = today, onSlotSelected 
 
         {bookingResult && (
           <div
-            className={`mt-4 p-2 rounded-lg text-center text-sm font-semibold ${bookingResult.type === 'success'
-              ? 'bg-green-100 text-green-800'
-              : 'bg-red-100 text-red-800'
-              }`}
+            className={`mt-4 p-2 rounded-lg text-center text-sm font-semibold ${
+              bookingResult.type === "success"
+                ? "bg-green-100 text-green-800"
+                : "bg-red-100 text-red-800"
+            }`}
           >
             {bookingResult.message}
           </div>
