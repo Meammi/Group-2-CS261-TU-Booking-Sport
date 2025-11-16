@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import CourtCard from "@/components/CourtCard";
@@ -18,57 +17,80 @@ interface Court {
   slot_time: { [time: string]: "AVAILABLE" | "BOOKED" | "MAINTENANCE" };
 }
 
-const lockPastSlots = (courts: Court[], selectedDate: string): Court[] => {
-  const today = new Date();
-  const selected = new Date(`${selectedDate}T00:00:00`);
-  if (Number.isNaN(selected.getTime())) return courts;
-  const isToday = selected.toDateString() === today.toDateString();
-  if (!isToday) return courts;
-
-  const currentMinutes = today.getHours() * 60 + today.getMinutes();
+const lockPastSlots = (courts: Court[]): Court[] => {
+  const now = new Date();
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
   return courts.map((court) => {
     const updatedSlots: Court["slot_time"] = {};
+
     Object.entries(court.slot_time).forEach(([time, status]) => {
       let nextStatus = status;
+
       if (status === "AVAILABLE") {
         const [hourStr = "0", minuteStr = "0"] = time.split(":");
-        const slotMinutes = parseInt(hourStr, 10) * 60 + parseInt(minuteStr, 10);
+        const slotMinutes =
+          parseInt(hourStr, 10) * 60 + parseInt(minuteStr, 10);
         if (!Number.isNaN(slotMinutes) && slotMinutes < currentMinutes) {
           nextStatus = "BOOKED";
         }
       }
+
       updatedSlots[time] = nextStatus;
     });
+
     return { ...court, slot_time: updatedSlots };
   });
 };
 
-export default function ReservationDetailPage({ params }: { params: { type: string; location: string } }) {
+export default function ReservationDetailPage({
+  params,
+}: {
+  params: { type: string; location: string };
+}) {
   const type = decodeURIComponent(params.type);
   const location = decodeURIComponent(params.location);
 
+  const [username, setUsername] = useState("");
   const [courts, setCourts] = useState<Court[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [errorCode, setErrorCode] = useState<number | null>(null);
-  const [selectedDate, setSelectedDate] = useState<string>(() => new Date().toISOString().split("T")[0]);
+  const [selectedDate, setSelectedDate] = useState<string>(
+    () => new Date().toISOString().split("T")[0]
+  );
 
   const fetchAndFilterCourts = async () => {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
+
     try {
-      const response = await fetch("http://localhost:8081/rooms", { signal: controller.signal });
-      if (!response.ok) {
-        throw new Error(`HTTP_${response.status}`);
-      }
+      // ===== Fetch user info =====
+      const meRes = await fetch("http://localhost:8081/auth/me", {
+        credentials: "include",
+      });
+      if (!meRes.ok)
+        throw new Error(`Failed to fetch user info: ${meRes.status}`);
+      const me: { username: string } = await meRes.json();
+      setUsername(me.username || "");
+
+      // ===== Fetch courts =====
+      const response = await fetch("http://localhost:8081/rooms", {
+        signal: controller.signal,
+      });
+      if (!response.ok) throw new Error(`HTTP_${response.status}`);
       const allCourts: Court[] = await response.json();
-      const filtered = allCourts.filter((court) => court.type === type && court.loc_name === location);
-      setCourts(lockPastSlots(filtered, selectedDate));
+      const filtered = allCourts.filter(
+        (court) => court.type === type && court.loc_name === location
+      );
+      setCourts(lockPastSlots(filtered));
     } catch (err: any) {
-      if (err?.name === "AbortError") {
+      if (err?.name === "AbortError")
         setError("Request timed out, please try again");
-      } else if (typeof err?.message === "string" && err.message.startsWith("HTTP_")) {
+      else if (
+        typeof err?.message === "string" &&
+        err.message.startsWith("HTTP_")
+      ) {
         const status = Number(err.message.replace("HTTP_", ""));
         setErrorCode(status);
         if (status === 404) setError("Data not found (404)");
@@ -123,12 +145,16 @@ export default function ReservationDetailPage({ params }: { params: { type: stri
     <AuthGuard>
       <div className="bg-gray-50 min-h-screen">
         <div className="mx-auto max-w-md bg-gray-100 min-h-screen">
-          <Header studentId="6709616376" />
+          {/* ส่ง username ให้ Header */}
+          <Header studentId={username} />
           <ReservationHeader />
 
           <main className="p-4 font-nunito">
             <header className="relative flex items-center justify-center mb-6">
-              <Link href="/reservations" className="bg-gray-200 absolute left-0 p-2 rounded-full hover:bg-gray-300">
+              <Link
+                href="/reservations"
+                className="bg-gray-200 absolute left-0 p-2 rounded-full hover:bg-gray-300"
+              >
                 <ArrowLeftIcon className="h-6 w-6 text-gray-700" />
               </Link>
 
@@ -151,7 +177,9 @@ export default function ReservationDetailPage({ params }: { params: { type: stri
               </div>
             ) : (
               <div className="text-center py-10">
-                <p className="text-gray-500">No courts available for this selection.</p>
+                <p className="text-gray-500">
+                  No courts available for this selection.
+                </p>
               </div>
             )}
           </main>

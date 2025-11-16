@@ -6,7 +6,7 @@ import { API_BASE } from "@/lib/config";
 type Props = {
   open: boolean;
   spot: string;
-  date: string;   // รูปแบบแสดงผล เช่น 11/04/2025
+  date: string; // รูปแบบแสดงผล เช่น 11/04/2025
   time: string;
   onClose: () => void;
   onConfirm?: () => void;
@@ -16,10 +16,16 @@ type Props = {
   idsUrl?: string;
 };
 
-
-
 export default function ConfirmModal({
-  open, spot, date, time, onClose, onConfirm, userId, slotId, roomId, idsUrl,
+  open,
+  spot,
+  time,
+  onClose,
+  onConfirm,
+  userId,
+  slotId,
+  roomId,
+  idsUrl,
 }: Props) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -34,58 +40,114 @@ export default function ConfirmModal({
   }, [open]);
 
   const handleConfirm = async () => {
-    // กำหนดค่า userId และ slotId จากแหล่งข้อมูลที่มี
+    // --- START: VALIDATE TIME
+    try {
+      // Normalize time format to HH:mm
+      let hm = time;
+
+      // DB format: 16:00:00.0000000
+      if (/^\d{2}:\d{2}:\d{2}\.\d+$/.test(time)) {
+        const [hh, mm] = time.split(":");
+        hm = `${hh}:${mm}`;
+      }
+
+      // DB format: 16:00:00
+      if (/^\d{2}:\d{2}:\d{2}$/.test(time)) {
+        const [hh, mm] = time.split(":");
+        hm = `${hh}:${mm}`;
+      }
+
+      const [hour, minute] = hm.split(":").map(Number);
+
+      if (isNaN(hour) || isNaN(minute)) {
+        setErrorMsg("Invalid time format.");
+        return;
+      }
+
+      const now = new Date();
+      const slotTime = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+        hour,
+        minute,
+        0
+      );
+
+      if (now > slotTime) {
+        setErrorMsg("This slot is in the past and can no longer be booked.");
+        return;
+      }
+    } catch (e: any) {
+      console.error("Error parsing time:", e);
+      setErrorMsg("Invalid time format (Parsing failed)");
+      return;
+    }
+
     let finalUserId = userId;
     let finalSlotId = slotId;
 
     try {
       // กรณีที่ส่ง URL มาให้ดึง userId + slotId พร้อมกัน
       if ((!finalUserId || !finalSlotId) && idsUrl) {
-        const r = await fetch(idsUrl, { method: 'GET' });
+        const r = await fetch(idsUrl, { method: "GET" });
         if (!r.ok) {
           let m = `Failed to fetch IDs (${r.status})`;
-          try { const t = await r.text(); if (t) m = t; } catch { }
+          try {
+            const t = await r.text();
+            if (t) m = t;
+          } catch {}
           throw new Error(m);
         }
         const data = await r.json();
+
         if (!finalUserId) finalUserId = data?.userId;
         if (!finalSlotId) finalSlotId = data?.slotId;
       }
 
-      
-
       // กรณี fallback ดึง userId จาก session cookie (/auth/me)
       if (!finalUserId) {
         const meRes = await fetch(`${API_BASE}/auth/me`, {
-          credentials: 'include',
+          credentials: "include",
         });
         if (!meRes.ok) {
           throw new Error(`Failed to fetch user info (${meRes.status})`);
         }
         const me = await meRes.json();
         finalUserId = me?.id;
-        const isUuid = (v: any) => typeof v === 'string' && /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(v);
+        const isUuid = (v: any) =>
+          typeof v === "string" &&
+          /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(
+            v
+          );
         if (!isUuid(finalUserId)) {
-          throw new Error('Invalid user ID returned from /auth/me');
+          throw new Error("Invalid user ID returned from /auth/me");
         }
       }
 
       // กรณีต้องค้นหา slotId จากค่า roomId + time โดยให้ backend resolve ให้
       if (!finalSlotId) {
-        if (!roomId || !time) throw new Error('Missing roomId or time to resolve slot.');
-        const lookupUrl = `${API_BASE}/api/slot/lookup?roomId=${encodeURIComponent(roomId)}&time=${encodeURIComponent(time)}`;
+        if (!roomId || !time)
+          throw new Error("Missing roomId or time to resolve slot.");
+        const lookupUrl = `${API_BASE}/api/slot/lookup?roomId=${encodeURIComponent(
+          roomId
+        )}&time=${encodeURIComponent(time)}`;
         const lookupRes = await fetch(lookupUrl);
         if (!lookupRes.ok) {
           let m = `Slot lookup failed (${lookupRes.status})`;
-          try { const t = await lookupRes.text(); if (t) m = t; } catch { }
+          try {
+            const t = await lookupRes.text();
+            if (t) m = t;
+          } catch {}
           throw new Error(m);
         }
         const d = await lookupRes.json();
         finalSlotId = d?.slotId;
-        if (!finalSlotId) throw new Error('Slot ID not found for selected time.');
+        if (!finalSlotId)
+          throw new Error("Slot ID not found for selected time.");
       }
     } catch (e: any) {
-      setErrorMsg(e?.message || 'Cannot resolve booking identifiers');
+      setErrorMsg(e?.message || "Cannot resolve booking identifiers");
       return;
     }
 
@@ -93,7 +155,10 @@ export default function ConfirmModal({
     setErrorMsg(null);
     setSuccessMsg(null);
 
-    const payload: Record<string, any> = { userId: finalUserId, slotId: finalSlotId };
+    const payload: Record<string, any> = {
+      userId: finalUserId,
+      slotId: finalSlotId,
+    };
     if (roomId) payload.roomId = roomId;
 
     try {
@@ -102,10 +167,9 @@ export default function ConfirmModal({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
-        credentials: 'include',
+        credentials: "include",
       });
       if (!res.ok) {
-
         let message = "Reservation failed. Please try again.";
         let raw = "";
         try {
@@ -118,7 +182,7 @@ export default function ConfirmModal({
               message = raw;
             }
           }
-        } catch { }
+        } catch {}
 
         const lower = (message || "").toLowerCase();
         if (
@@ -144,10 +208,10 @@ export default function ConfirmModal({
         priceRaw === undefined || priceRaw === null
           ? 0
           : typeof priceRaw === "number"
-            ? priceRaw
-            : typeof priceRaw === "string"
-              ? parseFloat(priceRaw)
-              : Number(priceRaw) || 0;
+          ? priceRaw
+          : typeof priceRaw === "string"
+          ? parseFloat(priceRaw)
+          : Number(priceRaw) || 0;
 
       setSuccessMsg(
         reservationId
@@ -172,7 +236,7 @@ export default function ConfirmModal({
                 const parsed = JSON.parse(raw);
                 msg = parsed?.message || raw;
               }
-            } catch { }
+            } catch {}
             throw new Error(msg);
           }
           router.push(`/receipt?id=${reservationId}`);
@@ -199,7 +263,7 @@ export default function ConfirmModal({
       <div className="relative z-10 w-[min(92vw,520px)] rounded-lg bg-white p-6 shadow-2xl border">
         <h2 className="text-2xl font-bold text-center mb-3">Your Booking</h2>
         <p className="text-center text-xl font-semibold mb-1">Spot : {spot}</p>
-        <p className="text-center mb-6">Date : {date} &nbsp; Time : {time}</p>
+        <p className="text-center mb-6">Time : {time}</p>
 
         <div className="flex items-center justify-center gap-4">
           <button
@@ -213,7 +277,7 @@ export default function ConfirmModal({
             disabled={isSubmitting}
             className="rounded-md bg-blue-600 px-5 py-2 text-white font-semibold shadow hover:bg-blue-700 active:scale-95 disabled:opacity-60"
           >
-            {isSubmitting ? 'Processing...' : 'Confirm'}
+            {isSubmitting ? "Processing..." : "Confirm"}
           </button>
         </div>
         {(errorMsg || successMsg) && (
@@ -226,9 +290,8 @@ export default function ConfirmModal({
             )}
           </div>
         )}
-        {(!errorMsg && !successMsg) && (
-          <div className="mt-4 text-center text-sm">
-          </div>
+        {!errorMsg && !successMsg && (
+          <div className="mt-4 text-center text-sm"></div>
         )}
       </div>
     </div>

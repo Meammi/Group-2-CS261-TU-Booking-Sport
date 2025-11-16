@@ -36,53 +36,42 @@ const getImageForLocation = (locationName: string, roomName?: string): string =>
 };
 
 export default function MyBookingPage() {
+  const [username, setUsername] = useState("");
   const [currentBookings, setCurrentBookings] = useState<BookingItem[]>([]);
   const [historyBookings, setHistoryBookings] = useState<BookingItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchBookings = async () => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      setError(null);
       try {
-        const meRes = await fetch('http://localhost:8081/auth/me', {
-          credentials: 'include',
-        });
-        if (!meRes.ok) {
-          throw new Error(`Failed to fetch user info: ${meRes.status}`);
-        }
-        const me: { id: string } = await meRes.json();
-        const userId = me.id;
+        // ===== Fetch user info =====
+        const meRes = await fetch('http://localhost:8081/auth/me', { credentials: 'include' });
+        if (!meRes.ok) throw new Error(`Failed to fetch user info: ${meRes.status}`);
+        const me: { username: string; id: string } = await meRes.json();
+        setUsername(me.username || "");
 
-        const response = await fetch(`http://localhost:8081/MyBookings/${userId}`, {
-          credentials: 'include',
-        });
+        // ===== Fetch bookings =====
+        const res = await fetch(`http://localhost:8081/MyBookings/${me.id}`, { credentials: 'include' });
+        if (!res.ok) throw new Error(`Failed to fetch bookings: ${res.status}`);
+        const data: { current: Omit<BookingItem, 'id'>[]; history: Omit<BookingItem, 'id'>[] } = await res.json();
 
-        if (!response.ok) {
-          throw new Error(`Failed to fetch bookings: ${response.status}`);
-        }
-
-        const data: { current: Omit<BookingItem, 'id'>[]; history: Omit<BookingItem, 'id'>[] } = await response.json();
-
-        const processedCurrent = data.current.map((item, index) => ({
-          ...item,
-          id: index,
-        }));
-
-        const processedHistory = data.history.map((item, index) => ({
-          ...item,
-          id: data.current.length + index,
-        }));
+        const processedCurrent = data.current.map((item, index) => ({ ...item, id: index }));
+        const processedHistory = data.history.map((item, index) => ({ ...item, id: data.current.length + index }));
 
         setCurrentBookings(processedCurrent);
         setHistoryBookings(processedHistory);
       } catch (err: any) {
-        setError(err.message);
+        console.error(err);
+        setError(err.message || "Unexpected error");
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchBookings();
+    fetchData();
   }, []);
 
   if (isLoading) {
@@ -106,7 +95,9 @@ export default function MyBookingPage() {
     <AuthGuard>
       <div className="bg-gray-50 min-h-screen">
         <div className="mx-auto max-w-md bg-gray-100 min-h-screen">
-          <Header studentId="6709616376" />
+          {/* ส่ง username ที่ fetch มาให้ Header */}
+          <Header studentId={username} />
+
           <main className="p-4 font-nunito">
             <div className="flex flex-col items-center gap-2 mb-6">
               <h1 className="text-3xl font-bold text-gray-800">My Booking</h1>

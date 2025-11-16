@@ -1,6 +1,7 @@
-"use client";
-import { API_BASE } from '@/lib/config'
+'use client';
+import { API_BASE } from '@/lib/config';
 import { useState, useEffect, useRef } from "react";
+import Header from '@/components/Header';
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import QrScanner from "qr-scanner";
@@ -43,10 +44,26 @@ function ReceiptContent() {
   const [checkResult, setCheckResult] = useState<string | null>(null);
   const [checking, setChecking] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
+  const [studentId, setStudentId] = useState<string>("");
 
   const total = data.price + (data.tax || 0);
-
   const qrRef = useRef<HTMLDivElement>(null);
+
+  // fetch user info
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await fetch("http://localhost:8081/auth/me", { credentials: "include" });
+        if (!res.ok) throw new Error(`Failed to fetch user info: ${res.status}`);
+        const me: { username: string } = await res.json();
+        setStudentId(me.username || "");
+      } catch (err) {
+        console.error(err);
+        setStudentId("6709616376"); // fallback
+      }
+    };
+    fetchUser();
+  }, []);
 
   useEffect(() => {
     if (!id) {
@@ -68,7 +85,7 @@ function ReceiptContent() {
               const parsed = JSON.parse(raw);
               msg = parsed?.message || raw;
             }
-          } catch {}
+          } catch { }
           throw new Error(msg);
         }
         const json = await res.json();
@@ -108,7 +125,6 @@ function ReceiptContent() {
     setCheckResult(null);
     setChecking(true);
 
-    // ตรวจสอบไฟล์เป็น image
     if (!file.type.startsWith("image/")) {
       setCheckResult("รองรับเฉพาะไฟล์รูปภาพเท่านั้น");
       setChecking(false);
@@ -116,22 +132,14 @@ function ReceiptContent() {
     }
 
     try {
-      // สแกน QR ในภาพ
-      const result = await QrScanner.scanImage(file, {
-        returnDetailedScanResult: true,
-      });
+      const result = await QrScanner.scanImage(file, { returnDetailedScanResult: true });
       if (!result || !result.data) {
         setCheckResult("ไม่พบ QR code ในภาพ");
         return;
       }
 
       const scanned = result.data;
-
-      // ตรวจสอบกับ API
-      const body = {
-        reservationId: data.bookingId,
-        slipId: scanned,
-      };
+      const body = { reservationId: data.bookingId, slipId: scanned };
 
       const res = await fetch(API_BASE + "/api/slipChecking", {
         method: "POST",
@@ -147,7 +155,6 @@ function ReceiptContent() {
         setCheckResult(`ตรวจสอบไม่สำเร็จ: ${json.message ?? "ไม่ทราบเหตุผล"}`);
       }
     } catch (err: any) {
-      // ถ้า error จาก QrScanner หรือภาพไม่มี QR
       setCheckResult("ไม่พบ QR code ในภาพ");
     } finally {
       setChecking(false);
@@ -155,159 +162,104 @@ function ReceiptContent() {
   };
 
   return (
-    <main className="min-h-screen w-full bg-neutral-100 flex items-start justify-center py-6">
-      <section className="w-[360px] min-h-[740px] rounded-lg border bg-white shadow-sm overflow-hidden">
+    <main className="bg-gray-50 min-h-screen flex justify-center items-center">
+      <section className="mx-auto max-w-md w-full bg-white shadow-sm py-8 px-6">
+
         {/* Top bar */}
-        <div className="flex items-center justify-between px-4 py-3 text-neutral-700">
-          <button aria-label="Menu" className="p-1">
-            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor">
-              <path
-                d="M3 6h18M3 12h18M3 18h18"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              />
-            </svg>
-          </button>
-          <div className="flex items-center gap-2 text-[11px]">
-            <svg
-              viewBox="0 0 24 24"
-              className="h-4 w-4"
-              fill="none"
-              stroke="currentColor"
-            >
-              <path
-                d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm7 8a7 7 0 0 0-14 0"
-                strokeWidth="1.3"
-                strokeLinecap="round"
-              />
-            </svg>
-            <span className="tracking-wide">{data.orderNo}</span>
+        <Header studentId={studentId} />
+
+        {/* Title */}
+        <h1 className="text-center text-[22px] font-bold text-neutral-800 tracking-wide mt-2">
+          RECEIPT
+        </h1>
+
+        <div className="mt-4 border-t border-gray-200" />
+
+        {/* Shop / Date */}
+        <div className="mt-4 space-y-3 text-[14px] text-neutral-700">
+          <Row label="Shop Name:" value={data.shopName} rightColWidth={RIGHT_COL_WIDTH} />
+          <Row label="Date:" value={data.dateStr} rightColWidth={RIGHT_COL_WIDTH} />
+        </div>
+
+        <div className="mt-4 border-t border-gray-200" />
+
+        {/* Items */}
+        <div className="mt-4 text-[14px] text-neutral-700">
+          <div className="flex font-semibold text-neutral-800">
+            <div className="flex-1">Description</div>
+            <div className={`${RIGHT_COL_WIDTH} text-right`}>Price</div>
+          </div>
+
+          <div className="mt-2 flex">
+            <div className="flex-1">{data.itemName}</div>
+            <div className={`${RIGHT_COL_WIDTH} text-right`}>
+              {data.price.toFixed(2)}
+            </div>
+          </div>
+
+          <div className="my-4 border-t border-gray-200" />
+
+          <div className="flex">
+            <div className="flex-1">Tax</div>
+            <div className={`${RIGHT_COL_WIDTH} text-right`}>
+              {Number(data.tax || 0).toFixed(2)}
+            </div>
+          </div>
+
+          <div className="mt-1 flex font-semibold text-neutral-800">
+            <div className="flex-1">Total</div>
+            <div className={`${RIGHT_COL_WIDTH} text-right`}>
+              {total.toFixed(2)}
+            </div>
           </div>
         </div>
 
-        <div className="px-6 pb-8">
-          <h1 className="text-center text-[20px] tracking-[0.12em] font-semibold text-neutral-800">
-            RECEIPT
-          </h1>
-          <div className="mt-3 border-t" />
+        <div className="mt-6 border-t border-gray-200" />
 
-          {/* Shop / Date */}
-          <div className="mt-3 space-y-2 text-[13px]">
-            <Row
-              label="Shop Name:"
-              value={data.shopName}
-              rightColWidth={RIGHT_COL_WIDTH}
-            />
-            <Row
-              label="Date:"
-              value={data.dateStr}
-              rightColWidth={RIGHT_COL_WIDTH}
-            />
+        {/* QR Section */}
+        <div className="mt-6 flex flex-col items-center gap-4 text-center">
+          <div ref={qrRef} className="rounded-md border border-gray-200 bg-neutral-50 p-3">
+            {qrDataUrl ? (
+              <img src={qrDataUrl} alt="QR Code" className="w-24 h-24" />
+            ) : (
+              <p className="text-[11px] text-neutral-500">Generating QR…</p>
+            )}
           </div>
-
-          <div className="mt-3 border-t" />
-
-          {/* Items */}
-          <div className="mt-3 text-[13px]">
-            <div className="flex font-semibold">
-              <div className="flex-1">Description</div>
-              <div className={`${RIGHT_COL_WIDTH} text-right`}>Price</div>
-            </div>
-
-            <div className="mt-2 flex">
-              <div className="flex-1">{data.itemName}</div>
-              <div className={`${RIGHT_COL_WIDTH} text-right`}>
-                {data.price.toFixed(2)}
-              </div>
-            </div>
-
-            <div className="my-3 border-t" />
-
-            <div className="flex">
-              <div className="flex-1">Tax</div>
-              <div className={`${RIGHT_COL_WIDTH} text-right`}>
-                {Number(data.tax || 0).toFixed(2)}
-              </div>
-            </div>
-
-            <div className="mt-1 flex font-semibold">
-              <div className="flex-1">Total</div>
-              <div className={`${RIGHT_COL_WIDTH} text-right`}>
-                {total.toFixed(2)}
-              </div>
-            </div>
+          <div>
+            <p className="text-[16px] font-bold text-neutral-800">No. {data.orderNo}</p>
+            <p className="mt-1 text-[13px] text-neutral-600">
+              Thank you for Booking!
+            </p>
           </div>
+        </div>
 
-          <div className="mt-4 border-t" />
+        {/* Buttons */}
+        <div className="mt-10 flex flex-col items-center gap-4">
+          <button
+            type="button"
+            className="px-6 py-2 rounded-md bg-gray-700 text-white text-[14px] hover:bg-gray-900 active:scale-95 transition"
+            onClick={() => router.push('/mybooking')}
+          >
+            Cancel
+          </button>
 
-          {/* QR + details */}
-          <div className="mt-4 flex items-center gap-4">
-            <div ref={qrRef} className="rounded-md border bg-neutral-50 p-2">
-              {qrDataUrl ? (
-                <img src={qrDataUrl} alt="QR Code" className="w-20 h-20" />
-              ) : (
-                <p className="text-[11px] text-neutral-500">Generating QR…</p>
-              )}
-            </div>
-            <div className="flex-1">
-              <p className="text-[15px] font-semibold">No. {data.orderNo}</p>
-              <p className="mt-2 text-[12px]">Thank you for Booking!</p>
-            </div>
-          </div>
+          <label
+            htmlFor="upload-slip"
+            className="px-6 py-2 rounded-md bg-green-600 text-white text-[14px] cursor-pointer hover:bg-green-700 active:scale-95 transition"
+          >
+            Upload Slip
+          </label>
 
-          {/* Loading / Error / QR check */}
-          {loading && (
-            <p className="mt-6 text-center text-[12px] text-neutral-500">
-              Loading receipt…
-            </p>
-          )}
-          {error && (
-            <p className="mt-2 text-center text-[12px] text-red-600">
-              Error: {error}
-            </p>
-          )}
-          {checking && (
-            <p className="mt-2 text-center text-[12px] text-neutral-500">
-              กำลังตรวจสอบ QR…
-            </p>
-          )}
-          {checkResult && (
-            <p className="mt-2 text-center text-[12px] text-red-700">
-              {checkResult}
-            </p>
-          )}
-
-          {/* Button Section */}
-          <div className="mt-8 flex flex-col items-center gap-3">
-            <button
-              type="button"
-              className="px-6 py-2 rounded-md border bg-red-600 text-white text-[14px] active:scale-[.99]"
-              onClick={(e) => {
-                router.push('/mybooking');
-              }}
-            >
-              Cancel
-            </button>
-
-            {/* Upload Slip */}
-            <label
-              htmlFor="upload-slip"
-              className="px-6 py-2 rounded-md bg-green-700 text-white text-[14px] cursor-pointer hover:bg-blue-800 active:scale-[.99]"
-            >
-              Upload Slip
-            </label>
-            <input
-              type="file"
-              id="upload-slip"
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) handleUpload(file);
-              }}
-            />
-          </div>
+          <input
+            type="file"
+            id="upload-slip"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleUpload(file);
+            }}
+          />
         </div>
       </section>
     </main>
@@ -349,11 +301,3 @@ function Row({
     </div>
   );
 }
-
-
-
-
-
-
-
-

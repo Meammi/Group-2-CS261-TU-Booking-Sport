@@ -1,15 +1,15 @@
 "use client";
-import { API_BASE } from '@/lib/config'
 
 import { useState, useEffect } from 'react';
-import SportCard from "@/components/SportCard";
+import axios from '@/lib/axios';
+import { API_BASE } from '@/lib/config';
 import Header from "@/components/Header";
+import SportCard from "@/components/SportCard";
 import AnnouncementCard from "@/components/AnnouncementCard";
 import CoverFlowCarousel from "@/components/Carousel";
+import FavoriteCard from "@/components/FavoriteCard";
 import AuthGuard from '@/components/AuthGuard';
-import FavoriteCard from '@/components/FavoriteCard';
 import { ArrowPathIcon } from '@heroicons/react/24/solid';
-import axios from '@/lib/axios';
 
 interface BackendSport {
   type: string;
@@ -34,16 +34,12 @@ interface Favorite {
 }
 
 const getImageForSport = (type: string, locationName: string): string => {
-  const normalizedType = type.toLowerCase();
-  const normalizedLocation = locationName.toLowerCase();
-
-  if (normalizedType.includes('badminton') && normalizedLocation.includes('gym 4')) {
-    return '/images/gym4.jpg';
-  }
-  if (normalizedType.includes('badminton')) return '/images/interzone.jpg';
-  if (normalizedType.includes('karaoke')) return '/images/karaoke.jpg';
-  if (normalizedType.includes('music')) return '/images/musicroom.jpg';
-
+  const t = type.toLowerCase();
+  const l = locationName.toLowerCase();
+  if (t.includes('badminton') && l.includes('gym 4')) return '/images/gym4.jpg';
+  if (t.includes('badminton')) return '/images/interzone.jpg';
+  if (t.includes('karaoke')) return '/images/karaoke.jpg';
+  if (t.includes('music')) return '/images/musicroom.jpg';
   return 'https://placehold.co/400x300/cccccc/FFFFFF?text=Sport';
 };
 
@@ -53,83 +49,70 @@ const announcementImages = [
   { id: 3, imageUrl: "/images/announce2.jpg", alt: "Announcement 3" },
 ];
 
-const userStudentId = "6709616376";
-
 export default function HomePage() {
   const [sports, setSports] = useState<Sport[]>([]);
   const [favorites, setFavorites] = useState<Favorite[]>([]);
+  const [username, setUsername] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  async function fetchFavorites() {
+  // fetch favorites
+  const fetchFavorites = async () => {
     try {
-      const favResp = await axios.get("/favorite/me", { withCredentials: true });
-      const favData = favResp.data;
-
+      const res = await axios.get("/favorite/me", { withCredentials: true });
+      const favData = res.data;
       const validatedFavorites: Favorite[] = [];
 
-      await Promise.all(
-        favData.map(async (fav: any) => {
-          try {
-            const roomId = fav.roomId || fav.room_id;
-            const slotId = fav.slotId || fav.slot_id;
-            const type = fav.type;
-            const name = fav.name;
-            const locationName = fav.locationName || fav.loc_name;
-            const startTime = fav.startTime || fav.start_time || '';
+      favData.forEach((fav: any) => {
+        const roomId = fav.roomId || fav.room_id;
+        const slotId = fav.slotId || fav.slot_id;
+        const type = fav.type;
+        const name = fav.name;
+        const locationName = fav.locationName || fav.loc_name;
+        const startTime = fav.startTime || fav.start_time || '';
 
-            if (roomId && slotId) {
-              validatedFavorites.push({
-                roomId,
-                slotId,
-                type,
-                name,
-                locationName,
-                startTime,
-              });
-            }
-          } catch (err) {
-            console.error("Error validating favorite:", err);
-          }
-        })
-      );
+        if (roomId && slotId) {
+          validatedFavorites.push({ roomId, slotId, type, name, locationName, startTime });
+        }
+      });
 
       setFavorites(validatedFavorites);
     } catch (err: any) {
       console.error("Error fetching favorites:", err.response?.data || err.message);
       setFavorites([]);
     }
-  }
+  };
 
   useEffect(() => {
     const fetchAll = async () => {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await fetch(API_BASE + '/homepage');
-        if (!response.ok) {
-          throw new Error(`Failed to load homepage data: ${response.status}`);
-        }
-        const backendData: BackendSport[] = await response.json();
+        // fetch user
+        const meResp = await axios.get("/auth/me", { withCredentials: true });
+        setUsername(meResp.data.username || "");
+
+        // fetch homepage sports
+        const resp = await fetch(API_BASE + '/homepage');
+        if (!resp.ok) throw new Error(`Failed to load homepage data: ${resp.status}`);
+        const backendData: BackendSport[] = await resp.json();
 
         const sortedData = backendData.sort((a, b) => {
           const aBad = a.type.toLowerCase().includes("badminton");
           const bBad = b.type.toLowerCase().includes("badminton");
-          if (aBad && !bBad) return -1;
-          if (!aBad && bBad) return 1;
-          return 0;
+          return (aBad && !bBad) ? -1 : (!aBad && bBad ? 1 : 0);
         });
 
-        const transformedData: Sport[] = sortedData.map((item, index) => ({
-          id: index,
+        const transformed: Sport[] = sortedData.map((item, i) => ({
+          id: i,
           title: item.type,
           subtitle: item.locationName,
           imageUrl: getImageForSport(item.type, item.locationName),
           href: `/reservations/${encodeURIComponent(item.type)}/${encodeURIComponent(item.locationName)}`,
         }));
+        setSports(transformed);
 
-        setSports(transformedData);
-
+        // fetch favorites
         await fetchFavorites();
       } catch (err: any) {
         setError(err.message || "Unexpected error");
@@ -145,7 +128,7 @@ export default function HomePage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
         <ArrowPathIcon className="h-12 w-12 animate-spin text-gray-500" />
-        <p className="mt-4 text-gray-600">Loading sports...</p>
+        <p className="mt-4 text-gray-600">Loading homepage...</p>
       </div>
     );
   }
@@ -161,7 +144,8 @@ export default function HomePage() {
   return (
     <AuthGuard>
       <div className="max-w-md mx-auto bg-gray-100 min-h-screen font-nunito">
-        <Header studentId={userStudentId} />
+        <Header studentId={username} />
+
         <main className="p-4">
           <header className="text-center my-4 text-tu-navy">
             <h1 className="text-lg font-bold">Welcome to TU Booking Sports</h1>
