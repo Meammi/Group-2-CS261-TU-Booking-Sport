@@ -1,7 +1,7 @@
 import Image from "next/image";
-import { useEffect ,useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "@/lib/axios";
-import ConfirmModal from "@/components/ConfirmCard";
+import ConfirmModal from "@/components/ConfirmCard"; // (คุณใช้ชื่อ ConfirmCard.tsx หรือ ConfirmModal.tsx ให้แน่ใจว่า import ถูกต้องนะครับ)
 
 interface cardProps {
   roomId: string;
@@ -14,6 +14,16 @@ interface cardProps {
 
 const defaultUrl = "/images/interzone.jpg";
 
+// --- 1. เพิ่มฟังก์ชันนี้สำหรับสร้างวันที่ปัจจุบัน ---
+const getTodayDateString = () => {
+  const today = new Date();
+  const day = String(today.getDate()).padStart(2, '0');
+  const month = String(today.getMonth() + 1).padStart(2, '0'); // JavaScript นับเดือน 0-11
+  const year = today.getFullYear();
+  return `${day}/${month}/${year}`; // Format: DD/MM/YYYY
+};
+// ----------------------------------------
+
 export default function FavoriteCard({
   roomId,
   slotId,
@@ -22,7 +32,7 @@ export default function FavoriteCard({
   locationName,
   startTime,
 }: cardProps) {
-
+  
   let imageUrl = defaultUrl;
 
   if (locationName === "Gym 4") {
@@ -32,7 +42,7 @@ export default function FavoriteCard({
   } else if (locationName === "Melodysphere") {
     if (type === "Karaoke Room") {
       imageUrl = "/images/karaoke.jpg";
-    }else {
+    } else {
       imageUrl = "/images/musicroom.jpg";
     }
   }
@@ -40,7 +50,9 @@ export default function FavoriteCard({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isStarred, setIsStarred] = useState(false);
   const [favoriteId, setFavoriteId] = useState<string | null>(null);
-  const [confirmationMessage, setConfirmationMessage] = useState<string | null>(null);
+  const [confirmationMessage, setConfirmationMessage] = useState<string | null>(
+    null
+  );
 
   // ...rest of your code
 
@@ -84,11 +96,14 @@ export default function FavoriteCard({
     }
   };
 
-
   const [datePart, timePartRaw] = startTime.includes("T")
     ? startTime.split("T")
     : ["", startTime];
-  const displayDate = datePart || "N/A";
+  
+  // --- 2. แก้ไขบรรทัดนี้: ถ้าไม่มี datePart ให้ใช้ "วันที่ปัจจุบัน" แทน "N/A" ---
+  const displayDate = datePart || getTodayDateString();
+  // -----------------------------------------------------------
+  
   const displayTime = (timePartRaw || startTime || "").substring(0, 5);
 
   return (
@@ -96,8 +111,8 @@ export default function FavoriteCard({
       <ConfirmModal
         open={isModalOpen}
         spot={name}
-        date={displayDate}
-        time={displayTime}
+        date={displayDate} // <-- ตอนนี้จะส่ง "16/11/2025" (หรือวันที่ปัจจุบัน)
+        time={displayTime} // <-- จะส่ง "17:00"
         roomId={roomId}
         slotId={slotId}
         onClose={() => setIsModalOpen(false)}
@@ -140,7 +155,9 @@ export default function FavoriteCard({
         </div>
       </div>
       {confirmationMessage && (
-        <p className="mt-2 text-sm text-green-600 text-center">{confirmationMessage}</p>
+        <p className="mt-2 text-sm text-green-600 text-center">
+          {confirmationMessage}
+        </p>
       )}
     </>
   );

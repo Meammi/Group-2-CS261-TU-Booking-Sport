@@ -34,7 +34,42 @@ export default function ConfirmModal({
   }, [open]);
 
   const handleConfirm = async () => {
-    // กำหนดค่า userId และ slotId จากแหล่งข้อมูลที่มี
+
+// --- START: VALIDATE TIME 
+    try {
+      let day: number, month: number, year: number;
+
+      if (date.includes('/')) {
+        [day, month, year] = date.split('/').map(Number);
+      } else if (date.includes('-')) {
+        const [yearStr, monthStr, dayStr] = date.split('-');
+        year = Number(yearStr);
+        month = Number(monthStr);
+        day = Number(dayStr);
+      } else {
+        throw new Error('Unknown date format or N/A');
+      }
+
+      const [hour, minute] = time.split(':').map(Number);
+
+      const slotStartTime = new Date(year, month - 1, day, hour, minute);
+      const now = new Date();
+      if (isNaN(slotStartTime.getTime()) || now > slotStartTime) {
+        
+        if (isNaN(slotStartTime.getTime())) {
+          console.error("Invalid Date! Check 'date' prop format.", date);
+          setErrorMsg("Date not received (N/A) or invalid format.");
+        } else {
+          setErrorMsg("This slot is in the past and can no longer be booked.");
+        }
+        return; 
+      }
+    } catch (e: any) {
+      console.error("Error parsing date/time:", e.message);
+      setErrorMsg("Invalid date or time format (Error: Parsing failed)");
+      return;
+    }
+
     let finalUserId = userId;
     let finalSlotId = slotId;
 
