@@ -113,7 +113,7 @@ export default function BookingActions({ bookingId, status, isCurrent, locationN
       }
 
       const response = await fetch(`${API_BASE}/MyBookings/cancel/${target.reservationId}`, {
-        method: "DELETE",
+        method: "PATCH",
         headers: { Authorization: `Bearer ${token}` },
         credentials: "include",
       });
@@ -127,7 +127,7 @@ export default function BookingActions({ bookingId, status, isCurrent, locationN
       setTimeout(() => {
         router.push("/mybooking");
         router.refresh();
-      }, 1500);
+      }, 500);
     } catch (err: any) {
       console.error("Cancellation API call failed:", err);
       if (err?.message?.includes("Failed to fetch")) {

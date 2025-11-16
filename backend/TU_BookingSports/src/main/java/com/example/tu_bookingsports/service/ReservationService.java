@@ -106,9 +106,8 @@ public class ReservationService {
         // Check if current Reservation >=10
         List<Reservations> reservations = reservationRepository.findByUser(loggedInUserId);
         long tomorrowReservationsCount = reservations.stream()
-                .filter(b -> {
-                    return b.getEndTime().isAfter(LocalDateTime.now());
-                })
+                .filter(b -> b.getEndTime().isAfter(LocalDateTime.now())
+                        && b.getStatus() != Reservations.ReservationStatus.CANCELLED)
                 .count();
         if (tomorrowReservationsCount >= MAX_RESERVATION) {
             throw new RuntimeException("Error: Reached current maximum number of Reservations: "+tomorrowReservationsCount+"/"+MAX_RESERVATION);
@@ -131,23 +130,24 @@ public class ReservationService {
 
         reservation.setPrice(price); //7
 
-        
-
         if (price.compareTo(BigDecimal.ZERO) <= 0) {
             reservation.setStatus(Reservations.ReservationStatus.CONFIRMED);//6
         } else {
             reservation.setStatus(Reservations.ReservationStatus.PENDING);//6
-            try {
-                paymentService.createPayment(reservation.getReservationID());
-            } catch (java.io.IOException | com.google.zxing.WriterException e) {
-                // Wrap checked exceptions in a RuntimeException to trigger transaction rollback
-                throw new RuntimeException("Failed to create payment", e);
-            }
         }
 
-        
+        Reservations saved = reservationRepository.save(reservation);
 
-        return reservationRepository.save(reservation);
+        if (price.compareTo(BigDecimal.ZERO) > 0) {
+            //try {
+            //    paymentService.createPayment(saved.getReservationID());
+            //} catch (java.io.IOException | com.google.zxing.WriterException e) {
+            //    // Wrap checked exceptions in a RuntimeException to trigger transaction rollback
+            //    throw new RuntimeException("Failed to create payment", e);
+            //}
+        }
+        
+        return saved;
 
     }
 }
