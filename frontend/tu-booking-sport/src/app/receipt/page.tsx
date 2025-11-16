@@ -1,5 +1,5 @@
-"use client";
-import { API_BASE } from '@/lib/config'
+'use client';
+import { API_BASE } from '@/lib/config';
 import { useState, useEffect, useRef } from "react";
 import Header from '@/components/Header';
 import { useSearchParams } from "next/navigation";
@@ -44,12 +44,26 @@ function ReceiptContent() {
   const [checkResult, setCheckResult] = useState<string | null>(null);
   const [checking, setChecking] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
-  const userStudentId = "6709616376";
-
+  const [studentId, setStudentId] = useState<string>("");
 
   const total = data.price + (data.tax || 0);
-
   const qrRef = useRef<HTMLDivElement>(null);
+
+  // fetch user info
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await fetch("http://localhost:8081/auth/me", { credentials: "include" });
+        if (!res.ok) throw new Error(`Failed to fetch user info: ${res.status}`);
+        const me: { username: string } = await res.json();
+        setStudentId(me.username || "");
+      } catch (err) {
+        console.error(err);
+        setStudentId("6709616376"); // fallback
+      }
+    };
+    fetchUser();
+  }, []);
 
   useEffect(() => {
     if (!id) {
@@ -111,7 +125,6 @@ function ReceiptContent() {
     setCheckResult(null);
     setChecking(true);
 
-    // ตรวจสอบไฟล์เป็น image
     if (!file.type.startsWith("image/")) {
       setCheckResult("รองรับเฉพาะไฟล์รูปภาพเท่านั้น");
       setChecking(false);
@@ -119,22 +132,14 @@ function ReceiptContent() {
     }
 
     try {
-      // สแกน QR ในภาพ
-      const result = await QrScanner.scanImage(file, {
-        returnDetailedScanResult: true,
-      });
+      const result = await QrScanner.scanImage(file, { returnDetailedScanResult: true });
       if (!result || !result.data) {
         setCheckResult("ไม่พบ QR code ในภาพ");
         return;
       }
 
       const scanned = result.data;
-
-      // ตรวจสอบกับ API
-      const body = {
-        reservationId: data.bookingId,
-        slipId: scanned,
-      };
+      const body = { reservationId: data.bookingId, slipId: scanned };
 
       const res = await fetch(API_BASE + "/api/slipChecking", {
         method: "POST",
@@ -150,7 +155,6 @@ function ReceiptContent() {
         setCheckResult(`ตรวจสอบไม่สำเร็จ: ${json.message ?? "ไม่ทราบเหตุผล"}`);
       }
     } catch (err: any) {
-      // ถ้า error จาก QrScanner หรือภาพไม่มี QR
       setCheckResult("ไม่พบ QR code ในภาพ");
     } finally {
       setChecking(false);
@@ -159,10 +163,10 @@ function ReceiptContent() {
 
   return (
     <main className="bg-gray-50 min-h-screen flex justify-center items-center">
-      <section className="mx-auto max-w-md w-full bg-white shadow-sm py-8 px-6 ">
+      <section className="mx-auto max-w-md w-full bg-white shadow-sm py-8 px-6">
 
         {/* Top bar */}
-        <Header studentId={userStudentId} />
+        <Header studentId={studentId} />
 
         {/* Title */}
         <h1 className="text-center text-[22px] font-bold text-neutral-800 tracking-wide mt-2">
@@ -231,7 +235,6 @@ function ReceiptContent() {
 
         {/* Buttons */}
         <div className="mt-10 flex flex-col items-center gap-4">
-
           <button
             type="button"
             className="px-6 py-2 rounded-md bg-gray-700 text-white text-[14px] hover:bg-gray-900 active:scale-95 transition"
@@ -257,12 +260,9 @@ function ReceiptContent() {
               if (file) handleUpload(file);
             }}
           />
-
         </div>
-
       </section>
     </main>
-
   );
 }
 
@@ -301,11 +301,3 @@ function Row({
     </div>
   );
 }
-
-
-
-
-
-
-
-

@@ -1,5 +1,4 @@
-"use client";
-
+'use client';
 import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import CourtCard from "@/components/CourtCard";
@@ -29,16 +28,8 @@ const lockPastSlots = (courts: Court[]): Court[] => {
       let nextStatus = status;
 
       if (status === "AVAILABLE") {
-        let hh = "0";
-        let mm = "0";
-        const parts = time.split(":");
-        if (parts.length >= 2) {
-          hh = parts[0];
-          mm = parts[1];
-        }
-
-        const slotMinutes = parseInt(hh, 10) * 60 + parseInt(mm, 10);
-
+        const [hh, mm] = time.split(":").map((v) => parseInt(v, 10));
+        const slotMinutes = hh * 60 + mm;
         if (!Number.isNaN(slotMinutes) && slotMinutes < currentMinutes) {
           nextStatus = "BOOKED";
         }
@@ -55,6 +46,7 @@ export default function ReservationDetailPage({ params }: { params: { type: stri
   const type = decodeURIComponent(params.type);
   const location = decodeURIComponent(params.location);
 
+  const [username, setUsername] = useState("");
   const [courts, setCourts] = useState<Court[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -64,18 +56,23 @@ export default function ReservationDetailPage({ params }: { params: { type: stri
   const fetchAndFilterCourts = async () => {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
+
     try {
+      // ===== Fetch user info =====
+      const meRes = await fetch("http://localhost:8081/auth/me", { credentials: "include" });
+      if (!meRes.ok) throw new Error(`Failed to fetch user info: ${meRes.status}`);
+      const me: { username: string } = await meRes.json();
+      setUsername(me.username || "");
+
+      // ===== Fetch courts =====
       const response = await fetch("http://localhost:8081/rooms", { signal: controller.signal });
-      if (!response.ok) {
-        throw new Error(`HTTP_${response.status}`);
-      }
+      if (!response.ok) throw new Error(`HTTP_${response.status}`);
       const allCourts: Court[] = await response.json();
       const filtered = allCourts.filter((court) => court.type === type && court.loc_name === location);
       setCourts(lockPastSlots(filtered));
     } catch (err: any) {
-      if (err?.name === "AbortError") {
-        setError("Request timed out, please try again");
-      } else if (typeof err?.message === "string" && err.message.startsWith("HTTP_")) {
+      if (err?.name === "AbortError") setError("Request timed out, please try again");
+      else if (typeof err?.message === "string" && err.message.startsWith("HTTP_")) {
         const status = Number(err.message.replace("HTTP_", ""));
         setErrorCode(status);
         if (status === 404) setError("Data not found (404)");
@@ -130,7 +127,8 @@ export default function ReservationDetailPage({ params }: { params: { type: stri
     <AuthGuard>
       <div className="bg-gray-50 min-h-screen">
         <div className="mx-auto max-w-md bg-gray-100 min-h-screen">
-          <Header studentId="6709616376" />
+          {/* ส่ง username ให้ Header */}
+          <Header studentId={username} />
           <ReservationHeader />
 
           <main className="p-4 font-nunito">
