@@ -256,26 +256,27 @@ export default function ConfirmModal({
   if (!open) return null;
   //console.log(successMsg,errorMsg);
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* backdrop */}
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      {/* dialog */}
-      <div className="relative z-10 w-[min(92vw,520px)] rounded-lg bg-white p-6 shadow-2xl border">
-        <h2 className="text-2xl font-bold text-center mb-3">Your Booking</h2>
-        <p className="text-center text-xl font-semibold mb-1">Spot : {spot}</p>
-        <p className="text-center mb-6">Time : {time}</p>
-
+    <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50 p-4">
+      <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm text-center">
+        <h3 className="text-xl font-bold text-tu-navy mb-2">
+          Confirm Your Booking
+        </h3>
+        <p className="text-gray-600 mb-6">
+          Are you sure you want to book <br />
+          <span className="font-bold">{spot}</span> at{" "}
+          <span className="font-bold">{time}</span>?
+        </p>
         <div className="flex items-center justify-center gap-4">
           <button
             onClick={onClose}
-            className="rounded-md bg-red-600 px-5 py-2 text-white font-semibold shadow hover:bg-red-700 active:scale-95"
+            className="px-6 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold transition disabled:opacity-50"
           >
             Cancel
           </button>
           <button
             onClick={handleConfirm}
             disabled={isSubmitting}
-            className="rounded-md bg-blue-600 px-5 py-2 text-white font-semibold shadow hover:bg-blue-700 active:scale-95 disabled:opacity-60"
+            className="px-6 py-2 rounded-lg bg-tu-navy hover:bg-tu-navy/90 text-white font-semibold transition disabled:opacity-50"
           >
             {isSubmitting ? "Processing..." : "Confirm"}
           </button>
@@ -285,9 +286,7 @@ export default function ConfirmModal({
             {errorMsg && (
               <p className="text-red-600 font-semibold">{errorMsg}</p>
             )}
-            {successMsg && (
-              <p className="text-green-600 font-semibold">{successMsg}</p>
-            )}
+            {successMsg && <p className="text-green-600 font-semibold"></p>}
           </div>
         )}
         {!errorMsg && !successMsg && (
