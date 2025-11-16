@@ -27,6 +27,10 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
   useEffect(() => {
     const fetchAndFindBooking = async () => {
       try {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+        if (!token) {
+          throw new Error('Please login to view your bookings.');
+        }
 
         // 1) Get current user info to resolve userId
         const meRes = await fetch('http://localhost:8081/auth/me', {

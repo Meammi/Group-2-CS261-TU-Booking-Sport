@@ -16,6 +16,8 @@ type Props = {
   idsUrl?: string;
 };
 
+
+
 export default function ConfirmModal({
   open, spot, date, time, onClose, onConfirm, userId, slotId, roomId, idsUrl,
 }: Props) {
@@ -24,12 +26,12 @@ export default function ConfirmModal({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-    useEffect(() => {
-        if (open) {
-            setErrorMsg(null);
-            setSuccessMsg(null);
-        }
-    }, [open]);
+  useEffect(() => {
+    if (open) {
+      setErrorMsg(null);
+      setSuccessMsg(null);
+    }
+  }, [open]);
 
   const handleConfirm = async () => {
     // กำหนดค่า userId และ slotId จากแหล่งข้อมูลที่มี
@@ -42,7 +44,7 @@ export default function ConfirmModal({
         const r = await fetch(idsUrl, { method: 'GET' });
         if (!r.ok) {
           let m = `Failed to fetch IDs (${r.status})`;
-          try { const t = await r.text(); if (t) m = t; } catch {}
+          try { const t = await r.text(); if (t) m = t; } catch { }
           throw new Error(m);
         }
         const data = await r.json();
@@ -50,7 +52,12 @@ export default function ConfirmModal({
         if (!finalSlotId) finalSlotId = data?.slotId;
       }
 
+<<<<<<< HEAD
       
+=======
+      // กรณีถอด userId จาก JWT ใน localStorage
+
+>>>>>>> 3a1795de9f771adb1b2a0688ec44e964071f6a13
 
       // กรณี fallback ดึง userId จาก session cookie (/auth/me)
       if (!finalUserId) {
@@ -75,7 +82,7 @@ export default function ConfirmModal({
         const lookupRes = await fetch(lookupUrl);
         if (!lookupRes.ok) {
           let m = `Slot lookup failed (${lookupRes.status})`;
-          try { const t = await lookupRes.text(); if (t) m = t; } catch {}
+          try { const t = await lookupRes.text(); if (t) m = t; } catch { }
           throw new Error(m);
         }
         const d = await lookupRes.json();
@@ -100,10 +107,10 @@ export default function ConfirmModal({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
-          credentials: 'include',
+        credentials: 'include',
       });
       if (!res.ok) {
-        
+
         let message = "Reservation failed. Please try again.";
         let raw = "";
         try {
@@ -116,7 +123,7 @@ export default function ConfirmModal({
               message = raw;
             }
           }
-        } catch {}
+        } catch { }
 
         const lower = (message || "").toLowerCase();
         if (
@@ -142,10 +149,10 @@ export default function ConfirmModal({
         priceRaw === undefined || priceRaw === null
           ? 0
           : typeof priceRaw === "number"
-          ? priceRaw
-          : typeof priceRaw === "string"
-          ? parseFloat(priceRaw)
-          : Number(priceRaw) || 0;
+            ? priceRaw
+            : typeof priceRaw === "string"
+              ? parseFloat(priceRaw)
+              : Number(priceRaw) || 0;
 
       setSuccessMsg(
         reservationId
@@ -161,6 +168,7 @@ export default function ConfirmModal({
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ reservationId }),
           });
+
           if (!paymentRes.ok) {
             let msg = "Failed to prepare payment. Please try again.";
             try {
@@ -169,7 +177,7 @@ export default function ConfirmModal({
                 const parsed = JSON.parse(raw);
                 msg = parsed?.message || raw;
               }
-            } catch {}
+            } catch { }
             throw new Error(msg);
           }
           router.push(`/receipt?id=${reservationId}`);
@@ -177,6 +185,8 @@ export default function ConfirmModal({
           setSuccessMsg(null);
           setErrorMsg(paymentErr?.message || "Unable to prepare payment.");
         }
+      } else {
+        router.push(`/mybooking`);
       }
     } catch (err: any) {
       setErrorMsg(err?.message || "Unknown error");
@@ -185,7 +195,7 @@ export default function ConfirmModal({
     }
   };
   if (!open) return null;
-    //console.log(successMsg,errorMsg);
+  //console.log(successMsg,errorMsg);
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* backdrop */}
@@ -221,10 +231,10 @@ export default function ConfirmModal({
             )}
           </div>
         )}
-          {(!errorMsg && !successMsg) && (
-              <div className="mt-4 text-center text-sm">
-              </div>
-          )}
+        {(!errorMsg && !successMsg) && (
+          <div className="mt-4 text-center text-sm">
+          </div>
+        )}
       </div>
     </div>
   );

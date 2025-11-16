@@ -85,13 +85,10 @@ export default function BookingActions({ bookingId, status, isCurrent, locationN
     setIsCancelling(true);
     setErrorMessage("");
     try {
-      const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-      if (!token) {
-        return;
-      }
+      
 
       const meRes = await fetch(`${API_BASE}/auth/me`, {
-        headers: { Authorization: `Bearer ${token}` },
+        
         credentials: "include",
       });
       if (!meRes.ok) {
@@ -100,7 +97,7 @@ export default function BookingActions({ bookingId, status, isCurrent, locationN
       const me: { id: string } = await meRes.json();
 
       const bookingsRes = await fetch(`${API_BASE}/MyBookings/${me.id}`, {
-        headers: { Authorization: `Bearer ${token}` },
+
         credentials: "include",
       });
       if (!bookingsRes.ok) {
@@ -114,7 +111,7 @@ export default function BookingActions({ bookingId, status, isCurrent, locationN
 
       const response = await fetch(`${API_BASE}/MyBookings/cancel/${target.reservationId}`, {
         method: "PATCH",
-        headers: { Authorization: `Bearer ${token}` },
+       
         credentials: "include",
       });
 
