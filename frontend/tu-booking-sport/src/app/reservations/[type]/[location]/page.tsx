@@ -18,28 +18,35 @@ interface Court {
   slot_time: { [time: string]: "AVAILABLE" | "BOOKED" | "MAINTENANCE" };
 }
 
-const lockPastSlots = (courts: Court[], selectedDate: string): Court[] => {
-  const today = new Date();
-  const selected = new Date(`${selectedDate}T00:00:00`);
-  if (Number.isNaN(selected.getTime())) return courts;
-  const isToday = selected.toDateString() === today.toDateString();
-  if (!isToday) return courts;
-
-  const currentMinutes = today.getHours() * 60 + today.getMinutes();
+const lockPastSlots = (courts: Court[]): Court[] => {
+  const now = new Date();
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
   return courts.map((court) => {
     const updatedSlots: Court["slot_time"] = {};
+
     Object.entries(court.slot_time).forEach(([time, status]) => {
       let nextStatus = status;
+
       if (status === "AVAILABLE") {
-        const [hourStr = "0", minuteStr = "0"] = time.split(":");
-        const slotMinutes = parseInt(hourStr, 10) * 60 + parseInt(minuteStr, 10);
+        let hh = "0";
+        let mm = "0";
+        const parts = time.split(":");
+        if (parts.length >= 2) {
+          hh = parts[0];
+          mm = parts[1];
+        }
+
+        const slotMinutes = parseInt(hh, 10) * 60 + parseInt(mm, 10);
+
         if (!Number.isNaN(slotMinutes) && slotMinutes < currentMinutes) {
           nextStatus = "BOOKED";
         }
       }
+
       updatedSlots[time] = nextStatus;
     });
+
     return { ...court, slot_time: updatedSlots };
   });
 };
@@ -64,7 +71,7 @@ export default function ReservationDetailPage({ params }: { params: { type: stri
       }
       const allCourts: Court[] = await response.json();
       const filtered = allCourts.filter((court) => court.type === type && court.loc_name === location);
-      setCourts(lockPastSlots(filtered, selectedDate));
+      setCourts(lockPastSlots(filtered));
     } catch (err: any) {
       if (err?.name === "AbortError") {
         setError("Request timed out, please try again");

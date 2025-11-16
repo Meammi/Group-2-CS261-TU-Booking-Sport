@@ -16,10 +16,8 @@ type Props = {
   idsUrl?: string;
 };
 
-
-
 export default function ConfirmModal({
-  open, spot, date, time, onClose, onConfirm, userId, slotId, roomId, idsUrl,
+  open, spot, time, onClose, onConfirm, userId, slotId, roomId, idsUrl,
 }: Props) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -35,38 +33,47 @@ export default function ConfirmModal({
 
   const handleConfirm = async () => {
 
-// --- START: VALIDATE TIME 
+    // --- START: VALIDATE TIME 
     try {
-      let day: number, month: number, year: number;
+      // Normalize time format to HH:mm
+      let hm = time;
 
-      if (date.includes('/')) {
-        [day, month, year] = date.split('/').map(Number);
-      } else if (date.includes('-')) {
-        const [yearStr, monthStr, dayStr] = date.split('-');
-        year = Number(yearStr);
-        month = Number(monthStr);
-        day = Number(dayStr);
-      } else {
-        throw new Error('Unknown date format or N/A');
+      // DB format: 16:00:00.0000000
+      if (/^\d{2}:\d{2}:\d{2}\.\d+$/.test(time)) {
+        const [hh, mm] = time.split(":");
+        hm = `${hh}:${mm}`;
       }
 
-      const [hour, minute] = time.split(':').map(Number);
+      // DB format: 16:00:00
+      if (/^\d{2}:\d{2}:\d{2}$/.test(time)) {
+        const [hh, mm] = time.split(":");
+        hm = `${hh}:${mm}`;
+      }
 
-      const slotStartTime = new Date(year, month - 1, day, hour, minute);
+      const [hour, minute] = hm.split(":").map(Number);
+
+      if (isNaN(hour) || isNaN(minute)) {
+        setErrorMsg("Invalid time format.");
+        return;
+      }
+
       const now = new Date();
-      if (isNaN(slotStartTime.getTime()) || now > slotStartTime) {
-        
-        if (isNaN(slotStartTime.getTime())) {
-          console.error("Invalid Date! Check 'date' prop format.", date);
-          setErrorMsg("Date not received (N/A) or invalid format.");
-        } else {
-          setErrorMsg("This slot is in the past and can no longer be booked.");
-        }
-        return; 
+      const slotTime = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+        hour,
+        minute,
+        0
+      );
+
+      if (now > slotTime) {
+        setErrorMsg("This slot is in the past and can no longer be booked.");
+        return;
       }
     } catch (e: any) {
-      console.error("Error parsing date/time:", e.message);
-      setErrorMsg("Invalid date or time format (Error: Parsing failed)");
+      console.error("Error parsing time:", e);
+      setErrorMsg("Invalid time format (Parsing failed)");
       return;
     }
 
@@ -83,11 +90,12 @@ export default function ConfirmModal({
           throw new Error(m);
         }
         const data = await r.json();
+
         if (!finalUserId) finalUserId = data?.userId;
         if (!finalSlotId) finalSlotId = data?.slotId;
       }
 
-      
+
 
       // กรณี fallback ดึง userId จาก session cookie (/auth/me)
       if (!finalUserId) {
@@ -234,7 +242,7 @@ export default function ConfirmModal({
       <div className="relative z-10 w-[min(92vw,520px)] rounded-lg bg-white p-6 shadow-2xl border">
         <h2 className="text-2xl font-bold text-center mb-3">Your Booking</h2>
         <p className="text-center text-xl font-semibold mb-1">Spot : {spot}</p>
-        <p className="text-center mb-6">Date : {date} &nbsp; Time : {time}</p>
+        <p className="text-center mb-6">Time : {time}</p>
 
         <div className="flex items-center justify-center gap-4">
           <button
