@@ -1,15 +1,15 @@
-﻿package com.example.tu_bookingsports.DTO;
+package com.example.tu_bookingsports.DTO;
 
 import com.example.tu_bookingsports.model.Slot;
 import java.time.LocalTime;
 import java.util.UUID;
 
-// DTO excerpt for Boss: used by POST /admin/slots
 public class AdminRequest {
     private LocalTime slotTime;
     private Slot.SlotStatus status;
     private RoomIdWrapper room;
 
+    // Getters and setters
     public LocalTime getSlotTime() { return slotTime; }
     public void setSlotTime(LocalTime slotTime) { this.slotTime = slotTime; }
     public Slot.SlotStatus getStatus() { return status; }

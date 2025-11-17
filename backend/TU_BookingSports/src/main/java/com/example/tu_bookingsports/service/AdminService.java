@@ -1,4 +1,4 @@
-﻿package com.example.tu_bookingsports.service;
+package com.example.tu_bookingsports.service;
 
 import com.example.tu_bookingsports.DTO.AdminRequest;
 import com.example.tu_bookingsports.model.AdminAuditLog;
@@ -9,12 +9,17 @@ import com.example.tu_bookingsports.repository.AdminAuditLogRepository;
 import com.example.tu_bookingsports.repository.RoomRepository;
 import com.example.tu_bookingsports.repository.SlotRepository;
 import jakarta.annotation.PostConstruct;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Pageable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -42,6 +47,17 @@ public class AdminService {
     public void init() { adminEmailsSet = new HashSet<>(Arrays.asList(adminEmails.split(","))); }
 
     public boolean isAdmin(User user) { return user != null && adminEmailsSet.contains(user.getEmail()); }
+
+    public List<AdminAuditLog> getAuditLogs() {
+        return auditLogRepository.findAll();
+    }
+
+    public Page<Rooms> getAllRooms(Pageable pageable) {
+        if (pageable.getSort().isUnsorted()) {
+            pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("orderId"));
+        }
+        return roomRepository.findAll(pageable);
+    }
 
     private void logAdminAction(User admin, AdminAuditLog.ActionType action, AdminAuditLog.EntityType entityType,
                                String entityId, String details) {
@@ -101,6 +117,9 @@ public class AdminService {
                 "Updated room: " + room.getName());
 
         return roomRepository.save(room);
+    }
+    public List<Slot> getAllSlotsForRoom(UUID roomId) {
+        return slotRepository.findSlotsByRoomId(roomId);
     }
 
     @Transactional
