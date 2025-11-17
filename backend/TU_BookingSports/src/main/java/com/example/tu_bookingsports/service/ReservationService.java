@@ -136,6 +136,8 @@ public class ReservationService {
             reservation.setStatus(Reservations.ReservationStatus.PENDING);//6
         }
 
+        reservation.setPrice(price); //7
+        reservation.setReminderSent(false); //8
         Reservations saved = reservationRepository.save(reservation);
 
         if (price.compareTo(BigDecimal.ZERO) > 0) {

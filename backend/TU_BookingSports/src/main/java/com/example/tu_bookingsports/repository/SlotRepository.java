@@ -2,6 +2,7 @@ package com.example.tu_bookingsports.repository;
 
 import com.example.tu_bookingsports.model.Slot;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
@@ -32,4 +33,8 @@ public interface SlotRepository extends JpaRepository<Slot, UUID> {
     // Native query to compare SQL TIME properly (avoids time vs datetime mismatch)
     @Query(value = "SELECT TOP 1 s.* FROM slots s WHERE s.room_id = :roomId AND s.slot_time = CAST(:slotTime AS time)", nativeQuery = true)
     Slot findByRoomIdAndSlotTimeNative(@Param("roomId") UUID roomId, @Param("slotTime") String slotTime);
+
+    @Modifying
+    @Query("DELETE FROM Slot s WHERE s.room.room_id = :roomId")
+    void deleteByRoomId(@Param("roomId") UUID roomId);
 }
