@@ -18,7 +18,7 @@ interface Slot {
     room_id: string;
     name: string;
   };
-  slotTime: string; // e.g., "14:00:00"
+  slotTime: string;
   status: 'AVAILABLE' | 'BOOKED' | 'MAINTENANCE';
 }
 
@@ -35,46 +35,66 @@ const AdminPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Pagination
   const [roomsPage, setRoomsPage] = useState(0);
   const [totalRoomsPages, setTotalRoomsPages] = useState(0);
   const PAGE_SIZE = 10;
 
+  // Modals
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalMode, setModalMode] = useState<'createRoom' | 'editRoom' | 'createSlot' | 'editSlot' | null>(null);
+  const [modalMode, setModalMode] = useState<
+    'createRoom' | 'editRoom' | 'createSlot' | 'editSlot' | null
+  >(null);
   const [currentItem, setCurrentItem] = useState<Room | Slot | null>(null);
   const [formData, setFormData] = useState<any>({});
   const [formError, setFormError] = useState<string | null>(null);
 
+  // Slot Manager
   const [isSlotManagerOpen, setIsSlotManagerOpen] = useState(false);
   const [selectedRoomForSlots, setSelectedRoomForSlots] = useState<Room | null>(null);
   const [slotsForSelectedRoom, setSlotsForSelectedRoom] = useState<Slot[]>([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
 
+  // User info
+  const [username, setUsername] = useState("");
+
   const API_BASE = 'http://localhost:8081';
 
-  const getAuthToken = () => {
-    return typeof window !== 'undefined'
-      ? localStorage.getItem('access_token')
-      : null;
-  };
+  // ===== Fetch user info =====
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const meRes = await fetch(`${API_BASE}/auth/me`, {
+          credentials: "include",
+        });
+        if (!meRes.ok) throw new Error(`Failed to fetch user info: ${meRes.status}`);
 
-  // ✅ FETCH ROOMS (with pagination)
+        const me: { username: string; id: string } = await meRes.json();
+        setUsername(me.username || "");
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    loadUser();
+  }, []);
+
+  // ===== Fetch Rooms =====
   const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
-    try {
-      const token = getAuthToken();
-      if (!token) throw new Error('Admin access token not found. Please log in.');
 
+    try {
       const res = await fetch(
         `${API_BASE}/admin/rooms?page=${roomsPage}&size=${PAGE_SIZE}&sort=orderId,asc`,
-        { headers: { Authorization: `Bearer ${token}` }, credentials: 'include' }
+        { credentials: 'include' }
       );
 
       if (res.status === 403) {
         throw new Error('Forbidden: You do not have admin privileges.');
       }
       if (!res.ok) throw new Error(`Failed to fetch rooms. Status: ${res.status}`);
+
       const data: Page<Room> = await res.json();
 
       setRooms(data.content);
@@ -86,21 +106,26 @@ const AdminPage = () => {
     }
   }, [roomsPage]);
 
-  // ✅ FETCH SLOTS (for a room)
+  // Fetch on load & page change
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // ===== Fetch Slots for a Room =====
   const fetchSlotsForRoom = useCallback(async (roomId: string) => {
     setSlotsLoading(true);
     setError(null);
+
     try {
-      const token = getAuthToken();
-      if (!token) throw new Error('Admin access token not found.');
       const res = await fetch(`${API_BASE}/admin/slots?roomId=${roomId}`, {
-        headers: { Authorization: `Bearer ${token}` },
         credentials: 'include',
       });
+
       if (res.status === 403) {
         throw new Error('Forbidden: You do not have admin privileges.');
       }
       if (!res.ok) throw new Error(`Failed to fetch slots. Status: ${res.status}`);
+
       const data: Slot[] = await res.json();
       setSlotsForSelectedRoom(data);
     } catch (err: any) {
@@ -110,12 +135,11 @@ const AdminPage = () => {
     }
   }, []);
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  // ✅ MODAL handlers
-  const handleOpenModal = (mode: 'createRoom' | 'editRoom' | 'createSlot' | 'editSlot', item: Room | Slot | null = null) => {
+  // ===== Modal Handlers =====
+  const handleOpenModal = (
+    mode: 'createRoom' | 'editRoom' | 'createSlot' | 'editSlot',
+    item: Room | Slot | null = null
+  ) => {
     setModalMode(mode);
     setCurrentItem(item);
     setFormData(item || {});
@@ -142,14 +166,9 @@ const AdminPage = () => {
     fetchSlotsForRoom(room.room_id);
   };
 
-  // ✅ FORM SUBMIT (create/edit room/slot)
+  // ===== Submit Form (Create/Edit Room/Slot) =====
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const token = getAuthToken();
-    if (!token) {
-      setFormError('Authentication token not found.');
-      return;
-    }
 
     let url = '';
     let method = 'POST';
@@ -170,10 +189,7 @@ const AdminPage = () => {
     try {
       const res = await fetch(url, {
         method,
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify(formData),
       });
@@ -184,61 +200,64 @@ const AdminPage = () => {
       if (!res.ok) throw new Error(`Failed to ${modalMode}. Status: ${res.status}`);
 
       handleCloseModal();
-      if (modalMode?.includes('Room')) fetchData();
+      fetchData();
       if (selectedRoomForSlots) fetchSlotsForRoom(selectedRoomForSlots.room_id);
     } catch (err: any) {
       setFormError(err.message);
     }
   };
 
-  // ✅ DELETE room
+  // ===== Delete Room =====
   const handleDeleteRoom = async (roomId: string) => {
     if (!confirm('Are you sure you want to delete this room and its slots?')) return;
+
     try {
-      const token = getAuthToken();
-      if (!token) throw new Error('No token found');
       const res = await fetch(`${API_BASE}/admin/rooms/${roomId}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }, credentials: 'include',
+        credentials: 'include',
       });
+
       if (res.status === 403) {
         throw new Error('Forbidden: You do not have admin privileges.');
       }
       if (!res.ok) throw new Error(`Failed to delete room. Status: ${res.status}`);
+
       fetchData();
     } catch (err: any) {
       setError(err.message);
     }
   };
 
-  // ✅ DELETE slot
+  // ===== Delete Slot =====
   const handleDeleteSlot = async (slotId: string) => {
     if (!confirm('Are you sure you want to delete this slot?')) return;
+
     try {
-      const token = getAuthToken();
-      if (!token) throw new Error('No token found');
       const res = await fetch(`${API_BASE}/admin/slots/${slotId}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }, credentials: 'include',
+        credentials: 'include',
       });
+
       if (res.status === 403) {
         throw new Error('Forbidden: You do not have admin privileges.');
       }
       if (!res.ok) throw new Error(`Failed to delete slot. Status: ${res.status}`);
+
       if (selectedRoomForSlots) fetchSlotsForRoom(selectedRoomForSlots.room_id);
     } catch (err: any) {
       setError(err.message);
     }
   };
 
-  // ✅ UI render
+  // ===== UI Rendering =====
   if (loading) return <div className="p-4">Loading admin dashboard...</div>;
   if (error) return <div className="p-4 text-red-500">Error: {error}</div>;
 
   return (
     <>
       <div className="max-w-md mx-auto bg-gray-100 min-h-screen font-nunito">
-        <Header studentId="6709616376" />
+        <Header studentId={username} />
+
         <main className="p-4">
           <h1 className="text-2xl font-bold mb-4 text-center">Admin Dashboard</h1>
 
@@ -261,14 +280,26 @@ const AdminPage = () => {
                   <div className="text-gray-600">{room.loc_name}</div>
                   <div className="text-right font-bold">{room.price.toFixed(2)}</div>
                 </div>
+
                 <div className="flex items-center space-x-2">
-                  <button onClick={() => handleOpenSlotManager(room)} className="px-3 py-1 text-sm bg-green-600 text-white rounded-md hover:bg-green-700">
+                  <button
+                    onClick={() => handleOpenSlotManager(room)}
+                    className="px-3 py-1 text-sm bg-green-600 text-white rounded-md hover:bg-green-700"
+                  >
                     Manage Slots
                   </button>
-                  <button onClick={() => handleOpenModal('editRoom', room)} className="px-3 py-1 text-sm bg-tu-navy text-white rounded-md hover:bg-blue-900">
+
+                  <button
+                    onClick={() => handleOpenModal('editRoom', room)}
+                    className="px-3 py-1 text-sm bg-tu-navy text-white rounded-md hover:bg-blue-900"
+                  >
                     Edit
                   </button>
-                  <button onClick={() => handleDeleteRoom(room.room_id)} className="px-3 py-1 text-sm bg-red-600 text-white rounded-md hover:bg-red-700">
+
+                  <button
+                    onClick={() => handleDeleteRoom(room.room_id)}
+                    className="px-3 py-1 text-sm bg-red-600 text-white rounded-md hover:bg-red-700"
+                  >
                     Delete
                   </button>
                 </div>
@@ -277,21 +308,39 @@ const AdminPage = () => {
           </div>
 
           <div className="flex justify-between items-center mt-4 text-sm">
-            <button onClick={() => setRoomsPage(p => p - 1)} disabled={roomsPage === 0} className="px-3 py-1 bg-white border rounded-md disabled:opacity-50">Previous</button>
-            <span>Page {roomsPage + 1} of {totalRoomsPages}</span>
-            <button onClick={() => setRoomsPage(p => p + 1)} disabled={roomsPage >= totalRoomsPages - 1} className="px-3 py-1 bg-white border rounded-md disabled:opacity-50">Next</button>
+            <button
+              onClick={() => setRoomsPage((p) => p - 1)}
+              disabled={roomsPage === 0}
+              className="px-3 py-1 bg-white border rounded-md disabled:opacity-50"
+            >
+              Previous
+            </button>
+
+            <span>
+              Page {roomsPage + 1} of {totalRoomsPages}
+            </span>
+
+            <button
+              onClick={() => setRoomsPage((p) => p + 1)}
+              disabled={roomsPage >= totalRoomsPages - 1}
+              className="px-3 py-1 bg-white border rounded-md disabled:opacity-50"
+            >
+              Next
+            </button>
           </div>
         </main>
       </div>
 
-      {/* ✅ Modal for Create/Edit */}
+      {/* Room/Slot Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-md shadow-lg p-5 w-full max-w-md">
             <h3 className="text-lg font-semibold mb-4 capitalize">
               {modalMode?.replace(/([A-Z])/g, ' $1')}
             </h3>
+
             {formError && <div className="text-red-600 mb-3">{formError}</div>}
+
             <form onSubmit={handleFormSubmit}>
               <div className="space-y-3">
                 {(modalMode === 'createRoom' || modalMode === 'editRoom') && (
@@ -305,7 +354,6 @@ const AdminPage = () => {
                       required
                     />
 
-                    {/* ✅ Type Dropdown */}
                     <select
                       name="type"
                       value={formData.type || ''}
@@ -319,7 +367,6 @@ const AdminPage = () => {
                       <option value="Music Room">Music Room</option>
                     </select>
 
-                    {/* ✅ Price input — cannot be negative */}
                     <input
                       name="price"
                       type="number"
@@ -331,7 +378,6 @@ const AdminPage = () => {
                       required
                     />
 
-                    {/* ✅ Location Dropdown */}
                     <select
                       name="loc_name"
                       value={formData.loc_name || ''}
@@ -345,7 +391,6 @@ const AdminPage = () => {
                       <option value="Melodysphere">Melodysphere</option>
                     </select>
 
-                    {/* ✅ Capacity input — cannot be negative */}
                     <input
                       name="capacity"
                       type="number"
@@ -358,7 +403,6 @@ const AdminPage = () => {
                   </>
                 )}
 
-
                 {(modalMode === 'createSlot' || modalMode === 'editSlot') && (
                   <>
                     <select
@@ -369,11 +413,13 @@ const AdminPage = () => {
                       required
                     >
                       <option value="">Select Time</option>
-                      {Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, '0')}:00:00`).map((time) => (
-                        <option key={time} value={time}>
-                          {time}
-                        </option>
-                      ))}
+                      {Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, '0')}:00:00`).map(
+                        (time) => (
+                          <option key={time} value={time}>
+                            {time}
+                          </option>
+                        )
+                      )}
                     </select>
 
                     <select
@@ -398,6 +444,7 @@ const AdminPage = () => {
                 >
                   Cancel
                 </button>
+
                 <button
                   type="submit"
                   className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
@@ -410,8 +457,7 @@ const AdminPage = () => {
         </div>
       )}
 
-
-      {/* ✅ Slot Manager Modal */}
+      {/* Slot Manager */}
       {isSlotManagerOpen && selectedRoomForSlots && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-40 p-4">
           <div className="bg-white rounded-md p-5 w-full max-w-lg">
@@ -419,7 +465,12 @@ const AdminPage = () => {
               <h3 className="text-xl font-bold">
                 Manage Slots for {selectedRoomForSlots.name}
               </h3>
-              <button onClick={() => setIsSlotManagerOpen(false)} className="text-gray-600 text-2xl">&times;</button>
+              <button
+                onClick={() => setIsSlotManagerOpen(false)}
+                className="text-gray-600 text-2xl"
+              >
+                &times;
+              </button>
             </div>
 
             <button
@@ -434,11 +485,28 @@ const AdminPage = () => {
             ) : (
               <div className="space-y-2">
                 {slotsForSelectedRoom.map((slot) => (
-                  <div key={slot.slotId} className="flex justify-between items-center bg-gray-100 p-2 rounded">
-                    <span>{slot.slotTime} — {slot.status}</span>
+                  <div
+                    key={slot.slotId}
+                    className="flex justify-between items-center bg-gray-100 p-2 rounded"
+                  >
+                    <span>
+                      {slot.slotTime} — {slot.status}
+                    </span>
+
                     <div className="space-x-2">
-                      <button onClick={() => handleOpenModal('editSlot', slot)} className="px-2 py-1 bg-tu-navy text-white rounded text-xs">Edit</button>
-                      <button onClick={() => handleDeleteSlot(slot.slotId)} className="px-2 py-1 bg-red-500 text-white rounded text-xs">Delete</button>
+                      <button
+                        onClick={() => handleOpenModal('editSlot', slot)}
+                        className="px-2 py-1 bg-tu-navy text-white rounded text-xs"
+                      >
+                        Edit
+                      </button>
+
+                      <button
+                        onClick={() => handleDeleteSlot(slot.slotId)}
+                        className="px-2 py-1 bg-red-500 text-white rounded text-xs"
+                      >
+                        Delete
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -446,7 +514,10 @@ const AdminPage = () => {
             )}
 
             <div className="mt-4 text-right">
-              <button onClick={() => setIsSlotManagerOpen(false)} className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">
+              <button
+                onClick={() => setIsSlotManagerOpen(false)}
+                className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+              >
                 Close
               </button>
             </div>
