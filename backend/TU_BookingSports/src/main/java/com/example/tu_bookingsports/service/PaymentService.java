@@ -1,11 +1,14 @@
 //backend\TU_BookingSports\src\main\java\com\example\tu_bookingsports\service\PaymentService.java
 package com.example.tu_bookingsports.service;
 
+import com.example.tu_bookingsports.model.Reservations;
+import com.example.tu_bookingsports.repository.ReservationRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pheerathach.ThaiQRPromptPay;
 import com.example.tu_bookingsports.model.Payment;
 import com.example.tu_bookingsports.repository.PaymentRepository;
+import com.example.tu_bookingsports.repository.ReservationRepository;
 import com.google.zxing.WriterException;
 import org.springframework.stereotype.Service;
 import org.springframework.http.HttpHeaders;
@@ -14,6 +17,8 @@ import org.springframework.http.HttpHeaders;
 import java.io.IOException;
 import java.math.BigDecimal;
 import org.springframework.http.*;
+
+import java.util.Optional;
 import java.util.UUID;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,10 +29,13 @@ public class PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final ReservationService reservationService;
+    private ReservationService reservationService1;
+    private final ReservationRepository reservationRepository;
 
-    public PaymentService(PaymentRepository paymentRepository, ReservationService reservationService) {
+    public PaymentService(PaymentRepository paymentRepository, ReservationService reservationService,ReservationRepository reservationRepository) {
         this.paymentRepository = paymentRepository;
         this.reservationService = reservationService;
+        this.reservationRepository = reservationRepository;
     }
 
     public Payment createPayment(UUID reservationId) throws IOException, WriterException {
@@ -51,6 +59,7 @@ public class PaymentService {
     public Map<String,Object> checkSlipData(UUID reservationId,String qrData) {
         Map<String, Object> result = new HashMap<>();
         Payment payment = paymentRepository.findByReservationId(reservationId).orElse(null);
+        Reservations reservation = reservationRepository.findByReservationID(reservationId);
         try{
             if(payment != null) {
                 String branchId = System.getenv("BRANCH_ID");
@@ -80,7 +89,11 @@ public class PaymentService {
                 result.put("success", success);
                 result.put("message", "การชำระเงินสำเร็จ");
                 payment.setPaymentStatus(Payment.PaymentStatus.APPROVED);
+                reservation.setStatus(Reservations.ReservationStatus.CONFIRMED);
+
+                reservationRepository.save(reservation);
                 paymentRepository.save(payment);
+
             }else {
                 result.put("success", false);
                 result.put("message", "Don't have payment data");
