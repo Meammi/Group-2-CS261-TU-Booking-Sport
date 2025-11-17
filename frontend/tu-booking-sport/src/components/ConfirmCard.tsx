@@ -1,10 +1,12 @@
 "use client";
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { API_BASE } from "@/lib/config";
 
 type Props = {
   open: boolean;
   spot: string;
-  date: string;   // รูปแบบแสดงผล เช่น 11/04/2025
+  date: string; // รูปแบบแสดงผล เช่น 11/04/2025
   time: string;
   onClose: () => void;
   onConfirm?: () => void;
@@ -15,95 +17,137 @@ type Props = {
 };
 
 export default function ConfirmModal({
-  open, spot, date, time, onClose, onConfirm, userId, slotId, roomId, idsUrl,
+  open,
+  spot,
+  time,
+  onClose,
+  onConfirm,
+  userId,
+  slotId,
+  roomId,
+  idsUrl,
 }: Props) {
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-    useEffect(() => {
-        if (open) {
-            setErrorMsg(null);
-            setSuccessMsg(null);
-        }
-    }, [open]);
+  useEffect(() => {
+    if (open) {
+      setErrorMsg(null);
+      setSuccessMsg(null);
+    }
+  }, [open]);
 
   const handleConfirm = async () => {
-    // กำหนดค่า userId และ slotId จากแหล่งข้อมูลที่มี
+    // --- START: VALIDATE TIME
+    try {
+      // Normalize time format to HH:mm
+      let hm = time;
+
+      // DB format: 16:00:00.0000000
+      if (/^\d{2}:\d{2}:\d{2}\.\d+$/.test(time)) {
+        const [hh, mm] = time.split(":");
+        hm = `${hh}:${mm}`;
+      }
+
+      // DB format: 16:00:00
+      if (/^\d{2}:\d{2}:\d{2}$/.test(time)) {
+        const [hh, mm] = time.split(":");
+        hm = `${hh}:${mm}`;
+      }
+
+      const [hour, minute] = hm.split(":").map(Number);
+
+      if (isNaN(hour) || isNaN(minute)) {
+        setErrorMsg("Invalid time format.");
+        return;
+      }
+
+      const now = new Date();
+      const slotTime = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+        hour,
+        minute,
+        0
+      );
+
+      if (now > slotTime) {
+        setErrorMsg("This slot is in the past and can no longer be booked.");
+        return;
+      }
+    } catch (e: any) {
+      console.error("Error parsing time:", e);
+      setErrorMsg("Invalid time format (Parsing failed)");
+      return;
+    }
+
     let finalUserId = userId;
     let finalSlotId = slotId;
 
     try {
       // กรณีที่ส่ง URL มาให้ดึง userId + slotId พร้อมกัน
       if ((!finalUserId || !finalSlotId) && idsUrl) {
-        const r = await fetch(idsUrl, { method: 'GET' });
+        const r = await fetch(idsUrl, { method: "GET" });
         if (!r.ok) {
           let m = `Failed to fetch IDs (${r.status})`;
-          try { const t = await r.text(); if (t) m = t; } catch {}
+          try {
+            const t = await r.text();
+            if (t) m = t;
+          } catch {}
           throw new Error(m);
         }
         const data = await r.json();
+
         if (!finalUserId) finalUserId = data?.userId;
         if (!finalSlotId) finalSlotId = data?.slotId;
       }
 
-      // กรณีถอด userId จาก JWT ใน localStorage
-      if (!finalUserId) {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
-        if (!token) throw new Error('Please login before booking.');
-        try {
-          const base64Url = token.split('.')[1];
-          const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-          const jsonPayload = decodeURIComponent(
-            atob(base64)
-              .split('')
-              .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-              .join('')
-          );
-          const payload = JSON.parse(jsonPayload);
-          finalUserId = payload?.id || payload?.userId || null;
-          // ตรวจสอบว่าเป็น UUID ถูกต้องไหม
-          const isUuid = (v: any) => typeof v === 'string' && /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(v);
-          if (!finalUserId || !isUuid(finalUserId)) {
-            finalUserId = null as any;
-          }
-        } catch (e) {
-          finalUserId = null as any;
-        }
-      }
-
       // กรณี fallback ดึง userId จาก session cookie (/auth/me)
       if (!finalUserId) {
-        const meRes = await fetch('http://localhost:8081/auth/me', {
-          credentials: 'include',
+        const meRes = await fetch(`${API_BASE}/auth/me`, {
+          credentials: "include",
         });
         if (!meRes.ok) {
           throw new Error(`Failed to fetch user info (${meRes.status})`);
         }
         const me = await meRes.json();
         finalUserId = me?.id;
-        const isUuid = (v: any) => typeof v === 'string' && /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(v);
+        const isUuid = (v: any) =>
+          typeof v === "string" &&
+          /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(
+            v
+          );
         if (!isUuid(finalUserId)) {
-          throw new Error('Invalid user ID returned from /auth/me');
+          throw new Error("Invalid user ID returned from /auth/me");
         }
       }
 
       // กรณีต้องค้นหา slotId จากค่า roomId + time โดยให้ backend resolve ให้
       if (!finalSlotId) {
-        if (!roomId || !time) throw new Error('Missing roomId or time to resolve slot.');
-        const lookupUrl = `http://localhost:8081/api/slot/lookup?roomId=${encodeURIComponent(roomId)}&time=${encodeURIComponent(time)}`;
+        if (!roomId || !time)
+          throw new Error("Missing roomId or time to resolve slot.");
+        const lookupUrl = `${API_BASE}/api/slot/lookup?roomId=${encodeURIComponent(
+          roomId
+        )}&time=${encodeURIComponent(time)}`;
         const lookupRes = await fetch(lookupUrl);
         if (!lookupRes.ok) {
           let m = `Slot lookup failed (${lookupRes.status})`;
-          try { const t = await lookupRes.text(); if (t) m = t; } catch {}
+          try {
+            const t = await lookupRes.text();
+            if (t) m = t;
+          } catch {}
           throw new Error(m);
         }
         const d = await lookupRes.json();
         finalSlotId = d?.slotId;
-        if (!finalSlotId) throw new Error('Slot ID not found for selected time.');
+        if (!finalSlotId)
+          throw new Error("Slot ID not found for selected time.");
       }
     } catch (e: any) {
-      setErrorMsg(e?.message || 'Cannot resolve booking identifiers');
+      setErrorMsg(e?.message || "Cannot resolve booking identifiers");
       return;
     }
 
@@ -111,19 +155,21 @@ export default function ConfirmModal({
     setErrorMsg(null);
     setSuccessMsg(null);
 
-    const payload: Record<string, any> = { userId: finalUserId, slotId: finalSlotId };
+    const payload: Record<string, any> = {
+      userId: finalUserId,
+      slotId: finalSlotId,
+    };
     if (roomId) payload.roomId = roomId;
 
     try {
       // ส่งคำขอสร้างการจองไปที่ backend
-      const res = await fetch("http://localhost:8081/reservation/create", {
+      const res = await fetch(`${API_BASE}/reservation/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
-          credentials: 'include',
+        credentials: "include",
       });
       if (!res.ok) {
-        
         let message = "Reservation failed. Please try again.";
         let raw = "";
         try {
@@ -151,12 +197,56 @@ export default function ConfirmModal({
         throw new Error(message);
       }
       const data = await res.json();
+      const reservation = data?.reservation;
+      const reservationId =
+        reservation?.reservationID ||
+        reservation?.reservationId ||
+        data?.reservationId ||
+        null;
+      const priceRaw = reservation?.price ?? data?.price;
+      const price =
+        priceRaw === undefined || priceRaw === null
+          ? 0
+          : typeof priceRaw === "number"
+          ? priceRaw
+          : typeof priceRaw === "string"
+          ? parseFloat(priceRaw)
+          : Number(priceRaw) || 0;
+
       setSuccessMsg(
-        data?.reservationId
-          ? `Booked successfully! Reservation ID: ${data.reservationId}`
+        reservationId
+          ? `Booked successfully! Reservation ID: ${reservationId}`
           : "Booked successfully!"
       );
       if (onConfirm) onConfirm();
+
+      if (reservationId && price > 0) {
+        try {
+          const paymentRes = await fetch(`${API_BASE}/api/payments`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ reservationId }),
+          });
+
+          if (!paymentRes.ok) {
+            let msg = "Failed to prepare payment. Please try again.";
+            try {
+              const raw = await paymentRes.text();
+              if (raw) {
+                const parsed = JSON.parse(raw);
+                msg = parsed?.message || raw;
+              }
+            } catch {}
+            throw new Error(msg);
+          }
+          router.push(`/receipt?id=${reservationId}`);
+        } catch (paymentErr: any) {
+          setSuccessMsg(null);
+          setErrorMsg(paymentErr?.message || "Unable to prepare payment.");
+        }
+      } else {
+        router.push(`/mybooking`);
+      }
     } catch (err: any) {
       setErrorMsg(err?.message || "Unknown error");
     } finally {
@@ -164,30 +254,31 @@ export default function ConfirmModal({
     }
   };
   if (!open) return null;
-    //console.log(successMsg,errorMsg);
+  //console.log(successMsg,errorMsg);
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* backdrop */}
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      {/* dialog */}
-      <div className="relative z-10 w-[min(92vw,520px)] rounded-lg bg-white p-6 shadow-2xl border">
-        <h2 className="text-2xl font-bold text-center mb-3">Your Booking</h2>
-        <p className="text-center text-xl font-semibold mb-1">Spot : {spot}</p>
-        <p className="text-center mb-6">Date : {date} &nbsp; Time : {time}</p>
-
+    <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50 p-4">
+      <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm text-center">
+        <h3 className="text-xl font-bold text-tu-navy mb-2">
+          Confirm Your Booking
+        </h3>
+        <p className="text-gray-600 mb-6">
+          Are you sure you want to book <br />
+          <span className="font-bold">{spot}</span> at{" "}
+          <span className="font-bold">{time}</span>?
+        </p>
         <div className="flex items-center justify-center gap-4">
           <button
             onClick={onClose}
-            className="rounded-md bg-red-600 px-5 py-2 text-white font-semibold shadow hover:bg-red-700 active:scale-95"
+            className="px-6 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold transition disabled:opacity-50"
           >
             Cancel
           </button>
           <button
             onClick={handleConfirm}
             disabled={isSubmitting}
-            className="rounded-md bg-blue-600 px-5 py-2 text-white font-semibold shadow hover:bg-blue-700 active:scale-95 disabled:opacity-60"
+            className="px-6 py-2 rounded-lg bg-tu-navy hover:bg-tu-navy/90 text-white font-semibold transition disabled:opacity-50"
           >
-            {isSubmitting ? 'Processing...' : 'Confirm'}
+            {isSubmitting ? "Processing..." : "Confirm"}
           </button>
         </div>
         {(errorMsg || successMsg) && (
@@ -195,15 +286,12 @@ export default function ConfirmModal({
             {errorMsg && (
               <p className="text-red-600 font-semibold">{errorMsg}</p>
             )}
-            {successMsg && (
-              <p className="text-green-600 font-semibold">{successMsg}</p>
-            )}
+            {successMsg && <p className="text-green-600 font-semibold"></p>}
           </div>
         )}
-          {(!errorMsg && !successMsg) && (
-              <div className="mt-4 text-center text-sm">
-              </div>
-          )}
+        {!errorMsg && !successMsg && (
+          <div className="mt-4 text-center text-sm"></div>
+        )}
       </div>
     </div>
   );

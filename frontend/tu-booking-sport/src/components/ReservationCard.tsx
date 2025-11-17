@@ -1,7 +1,7 @@
-// 1. ลบ import ของ 'next/image' และ 'next/link' ที่ไม่จำเป็นออก
-//    เนื่องจากสภาพแวดล้อมการแสดงผลนี้ไม่ใช่โปรเจกต์ Next.js เต็มรูปแบบ
+"use client";
 
-// Interface ยังคงเหมือนเดิมเพราะตรงกับ Props ที่ต้องการ
+import Link from "next/link";
+
 interface ReservationCardProps {
   href: string;
   imageUrl: string;
@@ -10,25 +10,30 @@ interface ReservationCardProps {
   total: number;
 }
 
-export default function ReservationCard({ href, imageUrl, title, location, total }: ReservationCardProps) {
+export default function ReservationCard({
+  href,
+  imageUrl,
+  title,
+  location,
+  total,
+}: ReservationCardProps) {
   return (
-    // 2. เปลี่ยนจาก <Link> ของ Next.js เป็น <a> tag มาตรฐานของ HTML
-    <a
+    <Link
       href={href}
       className="block m-4 rounded-xl bg-white shadow-lg overflow-hidden group transition-all duration-300 hover:shadow-2xl hover:-translate-y-1"
-      rel="noopener noreferrer"
+      prefetch={false}
     >
-      <div className="relative h-40 w-full">
-        {/* 3. เปลี่ยนจาก <Image> ของ Next.js เป็น <img> tag มาตรฐาน
-            และใช้ Tailwind classes เพื่อจำลองการทำงานของ layout="fill" และ objectFit="cover" */}
+      <div className="relative h-40 w-full overflow-hidden">
         <img
           src={imageUrl}
           alt={`Image of ${title} at ${location}`}
-          className="absolute top-0 left-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         <div className="absolute bottom-0 left-0 p-4">
-          <h3 className="text-lg font-bold text-white tracking-tight">{title}</h3>
+          <h3 className="text-lg font-bold text-white tracking-tight">
+            {title}
+          </h3>
           <p className="text-sm text-gray-200">{location}</p>
         </div>
       </div>
@@ -40,7 +45,6 @@ export default function ReservationCard({ href, imageUrl, title, location, total
           Details
         </span>
       </div>
-    </a>
+    </Link>
   );
 }
-

@@ -3,10 +3,10 @@ package com.example.tu_bookingsports;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-import java.math.BigDecimal;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
+@EnableScheduling
 public class TuBookingSportsApplication {
 
     public static void main(String[] args) {

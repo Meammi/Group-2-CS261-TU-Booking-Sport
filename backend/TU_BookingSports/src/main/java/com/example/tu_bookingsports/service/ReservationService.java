@@ -1,6 +1,19 @@
 //backend\TU_BookingSports\src\main\java\com\example\tu_bookingsports\service\ReservationService.java
 package com.example.tu_bookingsports.service; //this is for testing another pc
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.example.tu_bookingsports.DTO.ReservationRequest;
 import com.example.tu_bookingsports.model.Reservations;
 import com.example.tu_bookingsports.model.Rooms;
@@ -9,16 +22,6 @@ import com.example.tu_bookingsports.repository.HomepageRepository;
 import com.example.tu_bookingsports.repository.ReservationRepository;
 import com.example.tu_bookingsports.repository.RoomRepository;
 import com.example.tu_bookingsports.repository.SlotRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.List;
 
 @Service
 public class ReservationService {
@@ -26,6 +29,9 @@ public class ReservationService {
     private final HomepageRepository roomsRepository;
     private final SlotRepository slotRepository;
     private final RoomRepository roomRepository;
+    @Autowired
+    @Lazy
+    private PaymentService paymentService;
 
     private final int MAX_RESERVATION = 10;
 
@@ -94,15 +100,14 @@ public class ReservationService {
 
         // Build reservation period from slot time
         LocalTime startTime = slot.getSlotTime();
-        LocalDateTime startDateTime = LocalDateTime.of(LocalDate.now().plusDays(1), startTime);
+        LocalDateTime startDateTime = LocalDateTime.of(LocalDate.now().plusDays(0), startTime);
         LocalDateTime endDateTime = startDateTime.plusHours(1);
 
         // Check if current Reservation >=10
         List<Reservations> reservations = reservationRepository.findByUser(loggedInUserId);
         long tomorrowReservationsCount = reservations.stream()
-                .filter(b -> {
-                    return b.getEndTime().isAfter(LocalDateTime.now());
-                })
+                .filter(b -> b.getEndTime().isAfter(LocalDateTime.now())
+                        && b.getStatus() != Reservations.ReservationStatus.CANCELLED)
                 .count();
         if (tomorrowReservationsCount >= MAX_RESERVATION) {
             throw new RuntimeException("Error: Reached current maximum number of Reservations: "+tomorrowReservationsCount+"/"+MAX_RESERVATION);
@@ -114,7 +119,7 @@ public class ReservationService {
 
         reservation.setUser(loggedInUserId); //1
         reservation.setRoom(slot.getRoom().getRoom_id()); //2
-        reservation.setSlot(slot.getSlotId()); //3
+        reservation.setSlotId(slot.getSlotId()); //3
 
         reservation.setStartTime(startDateTime); //4
         reservation.setEndTime(endDateTime); //5
@@ -123,6 +128,8 @@ public class ReservationService {
                 .map(Rooms::getPrice)
                 .orElse(BigDecimal.ZERO);
 
+        reservation.setPrice(price); //7
+
         if (price.compareTo(BigDecimal.ZERO) <= 0) {
             reservation.setStatus(Reservations.ReservationStatus.CONFIRMED);//6
         } else {
@@ -130,9 +137,19 @@ public class ReservationService {
         }
 
         reservation.setPrice(price); //7
-        reservation.setReminderSent(true); //8
+        reservation.setReminderSent(false); //8
+        Reservations saved = reservationRepository.save(reservation);
 
-        return reservationRepository.save(reservation);
+        if (price.compareTo(BigDecimal.ZERO) > 0) {
+            //try {
+            //    paymentService.createPayment(saved.getReservationID());
+            //} catch (java.io.IOException | com.google.zxing.WriterException e) {
+            //    // Wrap checked exceptions in a RuntimeException to trigger transaction rollback
+            //    throw new RuntimeException("Failed to create payment", e);
+            //}
+        }
+        
+        return saved;
 
     }
 }
