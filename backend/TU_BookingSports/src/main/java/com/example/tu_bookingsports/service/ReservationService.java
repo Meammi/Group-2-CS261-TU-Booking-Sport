@@ -130,6 +130,7 @@ public class ReservationService {
         }
 
         reservation.setPrice(price); //7
+        reservation.setReminderSent(true); //8
 
         return reservationRepository.save(reservation);
 

@@ -19,7 +19,7 @@ interface Slot {
     name: string;
   };
   slotTime: string; // e.g., "14:00:00"
-  status: 'AVAILABLE' | 'BOOKED' | 'UNAVAILABLE';
+  status: 'AVAILABLE' | 'BOOKED' | 'MAINTENANCE';
 }
 
 interface Page<T> {
@@ -71,7 +71,10 @@ const AdminPage = () => {
         { headers: { Authorization: `Bearer ${token}` }, credentials: 'include' }
       );
 
-      if (!res.ok) throw new Error('Failed to fetch rooms.');
+      if (res.status === 403) {
+        throw new Error('Forbidden: You do not have admin privileges.');
+      }
+      if (!res.ok) throw new Error(`Failed to fetch rooms. Status: ${res.status}`);
       const data: Page<Room> = await res.json();
 
       setRooms(data.content);
@@ -94,7 +97,10 @@ const AdminPage = () => {
         headers: { Authorization: `Bearer ${token}` },
         credentials: 'include',
       });
-      if (!res.ok) throw new Error('Failed to fetch slots.');
+      if (res.status === 403) {
+        throw new Error('Forbidden: You do not have admin privileges.');
+      }
+      if (!res.ok) throw new Error(`Failed to fetch slots. Status: ${res.status}`);
       const data: Slot[] = await res.json();
       setSlotsForSelectedRoom(data);
     } catch (err: any) {
@@ -172,7 +178,10 @@ const AdminPage = () => {
         body: JSON.stringify(formData),
       });
 
-      if (!res.ok) throw new Error(`Failed to ${modalMode}.`);
+      if (res.status === 403) {
+        throw new Error('Forbidden: You do not have admin privileges.');
+      }
+      if (!res.ok) throw new Error(`Failed to ${modalMode}. Status: ${res.status}`);
 
       handleCloseModal();
       if (modalMode?.includes('Room')) fetchData();
@@ -192,7 +201,10 @@ const AdminPage = () => {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }, credentials: 'include',
       });
-      if (!res.ok) throw new Error('Failed to delete room');
+      if (res.status === 403) {
+        throw new Error('Forbidden: You do not have admin privileges.');
+      }
+      if (!res.ok) throw new Error(`Failed to delete room. Status: ${res.status}`);
       fetchData();
     } catch (err: any) {
       setError(err.message);
@@ -209,7 +221,10 @@ const AdminPage = () => {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }, credentials: 'include',
       });
-      if (!res.ok) throw new Error('Failed to delete slot');
+      if (res.status === 403) {
+        throw new Error('Forbidden: You do not have admin privileges.');
+      }
+      if (!res.ok) throw new Error(`Failed to delete slot. Status: ${res.status}`);
       if (selectedRoomForSlots) fetchSlotsForRoom(selectedRoomForSlots.room_id);
     } catch (err: any) {
       setError(err.message);
@@ -300,7 +315,8 @@ const AdminPage = () => {
                     >
                       <option value="">Select Type</option>
                       <option value="Badminton">Badminton</option>
-                      <option value="Karaoke">Karaoke</option>
+                      <option value="Karaoke Room">Karaoke Room</option>
+                      <option value="Music Room">Music Room</option>
                     </select>
 
                     {/* ✅ Price input — cannot be negative */}
@@ -368,7 +384,7 @@ const AdminPage = () => {
                     >
                       <option value="AVAILABLE">AVAILABLE</option>
                       <option value="BOOKED">BOOKED</option>
-                      <option value="UNAVAILABLE">UNAVAILABLE</option>
+                      <option value="MAINTENANCE">MAINTENANCE</option>
                     </select>
                   </>
                 )}
